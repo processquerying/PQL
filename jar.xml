@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project PQL with Jar-in-Jar Loader">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="C:/Users/polyvyan/Dropbox/MyOpenSource/PQL/tool/PQL.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+                <attribute name="Rsrc-Main-Class" value="org.pql.cmd.PQLCommandLine"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./ junit.jar org.hamcrest.core_1.3.0.v201303031735.jar ini4j-0.5.2.jar antlr-4.1-complete.jar mysql-connector-java-5.1.26-bin.jar postgresql-9.3-1101.jdbc41.jar themis.jar org.json.jar org.json.jar"/>
+            </manifest>
+            <zipfileset src="jar-in-jar-loader.zip"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/PQL/target/classes"/>
+            <zipfileset dir="C:\eclipse\plugins\org.junit_4.11.0.v201303080030" includes="junit.jar"/>
+            <zipfileset dir="C:\eclipse\plugins" includes="org.hamcrest.core_1.3.0.v201303031735.jar"/>
+            <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\PQL\lib" includes="ini4j-0.5.2.jar"/>
+            <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\PQL\lib" includes="antlr-4.1-complete.jar"/>
+            <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\PQL\lib" includes="mysql-connector-java-5.1.26-bin.jar"/>
+            <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\PQL\lib" includes="postgresql-9.3-1101.jdbc41.jar"/>
+            <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\PQL\lib" includes="themis.jar"/>
+            <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\PQL\lib" includes="org.json.jar"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-core/target/classes"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-core/target/test-classes"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-deco/target/classes"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-deco/target/test-classes"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-petri/target/classes"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-petri/target/test-classes"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-bp/target/classes"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-bp/target/test-classes"/>
+            <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\jbpt\jbpt-bpm\src\main\resources\lib" includes="org.json.jar"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-bpm/target/classes"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-bpm/target/test-classes"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-test/target/classes"/>
+            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-test/target/test-classes"/>
+        </jar>
+    </target>
+</project>
