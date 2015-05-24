@@ -409,10 +409,10 @@ public final class PQLCommandLine {
 			out.write("password = password\n");
 			out.write("\n");
 			out.write("[lola]\n");
-			out.write("lolaPath = .\\lola2\\win\\lola.exe\n");
+			out.write("lolaPath = .\\\\lola2\\\\win\\\\lola.exe\n");
 			out.write("\n");
 			out.write("[pql]\n");
-			out.write("labelSimilaritySearch = levenshtein");
+			out.write("labelSimilaritySearch = levenshtein\n");
 			out.write("defaultLabelSimilarity = 0.75\n");
 			out.write("indexedLabelSimilarities = 0.5,0.75,1.0\n");
 			out.close();

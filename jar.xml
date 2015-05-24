@@ -8,7 +8,7 @@
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="org.pql.cmd.PQLCommandLine"/>
                 <attribute name="Class-Path" value="."/>
-                <attribute name="Rsrc-Class-Path" value="./ junit.jar org.hamcrest.core_1.3.0.v201303031735.jar ini4j-0.5.2.jar antlr-4.1-complete.jar mysql-connector-java-5.1.26-bin.jar postgresql-9.3-1101.jdbc41.jar themis.jar org.json.jar org.json.jar"/>
+                <attribute name="Rsrc-Class-Path" value="./ junit.jar org.hamcrest.core_1.3.0.v201303031735.jar ini4j-0.5.2.jar antlr-4.1-complete.jar mysql-connector-java-5.1.26-bin.jar postgresql-9.3-1101.jdbc41.jar themis.jar org.json.jar jbpt-0.2.432.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
             <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/PQL/target/classes"/>
@@ -20,19 +20,7 @@
             <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\PQL\lib" includes="postgresql-9.3-1101.jdbc41.jar"/>
             <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\PQL\lib" includes="themis.jar"/>
             <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\PQL\lib" includes="org.json.jar"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-core/target/classes"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-core/target/test-classes"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-deco/target/classes"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-deco/target/test-classes"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-petri/target/classes"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-petri/target/test-classes"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-bp/target/classes"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-bp/target/test-classes"/>
-            <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\jbpt\jbpt-bpm\src\main\resources\lib" includes="org.json.jar"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-bpm/target/classes"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-bpm/target/test-classes"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-test/target/classes"/>
-            <fileset dir="C:/Users/polyvyan/Dropbox/MyOpenSource/jbpt/jbpt-test/target/test-classes"/>
+            <zipfileset dir="C:\Users\polyvyan\Dropbox\MyOpenSource\PQL\lib" includes="jbpt-0.2.432.jar"/>
         </jar>
     </target>
 </project>
