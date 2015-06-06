@@ -1,4 +1,4 @@
-package org.pql.cmd;
+package org.pql.cli;
 
 import java.io.BufferedWriter;
 import java.io.File;
