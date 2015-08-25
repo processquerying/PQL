@@ -9,6 +9,7 @@ import org.jbpt.petri.Node;
 import org.jbpt.petri.Place;
 import org.jbpt.petri.Transition;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
+import org.pql.label.ILabelManager;
 import org.pql.logic.IThreeValuedLogic;
 
 /**
@@ -16,8 +17,12 @@ import org.pql.logic.IThreeValuedLogic;
  */
 public class PQLIndexMySQL extends AbstractPQLIndexMySQL<Flow,Node,Place,Transition,Marking> {
 
-	public PQLIndexMySQL(String mysqlURL, String mysqlUser, String mysqlPassword, IPQLBasicPredicatesOnTasks basicPredicates, IThreeValuedLogic logic, double defaultSim, Set<Double> indexedSims) throws ClassNotFoundException, SQLException {
-		super(mysqlURL,mysqlUser,mysqlPassword,basicPredicates,logic,defaultSim,indexedSims);
+	public PQLIndexMySQL(String mysqlURL, String mysqlUser,
+			String mysqlPassword, IPQLBasicPredicatesOnTasks basicPredicates,
+			ILabelManager labelManager, IThreeValuedLogic logic,
+			double defaultSim, Set<Double> indexedSims)
+			throws ClassNotFoundException, SQLException {
+		super(mysqlURL, mysqlUser, mysqlPassword, basicPredicates, labelManager, logic,
+				defaultSim, indexedSims);
 	}
-
 }

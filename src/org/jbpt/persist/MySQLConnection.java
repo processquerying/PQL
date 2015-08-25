@@ -8,7 +8,7 @@ import java.sql.SQLException;
  * @author Artem Polyvyanyy
  */
 public class MySQLConnection {	
-	protected String musqlURL		= null;
+	protected String mysqlURL		= null;
 	protected String mysqlUser		= null;
 	protected String mysqlPassword	= null;
 		
@@ -17,7 +17,7 @@ public class MySQLConnection {
 	protected MySQLConnection(String url, String user, String password) throws ClassNotFoundException, SQLException {
 		Class.forName("com.mysql.jdbc.Driver");
 		
-		this.musqlURL		= url;
+		this.mysqlURL		= url;
 		this.mysqlUser		= user;
 		this.mysqlPassword	= password;
 		
@@ -26,7 +26,7 @@ public class MySQLConnection {
 	
 	public void connect() throws SQLException {
 		if (connection==null || connection.isClosed())
-			connection = DriverManager.getConnection(this.musqlURL,this.mysqlUser,this.mysqlPassword);
+			connection = DriverManager.getConnection(this.mysqlURL,this.mysqlUser,this.mysqlPassword);
 	}	
 	
 	public void disconnect() throws SQLException {

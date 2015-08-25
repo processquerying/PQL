@@ -1,29 +1,34 @@
 package org.pql.api;
 
+import java.sql.SQLException;
+import java.util.Set;
+
 import org.jbpt.petri.Flow;
 import org.jbpt.petri.Marking;
 import org.jbpt.petri.Node;
 import org.jbpt.petri.Place;
 import org.jbpt.petri.Transition;
-import org.jbpt.petri.persist.IPetriNetPersistenceLayer;
-import org.pql.index.IPQLIndex;
-import org.pql.label.ILabelManager;
-import org.pql.logic.IThreeValuedLogic;
-import org.pql.mc.IModelChecker;
+import org.pql.index.IndexType;
+import org.pql.label.LabelManagerType;
+import org.pql.logic.ThreeValuedLogicType;
 
 /**
  * Artem Polyvyanyy
  */
 public class PQLAPI extends AbstractPQLAPI<Flow,Node,Place,Transition,Marking> {
 
-	public PQLAPI(
-			String mysqlURL, String mysqlUser, String mysqlPassword, 
-			IModelChecker<Flow,Node,Place,Transition,Marking> modelChecker, 
-			IThreeValuedLogic logic, 
-			IPetriNetPersistenceLayer<Flow,Node,Place,Transition,Marking> netPersistenceLayer, 
-			IPQLIndex<Flow,Node,Place,Transition,Marking> pqlPersistenceLayer,  
-			ILabelManager labelManager) {
-		super(mysqlPassword, mysqlPassword, mysqlPassword, modelChecker,logic,netPersistenceLayer,pqlPersistenceLayer,labelManager);
+	public PQLAPI(String mySQLURL, String mySQLUser, String mySQLPassword,
+			String postgreSQLHost, String postgreSQLName,
+			String postgreSQLUser, String postgreSQLPassword, String lolaPath,
+			ThreeValuedLogicType threeValuedLogicType, IndexType indexType,
+			LabelManagerType labelManagerType, Double defaultLabelSimilarity,
+			Set<Double> indexedLabelSimilarities)
+			throws ClassNotFoundException, SQLException {
+		super(mySQLURL, mySQLUser, mySQLPassword, postgreSQLHost, postgreSQLName,
+				postgreSQLUser, postgreSQLPassword, lolaPath, threeValuedLogicType,
+				indexType, labelManagerType, defaultLabelSimilarity,
+				indexedLabelSimilarities);
 	}
+
 
 }

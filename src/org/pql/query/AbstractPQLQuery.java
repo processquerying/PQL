@@ -51,7 +51,6 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	
 	PQLErrorListener						listener		 = null;
 	
-	
 	protected abstract ThreeValuedLogicValue interpretUnaryPredicate(Token op, PQLTask a);
 	
 	protected abstract ThreeValuedLogicValue interpretBinaryPredicate(Token op, PQLTask a, PQLTask b);

@@ -14,7 +14,7 @@ public class PQLBasicPredicatesMySQL
 				extends MySQLConnection
 				implements IPQLBasicPredicatesOnTasks {
 	
-	protected String PETRI_NET_IDENTIFIER_TO_ID = "{? = CALL pql.jbpt_petri_nets_identifier2id(?)}";
+	protected String PETRI_NET_IDENTIFIER_TO_ID = "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
 	
 	protected String PQL_CAN_OCCUR		= "{? = CALL pql.pql_can_occur(?,?)}";
 	protected String PQL_ALWAYS_OCCURS	= "{? = CALL pql.pql_always_occurs(?,?)}";

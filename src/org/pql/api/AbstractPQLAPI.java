@@ -1,23 +1,33 @@
 package org.pql.api;
 
+import java.io.File;
+import java.sql.CallableStatement;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.antlr.v4.runtime.misc.TestRig;
+import org.jbpt.persist.MySQLConnection;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INetSystem;
 import org.jbpt.petri.INode;
 import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
-import org.jbpt.petri.io.PNMLSerializer;
+import org.jbpt.petri.persist.AbstractPetriNetPersistenceLayerMySQL;
 import org.jbpt.petri.persist.IPetriNetPersistenceLayer;
+import org.pql.core.AbstractPQLBasicPredicatesMC;
+import org.pql.core.IPQLBasicPredicatesOnTasks;
+import org.pql.index.AbstractPQLIndexMySQL;
 import org.pql.index.IPQLIndex;
+import org.pql.index.IndexType;
 import org.pql.label.ILabelManager;
+import org.pql.label.LabelManagerLevenshtein;
+import org.pql.label.LabelManagerType;
+import org.pql.label.LabelManagerVSM;
 import org.pql.logic.IThreeValuedLogic;
-import org.pql.logic.ThreeValuedLogicValue;
+import org.pql.logic.KleeneLogic;
+import org.pql.logic.ThreeValuedLogicType;
+import org.pql.mc.AbstractLoLA2ModelChecker;
 import org.pql.mc.IModelChecker;
 import org.pql.query.IPQLQuery;
 import org.pql.query.PQLQueryMySQL;
@@ -25,164 +35,153 @@ import org.pql.query.PQLQueryMySQL;
 /**
  * Artem Polyvyanyy
  */
-public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
+public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>>
+		extends MySQLConnection
 		implements IPQLAPI<F,N,P,T,M> {
 	
-	private String mysqlURL		= null;
-	private String mysqlUser		= null;
-	private String mysqlPassword	= null;
-	
-	private IModelChecker<F,N,P,T,M>			 modelChecker			= null;
-	private IPetriNetPersistenceLayer<F,N,P,T,M> netPersistenceLayer	= null;
-	private IPQLIndex<F,N,P,T,M>	 	 		 pqlPersistenceLayer	= null;
-	private ILabelManager						 labelMngr				= null;
 	private IThreeValuedLogic					 logic					= null;
-	private IPQLQuery							 pqlQuery				= null;
+	private IPetriNetPersistenceLayer<F,N,P,T,M> netPersistenceLayer	= null;
+	private ILabelManager						 labelMngr				= null;
+	private IModelChecker<F,N,P,T,M>			 modelChecker			= null;
+	private IPQLBasicPredicatesOnTasks			 basicPredicates		= null;	
+	private	IPQLIndex<F,N,P,T,M>	 	 		 pqlIndex				= null;
+	private IndexType							 indexType				= null;
 	
-	public AbstractPQLAPI(String mysqlURL, String mysqlUser, String mysqlPassword, 
-			IModelChecker<F,N,P,T,M> modelChecker, 
-			IThreeValuedLogic logic, 
-			IPetriNetPersistenceLayer<F,N,P,T,M> netPersistenceLayer, 
-			IPQLIndex<F,N,P,T,M> pqlPersistenceLayer, 
-			ILabelManager labelManager) {
-		
-		this.mysqlPassword = mysqlPassword;
-		this.mysqlUser = mysqlUser;
-		this.mysqlURL = mysqlUser;
-		
-		this.modelChecker			= modelChecker;
-		this.netPersistenceLayer	= netPersistenceLayer;
-		this.pqlPersistenceLayer	= pqlPersistenceLayer;
-		this.labelMngr				= labelManager;
-		this.logic 					= logic;
-	}
+	protected String	PQL_INDEX_CANNOT	= "{CALL pql.pql_index_cannot(?)}";
 
-	@Override
-	public boolean checkNetSystem(INetSystem<F,N,P,T,M> sys) {
-		if (sys==null) return false;	
-		return modelChecker.isSoundWorkflowNet(sys);
-	}
-
-	@Override
-	public int indexNetSystem(INetSystem<F,N,P,T,M> sys, String identifier, Set<Double> similarities) throws SQLException {
-		// proposed identifier must be available
-		int netID = netPersistenceLayer.identifier2NetID(identifier);
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public AbstractPQLAPI(String mySQLURL, String mySQLUser, String mySQLPassword,
+					String postgreSQLHost, String postgreSQLName, String postgreSQLUser, String postgreSQLPassword, 
+					String lolaPath,
+					ThreeValuedLogicType threeValuedLogicType, 
+					IndexType indexType,
+					LabelManagerType labelManagerType, 
+					Double defaultLabelSimilarity,
+					Set<Double> indexedLabelSimilarities) throws ClassNotFoundException, SQLException {
+		super(mySQLURL,mySQLUser,mySQLPassword);
 		
-		if (netID!=0) return 0;
+		this.indexType = indexType;
 		
-		netID = netPersistenceLayer.storeNetSystem(sys,identifier);
-		
-		// index labels
-		for (T t : sys.getTransitions()) {
-			if (t.isSilent()) continue;
-			
-			this.labelMngr.indexLabel(t.getLabel());
+		switch (threeValuedLogicType) {
+			default: 
+				this.logic = new KleeneLogic();
 		}
 		
-		// index tasks
-		for (T t : sys.getTransitions()) {
-			if (t.isSilent()) continue;
-			
-			this.labelMngr.indexTask(t.getLabel());
+		switch (labelManagerType) {
+			case VSM:
+				this.labelMngr = new LabelManagerVSM(mySQLURL,mySQLUser,mySQLPassword,postgreSQLHost,postgreSQLName,postgreSQLUser,postgreSQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);
+				break;
+			case LEVENSHTEIN:
+				this.labelMngr = new LabelManagerLevenshtein(mySQLURL,mySQLUser,mySQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);
+				break;
 		}
-				
-		// index behavioral relations
-		this.pqlPersistenceLayer.indexBehavioralRelations(sys, netID);
 		
-		return netID;
-	}
-	
-	@Override
-	public int deleteNetSystem(String identifier) throws SQLException {
-		return this.netPersistenceLayer.deleteNetSystem(identifier);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public INetSystem<F,N,P,T,M> bytes2NetSystem(byte[] pnmlContent) {
-		PNMLSerializer PNML = new PNMLSerializer();
-		
-		return (INetSystem<F,N,P,T,M>) PNML.parse(pnmlContent);
+		this.netPersistenceLayer	= new AbstractPetriNetPersistenceLayerMySQL(mySQLURL,mySQLUser,mySQLPassword);
+		this.modelChecker			= new AbstractLoLA2ModelChecker(lolaPath);
+		this.basicPredicates		= new AbstractPQLBasicPredicatesMC(this.modelChecker,this.logic);
+		this.pqlIndex				= new AbstractPQLIndexMySQL(mySQLURL,mySQLUser,mySQLPassword,basicPredicates,this.labelMngr,this.logic,defaultLabelSimilarity,indexedLabelSimilarities);
 	}
 
 	@Override
-	public ThreeValuedLogicValue checkQuery(String pqlQuery, String netIdentifier) throws ClassNotFoundException, SQLException {
-		this.pqlQuery = new PQLQueryMySQL(mysqlURL, mysqlUser, mysqlPassword, pqlQuery,logic,labelMngr);
+	public boolean checkNetSystem(int internalID) throws SQLException {
+		INetSystem<F,N,P,T,M> sys = this.restoreNetSystem(internalID);
 		
-		if (this.pqlQuery.getNumberOfParseErrors()==0) {
-			this.pqlQuery.configure(netIdentifier);
-			return this.pqlQuery.check();
-		}
+		boolean result = true;
+		if (sys==null) result = false;
 		
-		return null;
+		sys.loadNaturalMarking();		
+		
+		if (result) result = this.modelChecker.isSoundWorkflowNet(sys);
+		
+		if (!result) this.cannnotIndex(internalID);
+		
+		return result;
+	}
+	
+	private void cannnotIndex(int internalID) throws SQLException {
+		CallableStatement cs = connection.prepareCall(this.PQL_INDEX_CANNOT);
+		
+		cs.setInt(1, internalID);
+		
+		cs.execute();
+		
+		cs.close();
+	}
+	
+	@Override
+	public boolean index(int internalID) throws SQLException {		
+		return this.pqlIndex.index(internalID, this.indexType);
+	}
+	
+	@Override
+	public boolean deleteIndex(int internalID) throws SQLException {
+		return this.pqlIndex.deleteIndex(internalID)>0 ? true : false;
 	}
 
 	@Override
-	public void visualiseQuery(String pqlQuery) {
+	public void parsePQLQuery(String pqlPath) throws Exception {
 		String[] input = new String[4];
 		input[0] = "PQL";
 		input[1] = "query";
 		input[2] = "-gui";
-		input[3] = pqlQuery;
-		try {
-			TestRig testRig = new TestRig(input);
-			testRig.process();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		input[3] = pqlPath;
 		
+		TestRig testRig = new TestRig(input);
+		testRig.process();
 	}
 
-	@Override
-	public IPQLQuery getLastQuery() {
-		return this.pqlQuery;
-	}
-
-	@Override
-	public int getLastNumberOfParseErrors() {
-		return this.pqlQuery.getNumberOfParseErrors();
-	}
-
-	@Override
-	public List<String> getLastParseErrorMessages() {
-		return this.pqlQuery.getParseErrorMessages();
-	}
-
-	@Override
-	public void prepareQuery(String pqlQuery) throws ClassNotFoundException, SQLException {
-		this.pqlQuery = new PQLQueryMySQL(mysqlURL, mysqlUser, mysqlPassword, pqlQuery,logic,labelMngr);	
-	}
-
-	@Override
-	public Set<String> checkLastQuery(Set<String> identifiers) {
-		Set<String> result = new HashSet<String>(); 
-		
-		if (identifiers!=null && this.pqlQuery.getNumberOfParseErrors()==0) {
-			for (String identifier : identifiers) {
-				this.pqlQuery.configure(identifier);			
-				
-				if (this.pqlQuery.check()==ThreeValuedLogicValue.TRUE)
-					result.add(identifier);
-			}
-		}
-		
-		return result;
-	}
-
-	@Override
-	public Set<String> checkLastQuery() throws SQLException {
-		Set<String> result = new HashSet<String>();
-		
-		for (String identifier : netPersistenceLayer.getAllIdentifiers()) {
-			this.pqlQuery.configure(identifier);
-			if (this.pqlQuery.check()==ThreeValuedLogicValue.TRUE)
-				result.add(identifier);
-		}
-		
-		return result;
-	}
 
 	@Override
 	public void reset() throws SQLException {
 		this.netPersistenceLayer.reset();
 	}
+
+	@Override
+	public INetSystem<F,N,P,T,M> restoreNetSystem(int internalID) throws SQLException {
+		return this.netPersistenceLayer.restoreNetSystem(internalID);
+	}
+
+	@Override
+	public int storeNetSystem(INetSystem<F,N,P,T,M> sys, String identifier) throws SQLException {
+		return this.netPersistenceLayer.storeNetSystem(sys,identifier);
+	}
+
+	@Override
+	public int storeNetSystem(File pnmlFile, String identifier) throws SQLException {
+		return this.netPersistenceLayer.storeNetSystem(pnmlFile, identifier);
+	}
+	
+	@Override
+	public void cleanupIndex() throws SQLException {
+		this.pqlIndex.cleanupIndex();
+	}	
+	
+
+	@Override
+	public int getInternalID(String externalID) throws SQLException {
+		return this.netPersistenceLayer.getInternalID(externalID);
+	}
+
+	@Override
+	public String getExternalID(int internalID) throws SQLException {
+		return this.netPersistenceLayer.getExternalID(internalID);
+	}
+	
+	@Override
+	public PQLQueryResult query(String pqlQuery) throws ClassNotFoundException, SQLException {
+		IPQLQuery query = new PQLQueryMySQL(this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, logic, labelMngr);
+		
+		PQLQueryResult result = new PQLQueryResult(this.mysqlURL, this.mysqlUser, this.mysqlPassword, query);
+		
+		return result;
+	}
+
+	@Override
+	public PQLQueryResult query(String pqlQuery, Set<String> externalIDs) throws ClassNotFoundException, SQLException {
+		IPQLQuery query = new PQLQueryMySQL(this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, logic, labelMngr);
+		
+		PQLQueryResult result = new PQLQueryResult(this.mysqlURL, this.mysqlUser, this.mysqlPassword, query, externalIDs);
+		
+		return result;
+	}	
 }

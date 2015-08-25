@@ -11,6 +11,8 @@ import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
 
 /**
+ * An interface to a model checker.
+ * 
  * @author Artem Polyvyanyy
  */
 public interface IModelChecker<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> {

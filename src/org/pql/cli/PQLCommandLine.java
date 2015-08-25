@@ -1,484 +1,320 @@
 package org.pql.cli;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
-import org.ini4j.Ini;
-import org.jbpt.petri.NetSystem;
-import org.jbpt.petri.Place;
-import org.jbpt.petri.Transition;
-import org.jbpt.petri.io.PNMLSerializer;
-import org.jbpt.petri.persist.PetriNetMySQL;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.pql.api.PQLAPI;
-import org.pql.core.IPQLBasicPredicatesOnTasks;
-import org.pql.core.PQLBasicPredicatesMC;
+import org.pql.api.PQLQueryResult;
 import org.pql.core.PQLTask;
-import org.pql.index.PQLIndexMySQL;
-import org.pql.label.ILabelManager;
-import org.pql.label.LabelManagerLevenshtein;
-import org.pql.label.LabelManagerVSM;
-import org.pql.logic.IThreeValuedLogic;
-import org.pql.logic.KleeneLogic;
-import org.pql.logic.ThreeValuedLogicValue;
-import org.pql.mc.LoLAModelChecker;
-import org.pql.query.IPQLQuery;
+import org.pql.ini.PQLIniFile;
 
 /**
- * @author Artem Polyvyanyy
+ * PQL command line tool
  * 
- * TODO: when indexing check identifier first 
+ * @version 1.0
+ * @since 15-01-2015
+ * 
+ * @author Artem Polyvyanyy 
  */ 
 public final class PQLCommandLine {
-	final private static String		iniFile	= "PQL.ini";
+	final private static String	version	= "1.0";
 	
-	private static String mysqlURL		 = null;
-	private static String mysqlUser		 = null;
-	private static String mysqlPassword	 = null;
-	private static String pgHost		 = null;
-	private static String pgName		 = null;
-	private static String pgUser		 = null;
-	private static String pgPassword	 = null;
-	private static String lolaPath 		 = null;	
-	private static String labelSimSearch = null;
-	
-	private static double 		defaultLabelSimilarity		= 1.0;
-	private static Set<Double>	indexedLabelSimilarities	= null;
-	
-	private static NetSystem		sys			= null;
-	private static String			msg			= null;
-	private static PetriNetMySQL	pnMySQL		= null;
-	private static PQLIndexMySQL	pqlMySQL	= null;
-	
-	private static IThreeValuedLogic logic		= null;	// three-valued logic to use
-	private static ILabelManager	 labelMngr	= null;
-	
-	private static LoLAModelChecker lolaModelChecker = null;
-	private static PQLAPI 			pqlAPI			 = null;
-	
-	private static IPQLBasicPredicatesOnTasks basicPredicates = null;
-	
-	/**
-	 * Main interface to the command line tool.
-	 * 
-	 * @param args Command line arguments. 
-	 * @throws SQLException 
-	 * @throws ClassNotFoundException 
-	 */
+	private static PQLAPI pqlAPI = null;
+		
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		// check ini file
-		if (!PQLCommandLine.checkFile(PQLCommandLine.iniFile)) {
-			System.out.println(PQLCommandLine.msg);
-			PQLCommandLine.createINIFile();
-			System.out.println(String.format("Fresh %s file created.", PQLCommandLine.iniFile));
-			return;
+		// read parameters from the ini file
+		PQLIniFile iniFile = new PQLIniFile();
+		if (!iniFile.load()) { 
+			iniFile.create();
+			if (!iniFile.load()) {
+				System.out.println("ERROR: Cannot load PQL ini file.");
+				return;
+			}
 		}
 		
-		// load ini file
-		if (!PQLCommandLine.loadINIFile()) {
-			System.out.println(PQLCommandLine.msg);
-			return;
-		}
+		// read parameters from the CLI
+		CommandLineParser parser = new DefaultParser();
 		
-		// initialise objects
-		PQLCommandLine.logic			 = new KleeneLogic();
-		PQLCommandLine.lolaModelChecker	 = new LoLAModelChecker(PQLCommandLine.lolaPath);
-		PQLCommandLine.pnMySQL			 = new PetriNetMySQL(mysqlURL,mysqlUser,mysqlPassword);
-		
-		if (PQLCommandLine.labelSimSearch.trim().toLowerCase().equals("levenshtein"))
-			PQLCommandLine.labelMngr		= new LabelManagerLevenshtein(mysqlURL,mysqlUser,mysqlPassword,defaultLabelSimilarity,indexedLabelSimilarities);
-		else
-			PQLCommandLine.labelMngr		= new LabelManagerVSM(mysqlURL,mysqlUser,mysqlPassword,pgHost,pgName,pgUser,pgPassword,defaultLabelSimilarity,indexedLabelSimilarities);
-		
-		PQLCommandLine.basicPredicates 	= new PQLBasicPredicatesMC(PQLCommandLine.lolaModelChecker,PQLCommandLine.logic);
-		
-		PQLCommandLine.pqlMySQL		 	 = new PQLIndexMySQL(mysqlURL,mysqlUser,mysqlPassword,PQLCommandLine.basicPredicates,PQLCommandLine.logic,defaultLabelSimilarity,indexedLabelSimilarities);
-		
-		PQLCommandLine.pqlAPI			 = new PQLAPI(mysqlURL,mysqlUser,mysqlPassword,lolaModelChecker,logic,pnMySQL,pqlMySQL,labelMngr);
-		
-		
-		String identifier = null;
-		switch (args.length) {
-			case 1:	// one argument
-				switch (args[0]) {
-					case "-?":
-					case "--help":
-						PQLCommandLine.showHelp();
-						break;
-					case "-reset":
-						pqlAPI.reset();
-						System.out.println("The PQL system has been reset!");
-						break;
-					default:
-						PQLCommandLine.showError();
-				}
-				break;
-			case 2: // two arguments
-				switch (args[0]) {
-					case "-c": // check if a given net system can be indexed
-						// check PNML file
-						String pnmlFile = args[1];
-						if (!PQLCommandLine.checkFile(pnmlFile)) {
-							System.out.println(PQLCommandLine.msg);
-							return;
-						}
-						
-						// load PNML file
-						PQLCommandLine.loadPNMLFile(pnmlFile);	// TODO handle exceptions
-						
-						// check net system
-						PQLCommandLine.checkNetSystem();
-						System.out.println(PQLCommandLine.msg);
-						break;
-					case "-i":
-						String pnmlDirectory = args[1];
-						if (!PQLCommandLine.checkDirectory(pnmlDirectory)) {
-							System.out.println(PQLCommandLine.msg);
-							return;
-						}
-						
-						PQLCommandLine.indexNetSystems(pnmlDirectory);
-						break;
-					case "-q":
-						String q = args[1];
-						
-						pqlAPI.prepareQuery(q);
-						
-						if (pqlAPI.getLastNumberOfParseErrors()==0) {
-							System.out.println(pqlAPI.checkLastQuery());
-						} 
-						else {
-							for (String error: pqlAPI.getLastParseErrorMessages())
-								System.out.println(error);	
-						}
-						break;
-					case "-v": // visualize query parse tree
-						String query = args[1];
-						pqlAPI.visualiseQuery(query);
-						break;
-					case "-d": // delete index
-						identifier = args[1];
-						if (pqlAPI.deleteNetSystem(identifier)==0)
-							System.out.println(String.format("Net system with identifier '%s' was not deleted!", identifier));
-						else
-							System.out.println(String.format("Net system with identifier '%s' and its index were deleted!", identifier));
-						break;
-					default:
-						PQLCommandLine.showError();
-				}
-				break;
-			case 3: // three arguments
-				switch (args[0]) {
-					case "-i": // index net system
-						// check PNML file
-						String pnmlFile	= args[1];
-						if (!PQLCommandLine.checkFile(pnmlFile)) {
-							System.out.println(PQLCommandLine.msg);
-							return;
-						}
-						
-						identifier = args[2];
-						PQLCommandLine.indexNetSystem(pnmlFile,identifier);
-						break;
-					case "-q":
-						identifier = args[1];
-						String query = args[2];
-						ThreeValuedLogicValue result = pqlAPI.checkQuery(query,identifier);
-						
-						if (pqlAPI.getLastNumberOfParseErrors()==0) {
-							IPQLQuery q = pqlAPI.getLastQuery();
-							PQLCommandLine.reportQueryResult(q,result);
-						}
-						else {
-							for (String error: pqlAPI.getLastParseErrorMessages())
-								System.out.println(error);	
-						}
-						break;
-					default:
-						PQLCommandLine.showError();
-				}
-				break;
-			default:
-				PQLCommandLine.showError();
-		}
+		Options options = null;
+	    try {
+	    	// create Options object
+	    	options = new Options();
+	    	
+	    	OptionGroup cmdGroup = new OptionGroup();
+	    	
+	    	// create options
+	    	Option helpOption		= Option.builder("h").longOpt("help").numberOfArgs(0).required(false).desc("print this message").hasArg(false).build();
+	    	Option versionOption	= Option.builder("v").longOpt("version").numberOfArgs(0).required(false).desc("get version of this tool").hasArg(false).build();
+	    	Option resetOption		= Option.builder("r").longOpt("reset").numberOfArgs(0).required(false).desc("reset this PQL instance").hasArg(false).build();
+	    	Option storeOption		= Option.builder("s").longOpt("store").numberOfArgs(0).required(false).desc("store model").hasArg(false).build();
+	    	Option parseOption		= Option.builder("p").longOpt("parse").numberOfArgs(0).required(false).desc("show PQL query parse tree").hasArg(false).build();
+	    	Option indexOption		= Option.builder("i").longOpt("index").numberOfArgs(0).required(false).desc("index model").hasArg(false).build();
+	    	Option checkOption		= Option.builder("c").longOpt("check").numberOfArgs(0).required(false).desc("check if model can be indexed").hasArg(false).build();
+	    	Option queryOption		= Option.builder("q").longOpt("query").numberOfArgs(0).required(false).desc("run PQL query").hasArg(false).build();
+	    	
+	    	//Option deleteOption	= Option.builder("d").longOpt("delete").numberOfArgs(0).required(false).desc("delete model").hasArg(false).build();
+	    	//Option retrieveOption	= Option.builder("r").longOpt("retrieve").numberOfArgs(0).required(false).desc("retrieve model").hasArg(false).build();
+	    	
+	    	Option pnmlOption		= Option.builder("pnml").longOpt("pnmlPath").hasArg(true).optionalArg(false).valueSeparator('=').argName("path").required(false).desc("PNML path").build();
+	    	Option pqlOption		= Option.builder("pql").longOpt("pqlPath").hasArg(true).optionalArg(false).valueSeparator('=').argName("path").required(false).desc("PQL path").build();
+	    	Option idOption			= Option.builder("id").longOpt("identifier").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("model identifier").build();
+	    	
+	    	// add options
+	    	cmdGroup.addOption(helpOption);
+	    	cmdGroup.addOption(versionOption);
+	    	cmdGroup.addOption(resetOption);
+	    	cmdGroup.addOption(storeOption);
+	    	cmdGroup.addOption(parseOption);
+	    	cmdGroup.addOption(indexOption);
+	    	
+	    	//cmdGroup.addOption(deleteOption);
+	    	//cmdGroup.addOption(retrieveOption);
+	    	cmdGroup.addOption(checkOption);
+	    	cmdGroup.addOption(queryOption);
+	    	
+	    	cmdGroup.setRequired(true);
+	    	
+	    	options.addOptionGroup(cmdGroup);
+	    	
+	    	options.addOption(pnmlOption);
+	    	options.addOption(pqlOption);
+	    	options.addOption(idOption);
+	    	
+	        // parse the command line arguments
+	        CommandLine cmd = parser.parse(options, args);
+	        
+	        PQLCommandLine.pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
+	        									iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
+	        									iniFile.getLolaPath(), 
+	        									iniFile.getThreeValuedLogicType(),  
+	        									iniFile.getIndexType(),
+	        									iniFile.getLabelManagerType(),
+	        									iniFile.getDefaultLabelSimilarity(),
+	        									iniFile.getIndexedLabelSimilarities());
+	        
+	        // handle help
+	        if(cmd.hasOption("h") || cmd.getOptions().length==0) {
+	        	showHelp(options);
+	        	return;
+	        }
+	        
+	        // handle version
+	        if(cmd.hasOption("v")) {
+	        	System.out.println(PQLCommandLine.version);
+	        	return;
+	        }
+	        
+	        // handle reset
+	        if(cmd.hasOption("r")) {
+	        	System.out.print("Do you want to reset PQL index (Y/N): ");
+	        	try {
+					int ch = System.in.read();
+					
+					if (ch=='Y' || ch=='y') {
+						PQLCommandLine.pqlAPI.reset();
+						System.out.println("The index was reset!");
+					}
+					
+					return;
+				} catch (IOException e) {}
+	        }
+	        
+	        // handle store
+	        if (cmd.hasOption("s")) {
+	        	if (cmd.hasOption("pnml")) {
+	        		String pnmlPath = cmd.getOptionValue("pnml");
+	        		File pnmlFile = new File(pnmlPath);
+	        		
+	        		if (pnmlFile.isFile()) {
+	        			if (cmd.hasOption("id")) {
+	        				PQLCommandLine.store(pnmlFile,cmd.getOptionValue("id"));	
+	        			}
+	        			else throw new ParseException("-s and -pnml option requires -id option");
+	        		}
+	        		else if (pnmlFile.isDirectory()) {
+	        			PQLCommandLine.store(pnmlFile);
+	        		}
+	        	}
+	        	else throw new ParseException("-s option requires -pnml option");
+	        	
+	        	return;
+	        }
+	        
+	        // handle parse
+	        if (cmd.hasOption("p")) {
+	        	if (cmd.hasOption("pql")) {
+	        		String pqlPath = cmd.getOptionValue("pql");
+	        		
+	        		try {
+	        			PQLCommandLine.pqlAPI.parsePQLQuery(pqlPath);
+	        		}
+	        		catch (Exception e) {
+	        			System.out.println("invalid -pql argument");
+	        		}
+	        	}
+	        	else throw new ParseException("-p option requires -pql option");
+	        	
+	        	return;
+	        }
+	        
+	        // handle index
+	        if (cmd.hasOption("i")) {
+	        	if (cmd.hasOption("id")) {
+	        		String id = cmd.getOptionValue("id");
+	        		
+	        		int internalID = PQLCommandLine.pqlAPI.getInternalID(id);
+	        		
+	        		if (internalID>0) {
+	        			boolean result = PQLCommandLine.pqlAPI.index(internalID);
+	        			if (result)
+	        				System.out.println("model indexed successfully");
+	        			else
+	        				System.out.println("model not indexed");
+	        		}
+	        		else
+	        			System.out.println("specified identifier is not associated with any model");
+	        	}
+	        	else throw new ParseException("-i option requires -id option");
+	        	
+	        	return;
+	        }
+	        
+	        // handle check
+	        if (cmd.hasOption("c")) {
+	        	if (cmd.hasOption("id")) {
+	        		String id = cmd.getOptionValue("id");
+	        		
+	        		int internalID = PQLCommandLine.pqlAPI.getInternalID(id);
+	        		
+	        		if (internalID>0) {
+	        			boolean result = PQLCommandLine.pqlAPI.checkNetSystem(internalID);
+	        			if (result)
+	        				System.out.println("model can be indexed");
+	        			else
+	        				System.out.println("model cannot be indexed");
+	        		}
+	        		else
+	        			System.out.println("specified identifier is not associated with any model");
+	        	}
+	        	else throw new ParseException("-c option requires -id option");
+	        	
+	        	return;
+	        }
+	        
+	        // handle query
+	        if (cmd.hasOption("q")) {
+	        	if (cmd.hasOption("pql")) {
+	        		String pqlPath = cmd.getOptionValue("pql");
+	        		File file = new File(pqlPath);
+	        		
+	        		String pqlQuery = "";
+	        		if (file.isFile() && file.canRead()) {
+	        			pqlQuery = new String(Files.readAllBytes(Paths.get(pqlPath)));
+	        		}
+	        		else {
+	        			System.out.println("invalid -pql argument");
+	        			return;
+	        		}
+	        		
+	        		PQLQueryResult queryResult = null;
+	        		if (cmd.hasOption("id")) {
+	        			String id = cmd.getOptionValue("id");
+	        			Set<String> ids = new HashSet<String>();
+	        			ids.add(id);
+	        			queryResult = PQLCommandLine.pqlAPI.query(pqlQuery,ids);
+	        		}
+	        		else {
+	        			queryResult = PQLCommandLine.pqlAPI.query(pqlQuery);
+	        		}
+	        		
+	        		if (queryResult.getNumberOfParseErrors()==0) {
+	        			System.out.println("------------------------------------------------------------");
+	        			System.out.println("PQL query:\t"+ pqlQuery);
+	        			if (!queryResult.getVariables().isEmpty()) 
+	        				System.out.println("------------------------------------------------------------");
+		        		for (Map.Entry<String,Set<PQLTask>> var: queryResult.getVariables().entrySet()) {
+		        			System.out.println("Variable:\t"+ var.getKey() + " = " + var.getValue());
+		        		}
+		        		System.out.println("------------------------------------------------------------");
+		        		System.out.println("Attributes:\t"+ queryResult.getAttributes());
+		        		System.out.println("------------------------------------------------------------");
+		        		System.out.println("Locations:\t"+ queryResult.getAttributes());
+		        		if (!queryResult.getTaskMap().isEmpty()) 
+	        				System.out.println("------------------------------------------------------------");
+		        		for (Map.Entry<PQLTask,PQLTask> map: queryResult.getTaskMap().entrySet()) {
+		        			System.out.println("Task:\t"+ map.getKey() + " -> " + map.getValue());
+		        		}
+		        		System.out.println("------------------------------------------------------------");
+		        		System.out.println("Result:\t\t"+ queryResult.getSearchResults());
+		        		System.out.println("------------------------------------------------------------");
+	        		}
+	        		else {
+	        			System.out.println("------------------------------------------------------------");
+	        			for (String msg : queryResult.getParseErrorMessages()) {
+	        				System.out.println("Parse error:\t"+msg);
+	        				System.out.println("------------------------------------------------------------");
+	        			}
+	        		}
+	        	}
+	        	else throw new ParseException("-q option requires -pql option");
+	        	
+	        	return;
+	        }
+	        
+	    }
+	    catch (ParseException | IOException exp) {
+	        // oops, something went wrong
+	        System.err.println("CLI parsing failed. Reason: " + exp.getMessage() + "\n");
+	        showHelp(options);
+	        return;
+	    }
 	}
 	
-	private static void reportQueryResult(IPQLQuery q, ThreeValuedLogicValue result) {
-		System.out.println("QUERY RESULT: "+result);
-		System.out.println("---------------------------------------");
-		System.out.println("TASKS:");
-		for (Map.Entry<PQLTask,PQLTask> entry : q.getTaskMap().entrySet()) {
-			System.out.print(String.format("%s[%.2f] = %s[%.2f]%s", entry.getKey().getLabel(),entry.getKey().getSimilarity(),
-					entry.getValue().getLabel(),entry.getValue().getSimilarity(),entry.getValue().getSimilarLabels()));
-			
-			System.out.println();
+	private static void store(File pnmlFile, String identifier) throws SQLException {
+		if (pnmlFile==null || identifier==null) {
+			System.out.println("Cannot store model.");
+			return;
 		}
-		System.out.println("---------------------------------------");
-		System.out.println("VARIABLES: " + q.getVariables());
-		System.out.println("---------------------------------------");
-		System.out.println("ATTRIBUTES: " + q.getAttributes());
-		System.out.println("---------------------------------------");
-		System.out.println("LOCATIONS: " + q.getLocations());
-		System.out.println("---------------------------------------");
+		
+		int result = PQLCommandLine.pqlAPI.storeNetSystem(pnmlFile, identifier);
+		
+		if (result>0) 
+			System.out.println(String.format("Model %s stored under unique identifier %s.", pnmlFile.getAbsolutePath(), identifier));
+		else
+			System.out.println(String.format("Model %s cannot be stored under identifier %s.", pnmlFile.getAbsolutePath(), identifier));
 	}
 
-	private static boolean checkNetSystem() {
-		boolean result = PQLCommandLine.pqlAPI.checkNetSystem(PQLCommandLine.sys);
-		
-		if (result)
-			PQLCommandLine.msg = "Given system can be indexed, i.e., it is a sound workflow net.";
-		else
-			PQLCommandLine.msg = "Given system cannot be indexed, i.e., it is not a sound workflow net.";
-		
-		return result;
-	}
-	
-	private static int indexNetSystem(String pnmlFile, String identifier) throws SQLException {
-		// load PNML file
-		// TODO handle exceptions
-		PQLCommandLine.loadPNMLFile(pnmlFile);		
-		PQLCommandLine.sys.loadNaturalMarking();
-		
-		// check net system
-		if (!PQLCommandLine.checkNetSystem()) {
-			System.out.println(pnmlFile + ": " + PQLCommandLine.msg);
-			return -1;
-		}
-		
-		System.out.print(String.format("System with identifier '%s' ", identifier));
-		long start = System.nanoTime();
-		int netID = PQLCommandLine.pqlAPI.indexNetSystem(PQLCommandLine.sys,identifier,PQLCommandLine.indexedLabelSimilarities);
-		long end = System.nanoTime();
-		
-		if (netID>0)
-			System.out.println(String.format("indexed successfully in %sns.", end-start));
-		else if (netID==0)
-			System.out.println(String.format("cannot be indexed. The Identifier is already associated with some other system.", identifier)); 
-		else 
-			System.out.println(String.format("cannot be indexed. Cannot connect to database. Check %s file.", PQLCommandLine.iniFile));
-		
-		return netID;
-	}
-	
-	private static void indexNetSystems(String pnmlDirectory) throws SQLException {
-		File dir = new File(pnmlDirectory);
-		
-		for (File file : dir.listFiles()) {
+	private static void store(File pnmlDir) throws SQLException {
+		for (File file : pnmlDir.listFiles()) {
 			if (!file.isFile()) continue;
 			if (!file.getName().endsWith(".pnml")) continue;
 			
-			PQLCommandLine.indexNetSystem(file.getAbsolutePath(), file.getName());
+			PQLCommandLine.store(file, file.getName());
 		}
 	}
 
-	private static boolean checkFile(String fileName) {
-		try {
-			File file = new File(fileName);
-			
-			if (file.exists()) {
-				if (file.isFile()) {
-					if (file.canRead()) {
-				        return true;
-					}
-					else {
-						PQLCommandLine.msg = String.format("%s file exists, but cannot be read.", fileName);
-						return false;
-					}
-				}
-				else {
-					PQLCommandLine.msg = String.format("%s exists, but is not a normal file.", fileName);
-					return false;
-				}
-			}
-			else {
-				PQLCommandLine.msg = String.format("%s does not exist.", fileName);
-				return false;
-			}
-		} catch (Exception e) {
-			PQLCommandLine.msg = String.format("An unhandled exception was thrown: %s", e.getStackTrace().toString());
-			return false;
-		}
-	}
-	
-	private static boolean checkDirectory(String dirName) {
-		try {
-			File dir = new File(dirName);
-			
-			if (dir.exists()) {
-				if (dir.isDirectory()) {
-					if (dir.canRead()) {
-				        return true;
-					}
-					else {
-						PQLCommandLine.msg = String.format("%s directory exists, but cannot be read.", dirName);
-						return false;
-					}
-				}
-				else {
-					PQLCommandLine.msg = String.format("%s exists, but is not a normal directory.", dirName);
-					return false;
-				}
-			}
-			else {
-				PQLCommandLine.msg = String.format("%s does not exist.", dirName);
-				return false;
-			}
-		} catch (Exception e) {
-			PQLCommandLine.msg = String.format("An unhandled exception was thrown: %s", e.getStackTrace().toString());
-			return false;
-		}
-	}
-
-	private static boolean loadINIFile() {
-		try {
-			File file = new File(PQLCommandLine.iniFile);
-			
-			// read configuration from file
-			Ini ini = new Ini();
-			ini.load(new FileReader(file));
-			
-			// load lola section
-	        Ini.Section section = ini.get("lola");
-	        PQLCommandLine.lolaPath = section.get("lolaPath");
-	        
-	        // load pql section
-	        section = ini.get("pql");
-	        
-	        PQLCommandLine.labelSimSearch = section.get("labelSimilaritySearch");
-	        
-	        PQLCommandLine.defaultLabelSimilarity = Double.parseDouble(section.get("defaultLabelSimilarity"));
-	        String similarities = section.get("indexedLabelSimilarities");
-	        StringTokenizer st = new StringTokenizer(similarities,",");
-	        
-	        PQLCommandLine.indexedLabelSimilarities = new HashSet<Double>();
-	        while (st.hasMoreTokens()) 
-	        	PQLCommandLine.indexedLabelSimilarities.add(Double.parseDouble(st.nextToken()));
-	        
-	        PQLCommandLine.indexedLabelSimilarities.add(1.0);
-	        PQLCommandLine.indexedLabelSimilarities.add(PQLCommandLine.defaultLabelSimilarity);
-	        
-	        // load postgresql section
-	        section = ini.get("postgresql");
-	        PQLCommandLine.pgHost = section.get("host");
-	        PQLCommandLine.pgName = section.get("name");
-	        PQLCommandLine.pgUser = section.get("user");
-	        PQLCommandLine.pgPassword = section.get("password");
-	        
-	        // load mysql section
-	        section = ini.get("mysql");
-	        PQLCommandLine.mysqlURL = section.get("url");
-	        PQLCommandLine.mysqlUser = section.get("user");
-	        PQLCommandLine.mysqlPassword = section.get("password");
-	        
-	        return true;
-		} catch (IOException e) {
-			PQLCommandLine.msg = String.format("Cannot read %s.", PQLCommandLine.iniFile);
-			return false;
-		} catch (NumberFormatException e) {
-			PQLCommandLine.msg = String.format("Wrong number format for 'defaultLabelSimilarity' or 'indexedLabelSimilarities'.", e.getStackTrace().toString());
-			return false;
-		} catch (Exception e) {
-			PQLCommandLine.msg = String.format("An unhandled exception was thrown: %s", e.getStackTrace().toString());
-			return false;
-		}
-	}
-
-	/**
-	 * Create a configuration file, if one does not exist.
-	 */
-	private static void createINIFile() {
-		BufferedWriter out;
-		try {
-			out = new BufferedWriter(new FileWriter(PQLCommandLine.iniFile));
-			out.write("[mysql]\n");
-			out.write("url = jdbc:mysql://localhost:3306/mysql\n");
-			out.write("user = user\n");
-			out.write("password = password\n");
-			out.write("\n");
-			out.write("[postgresql]\n");
-			out.write("host = localhost\n");
-			out.write("name = themis\n");
-			out.write("user = user\n");
-			out.write("password = password\n");
-			out.write("\n");
-			out.write("[lola]\n");
-			out.write("lolaPath = .\\\\lola2\\\\win\\\\lola.exe\n");
-			out.write("\n");
-			out.write("[pql]\n");
-			out.write("labelSimilaritySearch = levenshtein\n");
-			out.write("defaultLabelSimilarity = 0.75\n");
-			out.write("indexedLabelSimilarities = 0.5,0.75,1.0\n");
-			out.close();
-			PQLCommandLine.msg += String.format("A sample %s file created.", PQLCommandLine.iniFile);
-		} catch (Exception e) {
-			PQLCommandLine.msg += String.format("An exception was thrown when creating a sample %s file: %s", PQLCommandLine.iniFile, e.getStackTrace().toString());
-		}
-	}	
-	
-	private static void loadPNMLFile(String pnmlFile) {
-		PNMLSerializer PNML = new PNMLSerializer();
-		PQLCommandLine.sys = PNML.parse(pnmlFile);
-		
-		int pi,ti;
-		pi = ti = 1;
-		
-		for (Place p : sys.getPlaces()) {
-			p.setName("p"+pi++);
-		}
-		
-		for (Transition t : sys.getTransitions()) {
-			t.setName("t"+ti++);
-		}
-		
-	}
-
-	/**
-	 * Print the error message to the standard output.
-	 */
-	private static void showError() {
-		System.out.println("Supplied arguments are not recognized as valid!");
-		System.out.println("Use 'java -jar PQL.jar -?' for help.");
-	}
-
-	/**
-	 * Print the help message to the standard output.
-	 */
-	private static void showHelp() {
-		System.out.println("Copyright (c), 2013-2014. Artem Polyvyanyy.");
-		System.out.println("All rights reserved.");
-		System.out.println();
-		System.out.println("Usage: java -jar PQL.jar [-?|--help]");
-		System.out.println("       (to print this help message)");
-		System.out.println();
-		System.out.println("   or  java -jar PQL.jar -reset");
-		System.out.println("       (to reset the system)");
-		System.out.println();
-		System.out.println("   or  java -jar PQL.jar -c pnmlFile");
-		System.out.println("       (to check if the net system stroed in 'pnmlFile' can be indexed)");
-		System.out.println();
-		System.out.println("   or  java -jar PQL.jar -v pqlFile");
-		System.out.println("       (to visualize parse tree of the query stored in 'pqlFile')");
-		System.out.println();
-		System.out.println("   or  java -jar PQL.jar -i pnmlDirectory");
-		System.out.println("       (to index all net systems stored in 'pnmlDirectory'; only *.pnml files are considered)");
-		System.out.println();
-		System.out.println("   or  java -jar PQL.jar -i pnmlFile identifier");
-		System.out.println("       (to index the net system stored in 'pnmlFile' under 'identifier')");
-		System.out.println();
-		System.out.println("   or  java -jar PQL.jar -d File identifier");
-		System.out.println("       (to delete the net system stored under 'identifier' and its index)");
-		System.out.println();
-		System.out.println("   or  java -jar PQL.jar -q pqlFile");
-		System.out.println("       (to discover all identifiers of net systems that match a query stored in 'pqlFile')");
-		System.out.println();
-		System.out.println("   or  java -jar PQL.jar -q identifier pqlFile");
-		System.out.println("       (to test if the net system indexed under 'identifier' matches a query stored in 'pqlFile')");
+	private static void showHelp(Options options) {
+		HelpFormatter formatter = new HelpFormatter();
+    	formatter.printHelp(80, "java -jar PQL.jar <options>", 
+    							String.format("===========================================================\n"+
+    										   " Process Query Language (PQL) ver. %s by Artem Polyvyanyy\n"+
+    										  "===========================================================\n", PQLCommandLine.version), 
+    							options, 
+    							"===========================================================\n");
 	}
 }
