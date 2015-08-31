@@ -1102,6 +1102,8 @@ BEGIN
 
   SELECT id INTO result FROM `pql_index_queue` LIMIT 0,1;
 
+  IF result IS NULL THEN RETURN 0; END IF;
+  
   RETURN result;
 END;
 
