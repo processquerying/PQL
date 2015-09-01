@@ -29,12 +29,14 @@ CREATE TABLE `jbpt_labels` (
   KEY `label` (`label`(5))
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 
+delimiter //
 CREATE TRIGGER `jbpt_labels_before_del_tr` BEFORE DELETE ON `jbpt_labels`
   FOR EACH ROW
 BEGIN
   DELETE FROM pql_tasks_sim WHERE pql_tasks_sim.label_id = OLD.id;
   DELETE FROM pql_tasks WHERE pql_tasks.label_id=OLD.id;
-END;
+END;//
+delimiter ;
 
 #
 # Structure for the `jbpt_petri_nets` table : 
@@ -54,13 +56,15 @@ CREATE TABLE `jbpt_petri_nets` (
   UNIQUE KEY `external_id` (`external_id`(20))
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 
+delimiter //
 CREATE TRIGGER `jbpt_petri_nets_before_del_tr` BEFORE DELETE ON `jbpt_petri_nets`
   FOR EACH ROW
 BEGIN
   DELETE FROM pql_index_status WHERE pql_index_status.net_id=OLD.id;
 
   DELETE FROM jbpt_petri_nodes WHERE jbpt_petri_nodes.net_id=OLD.id;
-END;
+END;//
+delimiter ;
 
 #
 # Structure for the `jbpt_petri_nodes` table : 
@@ -83,12 +87,14 @@ CREATE TABLE `jbpt_petri_nodes` (
   CONSTRAINT `jbpt_petri_nodes_fk` FOREIGN KEY (`label_id`) REFERENCES `jbpt_labels` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=282 DEFAULT CHARSET=utf8;
 
+delimiter //
 CREATE TRIGGER `jbpt_petri_nodes_before_del_tr` BEFORE DELETE ON `jbpt_petri_nodes`
   FOR EACH ROW
 BEGIN
   DELETE FROM jbpt_petri_markings WHERE jbpt_petri_markings.place_id=OLD.id;
   DELETE FROM jbpt_petri_flow WHERE jbpt_petri_flow.source=OLD.id OR jbpt_petri_flow.target=OLD.id;
-END;
+END;//
+delimiter ;
 
 #
 # Structure for the `jbpt_petri_flow` table : 
@@ -138,11 +144,13 @@ CREATE TABLE `pql_tasks` (
   CONSTRAINT `pql_tasks_fk` FOREIGN KEY (`label_id`) REFERENCES `jbpt_labels` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8;
 
+delimiter //
 CREATE TRIGGER `pql_tasks_before_del_tr` BEFORE DELETE ON `pql_tasks`
   FOR EACH ROW
 BEGIN
   DELETE FROM pql_tasks_sim WHERE pql_tasks_sim.task_id=OLD.id;
-END;
+END;//
+delimiter ;
 
 #
 # Structure for the `pql_always_occurs` table : 
@@ -251,6 +259,7 @@ CREATE TABLE `pql_index_status` (
   CONSTRAINT `pql_index_status_fk` FOREIGN KEY (`net_id`) REFERENCES `jbpt_petri_nets` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+delimiter //
 CREATE TRIGGER `pql_index_status_before_del_tr` BEFORE DELETE ON `pql_index_status`
   FOR EACH ROW
 BEGIN
@@ -260,7 +269,8 @@ BEGIN
   DELETE FROM pql_can_cooccur WHERE pql_can_cooccur.net_id=OLD.net_id;
   DELETE FROM pql_total_causal WHERE pql_total_causal.net_id=OLD.net_id;
   DELETE FROM pql_total_concur WHERE pql_total_concur.net_id=OLD.net_id;
-END;
+END;//
+delimiter ;
 
 #
 # Structure for the `pql_tasks_sim` table : 
@@ -323,6 +333,7 @@ CREATE TABLE `pql_total_concur` (
 
 DROP PROCEDURE IF EXISTS `jbpt_get_net_labels`;
 
+delimiter //
 CREATE PROCEDURE `jbpt_get_net_labels`(IN identifier TEXT)
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
@@ -337,7 +348,8 @@ BEGIN
   WHERE `jbpt_petri_nodes`.`net_id`=nid AND
         `jbpt_petri_nodes`.`label_id` IS NOT NULL AND
         `jbpt_labels`.`id` = `jbpt_petri_nodes`.`label_id`;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `jbpt_petri_nets_get_internal_ids` procedure : 
@@ -345,6 +357,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `jbpt_petri_nets_get_internal_ids`;
 
+delimiter //
 CREATE PROCEDURE `jbpt_petri_nets_get_internal_ids`()
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
@@ -352,7 +365,8 @@ CREATE PROCEDURE `jbpt_petri_nets_get_internal_ids`()
 BEGIN
   SELECT `jbpt_petri_nets`.`id`
   FROM `jbpt_petri_nets`;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_always_occurs_create` procedure : 
@@ -360,6 +374,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_always_occurs_create`;
 
+delimiter //
 CREATE PROCEDURE `pql_always_occurs_create`(IN net_id INTEGER(11), IN task_id INTEGER, IN value BOOLEAN)
     DETERMINISTIC
     SQL SECURITY DEFINER
@@ -372,7 +387,8 @@ BEGIN
   (`pql_always_occurs`.`net_id`,`pql_always_occurs`.`task_id`, `pql_always_occurs`.`value`)
   VALUES
   (net_id,task_id,value);
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_can_conflict_create` procedure : 
@@ -380,6 +396,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_can_conflict_create`;
 
+delimiter //
 CREATE PROCEDURE `pql_can_conflict_create`(IN net_id INTEGER(11), IN taskA_id INTEGER, IN taskB_id INTEGER, IN value BOOLEAN)
     DETERMINISTIC
     SQL SECURITY DEFINER
@@ -393,7 +410,8 @@ BEGIN
   INSERT INTO `pql_can_conflict`
   (`pql_can_conflict`.`net_id`,`pql_can_conflict`.`taskA_id`,`pql_can_conflict`.`taskB_id`,`pql_can_conflict`.`value`)
   VALUES (net_id,taskA_id,taskB_id,value);
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_can_cooccur_create` procedure : 
@@ -401,6 +419,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_can_cooccur_create`;
 
+delimiter //
 CREATE PROCEDURE `pql_can_cooccur_create`(IN net_id INTEGER(11), IN taskA_id INTEGER, IN taskB_id INTEGER, IN value BOOLEAN)
     DETERMINISTIC
     SQL SECURITY DEFINER
@@ -414,7 +433,8 @@ BEGIN
   INSERT INTO `pql_can_cooccur`
   (`pql_can_cooccur`.`net_id`,`pql_can_cooccur`.`taskA_id`,`pql_can_cooccur`.`taskB_id`,`pql_can_cooccur`.`value`)
   VALUES (net_id,taskA_id,taskB_id,value);
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_can_occur_create` procedure : 
@@ -422,6 +442,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_can_occur_create`;
 
+delimiter //
 CREATE PROCEDURE `pql_can_occur_create`(IN net_id INTEGER(11), IN task_id INTEGER, IN value BOOLEAN)
     DETERMINISTIC
     SQL SECURITY DEFINER
@@ -434,7 +455,8 @@ BEGIN
   (`pql_can_occur`.`net_id`,`pql_can_occur`.`task_id`, `pql_can_occur`.`value`)
   VALUES
   (net_id,task_id,value);
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_get_indexed_ids` procedure : 
@@ -442,13 +464,15 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_get_indexed_ids`;
 
+delimiter //
 CREATE PROCEDURE `pql_get_indexed_ids`()
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
     COMMENT ''
 BEGIN
   SELECT * FROM `pql_indexed_ids`;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_index_bots_alive` procedure : 
@@ -456,6 +480,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_index_bots_alive`;
 
+delimiter //
 CREATE PROCEDURE `pql_index_bots_alive`(IN bot_name VARCHAR(36))
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
@@ -475,7 +500,8 @@ BEGIN
     SET `pql_index_bots`.`last_alive`=UNIX_TIMESTAMP()
     WHERE `pql_index_bots`.`bot_name` = bname;
   END IF;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_index_cannot` procedure : 
@@ -483,6 +509,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_index_cannot`;
 
+delimiter //
 CREATE PROCEDURE `pql_index_cannot`(IN net_id INTEGER(11))
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
@@ -493,7 +520,8 @@ UPDATE `pql_index_status`
   SET `pql_index_status`.`status`=2, `pql_index_status`.`end_time`=UNIX_TIMESTAMP()
 WHERE `pql_index_status`.`net_id`=net_id;
 
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_index_claim_job` procedure : 
@@ -501,6 +529,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_index_claim_job`;
 
+delimiter //
 CREATE PROCEDURE `pql_index_claim_job`(IN net_id INTEGER(11), IN bot_name VARCHAR(36))
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
@@ -510,7 +539,8 @@ BEGIN
   INSERT INTO `pql_index_status` (`pql_index_status`.`net_id`, `pql_index_status`.`bot_name`, `pql_index_status`.`claim_time`)
   VALUES (net_id,bot_name,UNIX_TIMESTAMP());
 
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_index_cleanup` procedure : 
@@ -518,6 +548,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_index_cleanup`;
 
+delimiter //
 CREATE PROCEDURE `pql_index_cleanup`()
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
@@ -553,7 +584,8 @@ BEGIN
 
   CLOSE cur1;
 
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_index_finish_job` procedure : 
@@ -561,6 +593,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_index_finish_job`;
 
+delimiter //
 CREATE PROCEDURE `pql_index_finish_job`(IN net_id INTEGER(11), IN bot_name VARCHAR(36))
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
@@ -573,7 +606,8 @@ BEGIN
   WHERE
     `pql_index_status`.`net_id` = net_id AND
     `pql_index_status`.`bot_name` = bot_name;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_levenshtein_label_sim_search` procedure : 
@@ -581,6 +615,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_levenshtein_label_sim_search`;
 
+delimiter //
 CREATE PROCEDURE `pql_levenshtein_label_sim_search`(IN label TEXT)
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
@@ -590,7 +625,8 @@ BEGIN
   SET x = TRIM(LOWER(label));
   SELECT jbpt_labels.`label`, 1-`pql_levenshtein`(x,TRIM(LOWER(jbpt_labels.`label`)))/(2*GREATEST(CHAR_LENGTH(x),CHAR_LENGTH(TRIM(LOWER(jbpt_labels.`label`))))) AS sim
   FROM jbpt_labels ORDER BY sim DESC LIMIT 0,10;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_tasks_get_in_net` procedure : 
@@ -598,6 +634,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_tasks_get_in_net`;
 
+delimiter //
 CREATE PROCEDURE `pql_tasks_get_in_net`(IN net_id INTEGER(11))
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
@@ -611,7 +648,8 @@ BEGIN
     FROM `jbpt_petri_nets`
     WHERE `jbpt_petri_nets`.`id`=net_id
   );
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_tasks_get_nets` procedure : 
@@ -619,6 +657,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_tasks_get_nets`;
 
+delimiter //
 CREATE PROCEDURE `pql_tasks_get_nets`(IN task_id INTEGER)
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
@@ -629,7 +668,8 @@ BEGIN
   WHERE `jbpt_petri_nodes`.`is_transition` IS TRUE AND
     `jbpt_petri_nodes`.`label_id`=`pql_tasks_sim`.`label_id` AND
     `pql_tasks_sim`.`task_id`=task_id;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_tasks_get_sim` procedure : 
@@ -637,6 +677,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_tasks_get_sim`;
 
+delimiter //
 CREATE PROCEDURE `pql_tasks_get_sim`(IN task_id INTEGER(11))
     NOT DETERMINISTIC
     SQL SECURITY DEFINER
@@ -645,7 +686,8 @@ BEGIN
   SELECT DISTINCT `jbpt_labels`.`label`
   FROM `pql_tasks_sim`,`jbpt_labels`
   WHERE `pql_tasks_sim`.`label_id`=`jbpt_labels`.`id` AND `pql_tasks_sim`.`task_id` = task_id;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_total_causal_create` procedure : 
@@ -653,6 +695,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_total_causal_create`;
 
+delimiter //
 CREATE PROCEDURE `pql_total_causal_create`(IN net_id INTEGER(11), IN taskA_id INTEGER, IN taskB_id INTEGER, IN value BOOLEAN)
     DETERMINISTIC
     SQL SECURITY DEFINER
@@ -666,7 +709,8 @@ BEGIN
   INSERT INTO `pql_total_causal`
   (`pql_total_causal`.`net_id`,`pql_total_causal`.`taskA_id`,`pql_total_causal`.`taskB_id`,`pql_total_causal`.`value`)
   VALUES (net_id,taskA_id,taskB_id,value);
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `pql_total_concur_create` procedure : 
@@ -674,6 +718,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `pql_total_concur_create`;
 
+delimiter //
 CREATE PROCEDURE `pql_total_concur_create`(IN net_id INTEGER(11), IN taskA_id INTEGER, IN taskB_id INTEGER, IN value BOOLEAN)
     DETERMINISTIC
     SQL SECURITY DEFINER
@@ -687,7 +732,8 @@ BEGIN
   INSERT INTO `pql_total_concur`
   (`pql_total_concur`.`net_id`,`pql_total_concur`.`taskA_id`,`pql_total_concur`.`taskB_id`,`pql_total_concur`.`value`)
   VALUES (net_id,taskA_id,taskB_id,value);
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `reset` procedure : 
@@ -695,6 +741,7 @@ END;
 
 DROP PROCEDURE IF EXISTS `reset`;
 
+delimiter //
 CREATE PROCEDURE `reset`()
     DETERMINISTIC
     SQL SECURITY INVOKER
@@ -714,7 +761,8 @@ BEGIN
   ALTER TABLE pql_tasks AUTO_INCREMENT = 1;
   
   DELETE FROM `pql_index_bots`;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `jbpt_labels_create` function : 
@@ -722,6 +770,7 @@ END;
 
 DROP FUNCTION IF EXISTS `jbpt_labels_create`;
 
+delimiter //
 CREATE FUNCTION `jbpt_labels_create`(label TEXT)
     RETURNS int(11)
     DETERMINISTIC
@@ -746,7 +795,8 @@ BEGIN
   SET result = LAST_INSERT_ID();
 
   RETURN result;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `jbpt_petri_flow_create` function : 
@@ -754,6 +804,7 @@ END;
 
 DROP FUNCTION IF EXISTS `jbpt_petri_flow_create`;
 
+delimiter //
 CREATE FUNCTION `jbpt_petri_flow_create`(source INTEGER(11), target INTEGER(11), name TEXT, description TEXT)
     RETURNS tinyint(1)
     DETERMINISTIC
@@ -766,7 +817,8 @@ BEGIN
   (source,target,name,description);
   
   RETURN TRUE;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `jbpt_petri_markings_create` function : 
@@ -774,6 +826,7 @@ END;
 
 DROP FUNCTION IF EXISTS `jbpt_petri_markings_create`;
 
+delimiter //
 CREATE FUNCTION `jbpt_petri_markings_create`(place_id INTEGER(11), tokens INTEGER(11))
     RETURNS tinyint(1)
     NOT DETERMINISTIC
@@ -786,14 +839,15 @@ BEGIN
   (place_id,tokens);
 
   RETURN TRUE;
-END;
-
+END;//
+delimiter ;
 #
 # Definition for the `jbpt_petri_nets_create` function : 
 #
 
 DROP FUNCTION IF EXISTS `jbpt_petri_nets_create`;
 
+delimiter //
 CREATE FUNCTION `jbpt_petri_nets_create`(uuid VARCHAR(36), name TEXT, description TEXT, external_id TEXT, pnml_content TEXT)
     RETURNS int(11)
     NOT DETERMINISTIC
@@ -806,7 +860,8 @@ BEGIN
   (uuid,name,description,external_id,pnml_content);
 
   RETURN LAST_INSERT_ID();
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `jbpt_petri_nets_delete` function : 
@@ -814,6 +869,7 @@ END;
 
 DROP FUNCTION IF EXISTS `jbpt_petri_nets_delete`;
 
+delimiter //
 CREATE FUNCTION `jbpt_petri_nets_delete`(internal_id INTEGER(11))
     RETURNS int(11)
     DETERMINISTIC
@@ -840,7 +896,8 @@ BEGIN
     (`jbpt_petri_nodes`.`label_id` is not null))));
 
   RETURN delID;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `jbpt_petri_nets_get_external_id` function : 
@@ -848,6 +905,7 @@ END;
 
 DROP FUNCTION IF EXISTS `jbpt_petri_nets_get_external_id`;
 
+delimiter //
 CREATE FUNCTION `jbpt_petri_nets_get_external_id`(internal_id INTEGER(11))
     RETURNS text CHARSET utf8
     NOT DETERMINISTIC
@@ -861,7 +919,8 @@ BEGIN
   WHERE `jbpt_petri_nets`.`id`=internal_id;
 
   RETURN result;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `jbpt_petri_nets_get_internal_id` function : 
@@ -869,6 +928,7 @@ END;
 
 DROP FUNCTION IF EXISTS `jbpt_petri_nets_get_internal_id`;
 
+delimiter //
 CREATE FUNCTION `jbpt_petri_nets_get_internal_id`(external_id TEXT)
     RETURNS int(11)
     DETERMINISTIC
@@ -882,7 +942,8 @@ BEGIN
   WHERE `jbpt_petri_nets`.`external_id`=external_id;
     
   RETURN result;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `jbpt_petri_nets_get_pnml_content` function : 
@@ -890,6 +951,7 @@ END;
 
 DROP FUNCTION IF EXISTS `jbpt_petri_nets_get_pnml_content`;
 
+delimiter //
 CREATE FUNCTION `jbpt_petri_nets_get_pnml_content`(internal_id INTEGER(11))
     RETURNS text CHARSET utf8
     NOT DETERMINISTIC
@@ -903,7 +965,8 @@ BEGIN
   WHERE `jbpt_petri_nets`.`id`=internal_id;
 
   RETURN result;
-END;
+END;//
+delimiter ;
 
 #
 # Definition for the `jbpt_petri_nodes_create` function : 
@@ -911,6 +974,7 @@ END;
 
 DROP FUNCTION IF EXISTS `jbpt_petri_nodes_create`;
 
+delimiter //
 CREATE FUNCTION `jbpt_petri_nodes_create`(net_id INTEGER(11), uuid VARCHAR(50), name TEXT, description TEXT, label TEXT, is_transition BOOLEAN)
     RETURNS int(11)
     NOT DETERMINISTIC
@@ -931,7 +995,8 @@ BEGIN
   (net_id,uuid,name,description,labelID,is_transition);
 
   RETURN LAST_INSERT_ID();
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_always_occurs` function : 
@@ -939,6 +1004,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_always_occurs`;
 
+delimiter //
 CREATE FUNCTION `pql_always_occurs`(net_id INTEGER(11), task_id INTEGER)
     RETURNS tinyint(1)
     DETERMINISTIC
@@ -955,7 +1021,8 @@ BEGIN
   END IF;
   
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_can_conflict` function : 
@@ -963,6 +1030,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_can_conflict`;
 
+delimiter //
 CREATE FUNCTION `pql_can_conflict`(net_id INTEGER(11), taskA_id INTEGER, taskB_id INTEGER)
     RETURNS tinyint(1)
     DETERMINISTIC
@@ -979,7 +1047,8 @@ BEGIN
   END IF;
 
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_can_cooccur` function : 
@@ -987,6 +1056,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_can_cooccur`;
 
+delimiter //
 CREATE FUNCTION `pql_can_cooccur`(net_id INTEGER(11), taskA_id INTEGER, taskB_id INTEGER)
     RETURNS tinyint(1)
     DETERMINISTIC
@@ -1003,7 +1073,8 @@ BEGIN
   END IF;
 
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_can_occur` function : 
@@ -1011,6 +1082,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_can_occur`;
 
+delimiter //
 CREATE FUNCTION `pql_can_occur`(net_id INTEGER(11), task_id INTEGER)
     RETURNS tinyint(1)
     DETERMINISTIC
@@ -1027,7 +1099,8 @@ BEGIN
   END IF;
   
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_index_bots_is_alive` function : 
@@ -1035,6 +1108,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_index_bots_is_alive`;
 
+delimiter //
 CREATE FUNCTION `pql_index_bots_is_alive`(bot_name VARCHAR(36))
     RETURNS tinyint(4)
     NOT DETERMINISTIC
@@ -1059,7 +1133,8 @@ BEGIN
   END IF;
 
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_index_delete` function : 
@@ -1067,6 +1142,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_index_delete`;
 
+delimiter //
 CREATE FUNCTION `pql_index_delete`(internal_id INTEGER(11))
     RETURNS int(11)
     NOT DETERMINISTIC
@@ -1084,7 +1160,8 @@ BEGIN
   DELETE FROM `pql_index_status` WHERE `pql_index_status`.`net_id` = delID;
 
   RETURN delID;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_index_get_next_job` function : 
@@ -1092,6 +1169,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_index_get_next_job`;
 
+delimiter //
 CREATE FUNCTION `pql_index_get_next_job`()
     RETURNS int(11)
     NOT DETERMINISTIC
@@ -1105,7 +1183,8 @@ BEGIN
   IF result IS NULL THEN RETURN 0; END IF;
   
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_index_get_status` function : 
@@ -1113,6 +1192,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_index_get_status`;
 
+delimiter //
 CREATE FUNCTION `pql_index_get_status`(internal_id INTEGER(11))
     RETURNS tinyint(4)
     NOT DETERMINISTIC
@@ -1129,7 +1209,8 @@ BEGIN
   END IF;
 
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_index_get_type` function : 
@@ -1137,6 +1218,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_index_get_type`;
 
+delimiter //
 CREATE FUNCTION `pql_index_get_type`(internal_id INTEGER(11))
     RETURNS tinyint(4)
     NOT DETERMINISTIC
@@ -1153,7 +1235,8 @@ BEGIN
   END IF;
 
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_index_start_job` function : 
@@ -1161,6 +1244,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_index_start_job`;
 
+delimiter //
 CREATE FUNCTION `pql_index_start_job`(net_id INTEGER(11), bot_name VARCHAR(36))
     RETURNS tinyint(1)
     NOT DETERMINISTIC
@@ -1187,7 +1271,8 @@ BEGIN
   END IF;
 
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_levenshtein` function : 
@@ -1195,6 +1280,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_levenshtein`;
 
+delimiter //
 CREATE FUNCTION `pql_levenshtein`(s1 TEXT, s2 TEXT)
     RETURNS int(11)
     DETERMINISTIC
@@ -1237,7 +1323,8 @@ BEGIN
       END WHILE;
     END IF;
     RETURN c;
-  END;
+  END;// 
+  delimiter ;
 
 #
 # Definition for the `pql_tasks_create` function : 
@@ -1245,6 +1332,7 @@ BEGIN
 
 DROP FUNCTION IF EXISTS `pql_tasks_create`;
 
+delimiter //
 CREATE FUNCTION `pql_tasks_create`(label TEXT, similarity DOUBLE)
     RETURNS int(11)
     DETERMINISTIC
@@ -1270,7 +1358,8 @@ BEGIN
   SET result = LAST_INSERT_ID();
 
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_tasks_get` function : 
@@ -1278,6 +1367,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_tasks_get`;
 
+delimiter //
 CREATE FUNCTION `pql_tasks_get`(label TEXT, sim DOUBLE, threshold DOUBLE)
     RETURNS int(11)
     DETERMINISTIC
@@ -1302,7 +1392,8 @@ BEGIN
   END IF;
   
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_tasks_sim_create` function : 
@@ -1310,6 +1401,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_tasks_sim_create`;
 
+delimiter //
 CREATE FUNCTION `pql_tasks_sim_create`(labelA TEXT, labelB TEXT, similarity DOUBLE)
     RETURNS int(11)
     DETERMINISTIC
@@ -1338,7 +1430,8 @@ BEGIN
   VALUES (taskID,labelBid);
 
   RETURN taskID;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_total_causal` function : 
@@ -1346,6 +1439,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_total_causal`;
 
+delimiter //
 CREATE FUNCTION `pql_total_causal`(net_id INTEGER(11), taskA_id INTEGER, taskB_id INTEGER)
     RETURNS tinyint(1)
     DETERMINISTIC
@@ -1362,7 +1456,8 @@ BEGIN
   END IF;
 
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `pql_total_concur` function : 
@@ -1370,6 +1465,7 @@ END;
 
 DROP FUNCTION IF EXISTS `pql_total_concur`;
 
+delimiter //
 CREATE FUNCTION `pql_total_concur`(net_id INTEGER(11), taskA_id INTEGER, taskB_id INTEGER)
     RETURNS tinyint(1)
     DETERMINISTIC
@@ -1386,7 +1482,8 @@ BEGIN
   END IF;
 
   RETURN result;
-END;
+END;// 
+delimiter ;
 
 #
 # Definition for the `jbpt_unused_labels` view : 
