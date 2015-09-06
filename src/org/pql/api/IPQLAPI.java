@@ -40,6 +40,16 @@ public interface IPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, 
 	/**
 	 * Store a Petri net.
 	 * 
+	 * @param pnmlByteContent Array of bytes with PNML content.
+	 * @param externalID External identifier to associate with the stored Petri net.
+	 * @return <tt>0</tt> if the Petri net was not stored; otherwise a unique internal identifier of the stored Petri net.
+	 * @throws SQLException
+	 */
+	public int storeNetSystem(byte[] pnmlByteContent, String externalID) throws SQLException;
+	
+	/**
+	 * Store a Petri net.
+	 * 
 	 * @param sys {@link INetSystem}} to be stored. 
 	 * @param externalID External identifier to associate with the stored Petri net.
 	 * @return <tt>0</tt> if the Petri net was not stored; otherwise a unique internal identifier of the stored Petri net.
