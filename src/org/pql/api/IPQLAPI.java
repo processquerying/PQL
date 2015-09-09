@@ -10,6 +10,7 @@ import org.jbpt.petri.INetSystem;
 import org.jbpt.petri.INode;
 import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
+import org.pql.index.IndexStatus;
 
 /**
  * A PQL interface.
@@ -141,4 +142,12 @@ public interface IPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, 
 	 * @throws SQLException
 	 */
 	public PQLQueryResult query(String pqlQuery, Set<String> externalIDs) throws ClassNotFoundException, SQLException;
+
+	/**
+	 * Get {@link IndexStatus} of a Petri net.
+	 * @param internalID Internal identifier of a Petri net.
+	 * @return {@link IndexStatus} of the Petri net with internal identifier internalID.
+	 * @throws SQLException
+	 */
+	public IndexStatus getIndexStatus(int internalID) throws SQLException;
 }
