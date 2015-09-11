@@ -1,6 +1,5 @@
 package org.pql.core;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -21,7 +20,6 @@ import org.jbpt.petri.unfolding.IEvent;
 import org.jbpt.petri.unfolding.ILocalConfiguration;
 import org.jbpt.petri.unfolding.IOccurrenceNet;
 import org.jbpt.petri.unfolding.order.AdequateOrderType;
-import org.jbpt.utils.IOUtils;
 import org.pql.logic.IThreeValuedLogic;
 import org.pql.logic.ThreeValuedLogicValue;
 import org.pql.mc.IModelChecker;
@@ -31,7 +29,6 @@ import org.pql.mc.IModelChecker;
  */
 public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>>
 	implements IPQLBasicPredicatesOnTransitions<F,N,P,T,M>, 
-			   IPQLBasicPredicatesOnLabels,
 			   IPQLBasicPredicatesOnTasks {
 	
 	private INetSystem<F,N,P,T,M>	 netSystem	  = null;
@@ -117,13 +114,6 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		return this.canOccur(task.getSimilarLabels());
 	}
 	
-	@Override
-	public ThreeValuedLogicValue canOccur(String label) {
-		Set<String> labels = new HashSet<String>();
-		labels.add(label);
-		return this.canOccur(labels);
-	}
-	
 	// ALWAYS OCCURS
 	
 	@Override
@@ -157,13 +147,6 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 	@Override
 	public ThreeValuedLogicValue alwaysOccurs(PQLTask task) {
 		return this.alwaysOccurs(task.getSimilarLabels());
-	}
-	
-	@Override
-	public ThreeValuedLogicValue alwaysOccurs(String label) {
-		Set<String> labels = new HashSet<String>();
-		labels.add(label);
-		return this.alwaysOccurs(labels);
 	}
 	
 	// CAN CONFLICT
@@ -247,16 +230,6 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 	@Override
 	public ThreeValuedLogicValue canConflict(PQLTask taskA, PQLTask taskB) {
 		return this.canConflict(taskA.getSimilarLabels(),taskB.getSimilarLabels());
-	}
-	
-	@Override
-	public ThreeValuedLogicValue canConflict(String labelA, String labelB) {
-		Set<String> labelsA = new HashSet<String>();
-		labelsA.add(labelA);
-		Set<String> labelsB = new HashSet<String>();
-		labelsA.add(labelB);
-		
-		return this.canConflict(labelsA,labelsB);
 	}
 	
 	// CAN COOCCUR
@@ -352,16 +325,6 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 	@Override
 	public ThreeValuedLogicValue canCooccur(PQLTask taskA, PQLTask taskB) {
 		return this.canCooccur(taskA.getSimilarLabels(),taskB.getSimilarLabels());
-	}
-	
-	@Override
-	public ThreeValuedLogicValue canCooccur(String labelA, String labelB) {
-		Set<String> labelsA = new HashSet<String>();
-		labelsA.add(labelA);
-		Set<String> labelsB = new HashSet<String>();
-		labelsA.add(labelB);
-		
-		return this.canCooccur(labelsA,labelsB);
 	}
 	
 	private T prepareNetSystem(Set<String> labels) {
