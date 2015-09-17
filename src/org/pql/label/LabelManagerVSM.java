@@ -68,7 +68,7 @@ public class LabelManagerVSM extends MySQLConnection implements ILabelManager {
 		if (search!=null && !search.isEmpty()) {
 			Document doc = search.iterator().next();
 			newLabel = doc.getContent();
-			if (doc.getSimilarity()<0.8)	// TODO
+			if (doc.getSimilarity()<0.8)	// TODO: improve handling of similarity threshold
 				flag = true;
 		}
 		else flag = true;

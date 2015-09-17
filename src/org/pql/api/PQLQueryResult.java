@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.jbpt.persist.MySQLConnection;
 import org.pql.core.PQLAttribute;
+import org.pql.core.PQLException;
 import org.pql.core.PQLLocation;
 import org.pql.core.PQLTask;
 import org.pql.logic.ThreeValuedLogicValue;
@@ -30,7 +31,7 @@ public class PQLQueryResult extends MySQLConnection {
 			ResultSet res = cs.executeQuery();
 			
 			while (res.next()) {
-				this.query.configure(res.getString(2));
+				try { this.query.configure(res.getString(2)); } catch (PQLException e) { e.printStackTrace(); }
 				
 				if (this.query.check()==ThreeValuedLogicValue.TRUE) {
 					this.queryResult.add(res.getString(2));
@@ -47,7 +48,8 @@ public class PQLQueryResult extends MySQLConnection {
 		if (this.getNumberOfParseErrors()==0) {
 			
 			for (String s : externalIDs) {
-				this.query.configure(s);
+				try { this.query.configure(s); } catch (PQLException e) { e.printStackTrace(); }
+				
 				if (this.query.check()==ThreeValuedLogicValue.TRUE)
 					this.queryResult.add(s);
 			}

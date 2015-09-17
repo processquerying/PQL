@@ -7,6 +7,7 @@ import java.util.Set;
 import org.antlr.v4.runtime.Token;
 import org.pql.antlr.PQLLexer;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
+import org.pql.core.PQLException;
 import org.pql.core.PQLTask;
 import org.pql.label.ILabelManager;
 import org.pql.logic.IThreeValuedLogic;
@@ -44,7 +45,7 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	}
 
 	@Override
-	public void configure(Object obj) {
+	public void configure(Object obj) throws PQLException {
 		this.identifier = obj.toString();
 		this.basicPredicates.configure(this.identifier);
 	}

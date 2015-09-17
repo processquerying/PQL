@@ -91,8 +91,8 @@ public class PQLBasicPredicatesMySQL
 	}
 	
 	@Override
-	public void configure(Object param) {
-		this.identifier = (String) param;
+	public void configure(Object obj) {
+		this.identifier = (String) obj;
 		
 		try {
 			CallableStatement cs = connection.prepareCall(this.PETRI_NET_IDENTIFIER_TO_ID);

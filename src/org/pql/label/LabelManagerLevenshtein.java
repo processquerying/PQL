@@ -56,7 +56,7 @@ public class LabelManagerLevenshtein extends MySQLConnection implements ILabelMa
 		ResultSet res = cs.executeQuery();
 		if (res.next()) {
 			newLabel = res.getString(1);
-			if (res.getDouble(2)<0.8) // TODO
+			if (res.getDouble(2)<0.8)	// TODO: improve handling of similarity threshold
 				flag = true;
 		}
 		else flag = true;
