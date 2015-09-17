@@ -778,6 +778,13 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		
 		return info;
 	}
+
+	//A.P.
+	@Override
+	public ThreeValuedLogicValue executes(PQLTrace trace) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 	
 	

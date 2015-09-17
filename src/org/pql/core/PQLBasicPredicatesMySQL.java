@@ -2,10 +2,16 @@ package org.pql.core;
 
 import java.sql.CallableStatement;
 import java.sql.SQLException;
-
+import org.deckfour.xes.model.XLog;
 import org.jbpt.persist.MySQLConnection;
+import org.pql.alignment.AbstractReplayer;
+import org.pql.alignment.PQLAlignment;
+import org.pql.alignment.Replayer;
+import org.pql.api.AlignmentAPI;
 import org.pql.logic.IThreeValuedLogic;
 import org.pql.logic.ThreeValuedLogicValue;
+import org.processmining.models.graphbased.directed.petrinet.PetrinetGraph;
+import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactory;
 
 /**
  * @author Artem Polyvyanyy
@@ -15,7 +21,6 @@ public class PQLBasicPredicatesMySQL
 				implements IPQLBasicPredicatesOnTasks {
 	
 	protected String PETRI_NET_IDENTIFIER_TO_ID = "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
-	
 	protected String PQL_CAN_OCCUR		= "{? = CALL pql.pql_can_occur(?,?)}";
 	protected String PQL_ALWAYS_OCCURS	= "{? = CALL pql.pql_always_occurs(?,?)}";
 	protected String PQL_CAN_CONFLICT	= "{? = CALL pql.pql_can_conflict(?,?,?)}";
@@ -40,7 +45,7 @@ public class PQLBasicPredicatesMySQL
 			cs.registerOutParameter(1, java.sql.Types.TINYINT);
 			cs.setInt(2,this.netID);
 			cs.setInt(3,task.getID());
-			
+						
 			cs.execute();
 			
 			ThreeValuedLogicValue result = null;
@@ -59,6 +64,45 @@ public class PQLBasicPredicatesMySQL
 		catch (SQLException e) {
 			return ThreeValuedLogicValue.UNKNOWN;
 		}
+	}
+	
+	//A.P.
+	private ThreeValuedLogicValue checkUnaryTracePredicate(PQLTrace trace) {
+		try {
+				
+			ThreeValuedLogicValue 		result 				= null;
+			XLog 						log					= null; 
+			PetrinetGraph				net 				= PetrinetFactory.newPetrinet("PNML");
+				
+			// TO DO: label unification
+			
+			// TO DO: transform the model to consider '*' in traces
+						
+			// TO DO: create PetrinetGraph from the transformed model
+			
+			// get original PNML from DB: column 'pnml_content' in table 'jbpt_petri_nets' 
+			String pnml = AlignmentAPI.getPnmlContent(this.netID);
+			byte[] pnmlBytes = pnml.getBytes();
+			
+			// create PetrinetGraph from PNML
+			net = AlignmentAPI.constructNet(pnmlBytes, net);
+			
+			// convert trace to XLog
+			log = AlignmentAPI.getLog(trace);	
+			
+			// get an optimal alignment
+			AbstractReplayer replayer = new Replayer();
+			PQLAlignment alignment = replayer.getAlignment(net, log);
+						
+			// get alignment cost
+			int alignmentCost = alignment.getAlignmentCost();
+						
+			if(alignmentCost == 0)
+			{result = ThreeValuedLogicValue.TRUE;}else{result = ThreeValuedLogicValue.FALSE;}
+			return result;
+			}
+			catch(Exception e){return ThreeValuedLogicValue.UNKNOWN;}
+		
 	}
 	
 	private ThreeValuedLogicValue checkBinaryPredicate(String call, PQLTask taskA, PQLTask taskB) {
@@ -118,6 +162,13 @@ public class PQLBasicPredicatesMySQL
 	public ThreeValuedLogicValue alwaysOccurs(PQLTask task) {
 		return this.checkUnaryPredicate(this.PQL_ALWAYS_OCCURS, task);
 	}
+	
+	//A.P.
+	@Override
+	public ThreeValuedLogicValue executes(PQLTrace trace) {
+		return this.checkUnaryTracePredicate(trace);
+	}
+
 
 	@Override
 	public ThreeValuedLogicValue canConflict(PQLTask taskA, PQLTask taskB) {

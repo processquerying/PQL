@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.Token;
 import org.pql.antlr.PQLLexer;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
 import org.pql.core.PQLTask;
+import org.pql.core.PQLTrace;
 import org.pql.label.ILabelManager;
 import org.pql.logic.IThreeValuedLogic;
 import org.pql.logic.ThreeValuedLogicValue;
@@ -72,6 +73,19 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	
 		return ThreeValuedLogicValue.UNKNOWN;
 	}
+	
+	//A.P. 
+	@Override
+	protected ThreeValuedLogicValue interpretUnaryTracePredicate(Token op, PQLTrace trace) {
+		
+	switch (op.getType()) {
+	case PQLLexer.EXECUTES		: return basicPredicates.executes(trace);
+	
+	}
+
+	return ThreeValuedLogicValue.UNKNOWN;	
+	}
+
 	
 	@Override
 	protected ThreeValuedLogicValue interpretBinaryPredicate(Token op, PQLTask taskA, PQLTask taskB) {

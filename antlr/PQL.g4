@@ -30,10 +30,17 @@
 
    grammar PQL;
 
-   query      : variables 
+   query      : selectQuery |
+                insertQuery;
+                
+   selectQuery : variables 
               SELECT attributes 
               FROM locations 
               (WHERE predicate)? EOS ;
+
+   insertQuery : variables 
+              INSERT trace INTO locations 
+              (WHERE predicate)? EOS ;              
 
    variables  : variable* ;
    variable   : varName ASSIGN 
@@ -72,6 +79,11 @@
    setOfTasksLiteral  : 
               LB (task (SEP task)*)? RB ;
  
+   trace      : LTB (event (SEP event)*)? RTB ; 
+   
+   event 	  :	universe
+			  | task; 
+   
    task       : approximate label 
               | label (LSB similarity RSB)? ; 
    approximate: TILDE ;
@@ -94,8 +106,11 @@
    anyAll     : ANY | ALL ;
    
    unaryPredicateName : CAN_OCCUR
-              | ALWAYS_OCCURS ;
-              
+              | ALWAYS_OCCURS;
+   
+   unaryTracePredicateName : EXECUTES;
+
+   
    binaryPredicateName: CAN_CONFLICT
               | CAN_COOCCUR 
               | CONFLICT
@@ -110,6 +125,7 @@
 
    proposition: unaryPredicate
               | binaryPredicate
+			  | unaryTracePredicate
               | unaryPredicateMacro
               | binaryPredicateMacro
               | setPredicate
@@ -121,7 +137,10 @@
                 LP task RP ;
 
    binaryPredicate     : binaryPredicateName
-                LP task SEP task RP ;              
+                LP task SEP task RP ;  
+
+   unaryTracePredicate      : unaryTracePredicateName 
+                LP trace RP ;				
               
    unaryPredicateMacro : unaryPredicateName
                 LP setOfTasks SEP anyAll RP ;
@@ -236,11 +255,14 @@
    RB          : '}' ;
    LSB         : '[' ;
    RSB         : ']' ;
+   LTB	       : '<' ;
+   RTB	       : '>' ;
    DQ          : '"' ;
    EOS         : ';' ; 
    SEP         : ',' ;
    ASSIGN      : '=' ;
    TILDE       : '~' ;
+   
    
    ESC_SEQ     : '\\' ('\"'|'\\'|'/'|'b'|
                'f'|'n'|'r'|'t') 
@@ -253,6 +275,8 @@
    LINE_COMMENT: '--' ~[\r\n]* -> skip ;
 
    SELECT      : 'SELECT' ;
+   INSERT      : 'INSERT' ;
+   INTO        : 'INTO' ;
    FROM        : 'FROM' ;
    WHERE       : 'WHERE' ;
    EQUALS      : 'EQUALS' ;
@@ -290,6 +314,7 @@
 
    CAN_OCCUR       : 'CanOccur' ;
    ALWAYS_OCCURS   : 'AlwaysOccurs' ;
+   EXECUTES		   : 'Executes';
    CAN_CONFLICT    : 'CanConflict' ;
    CAN_COOCCUR     : 'CanCooccur' ;
    CONFLICT        : 'Conflict' ;

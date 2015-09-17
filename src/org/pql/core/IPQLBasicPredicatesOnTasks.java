@@ -13,6 +13,8 @@ public interface IPQLBasicPredicatesOnTasks {
 	
 	public ThreeValuedLogicValue alwaysOccurs(PQLTask task);
 	
+	public ThreeValuedLogicValue executes(PQLTrace trace); //A.P.
+	
 	public ThreeValuedLogicValue canConflict(PQLTask taskA, PQLTask taskB);
 	
 	public ThreeValuedLogicValue canCooccur(PQLTask taskA, PQLTask taskB);

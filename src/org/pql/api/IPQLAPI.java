@@ -131,4 +131,5 @@ public interface IPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, 
 	 * @throws SQLException
 	 */
 	public PQLQueryResult query(String pqlQuery, Set<String> externalIDs) throws ClassNotFoundException, SQLException;
+
 }
