@@ -20,7 +20,7 @@ public class PQLBotPersistenceLayerMySQL extends MySQLConnection implements
 	protected String	PQL_INDEX_START_JOB			= "{? = CALL pql.pql_index_start_job(?,?)}";
 	protected String	PQL_INDEX_FINISH_JOB		= "{CALL pql.pql_index_finish_job(?,?)}";
 
-	protected PQLBotPersistenceLayerMySQL(String url, String user, String password) throws ClassNotFoundException, SQLException {
+	public PQLBotPersistenceLayerMySQL(String url, String user, String password) throws ClassNotFoundException, SQLException {
 		super(url, user, password);
 	}
 

@@ -17,14 +17,6 @@ import org.jbpt.petri.ITransition;
  */
 public interface IModelChecker<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> {
 	
-	public boolean checkCTL(INetSystem<F,N,P,T,M> sys, String formula);
-
-	public boolean checkStatePredicate(INetSystem<F,N,P,T,M> sys, String formula);
-
-	public boolean checkEventuallyProp(INetSystem<F,N,P,T,M> sys, String formula);
-
-	public boolean checkLiveProp(INetSystem<F,N,P,T,M> sys, String formula);
-
 	public boolean isLive(INetSystem<F,N,P,T,M> sys, T t);
 
 	public boolean isLive(INetSystem<F,N,P,T,M> sys);

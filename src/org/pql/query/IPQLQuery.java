@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.pql.core.PQLAttribute;
+import org.pql.core.PQLException;
 import org.pql.core.PQLLocation;
 import org.pql.core.PQLTask;
 import org.pql.logic.ThreeValuedLogicValue;
@@ -27,8 +28,9 @@ public interface IPQLQuery {
 	 * Configure this PQL query.
 	 * 
 	 * @param obj A configuration object.
+	 * @throws PQLException 
 	 */
-	public void configure(Object obj);
+	public void configure(Object obj) throws PQLException;
 
 	/**
 	 * Get all variable declarations of this PQL query.

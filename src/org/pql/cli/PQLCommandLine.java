@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -19,7 +20,9 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.pql.api.PQLAPI;
 import org.pql.api.PQLQueryResult;
+import org.pql.bot.PQLBotPersistenceLayerMySQL;
 import org.pql.core.PQLTask;
+import org.pql.index.IndexStatus;
 import org.pql.ini.PQLIniFile;
 
 /**
@@ -180,11 +183,57 @@ public final class PQLCommandLine {
 	        		int internalID = PQLCommandLine.pqlAPI.getInternalID(id);
 	        		
 	        		if (internalID>0) {
-	        			boolean result = PQLCommandLine.pqlAPI.index(internalID);
-	        			if (result)
-	        				System.out.println("model indexed successfully");
+	        			IndexStatus status = PQLCommandLine.pqlAPI.getIndexStatus(internalID);
+	        			
+	        			if (status==IndexStatus.UNINDEXED) {
+	        				PQLBotPersistenceLayerMySQL bot = new PQLBotPersistenceLayerMySQL(iniFile.getMySQLURL(),
+	        														iniFile.getMySQLUser(),
+	        														iniFile.getMySQLPassword());
+	        				
+	        				// random name
+	        				String cliName = UUID.randomUUID().toString();
+	        				bot.claimIndexJob(internalID, cliName);
+	        				
+	        				boolean start = bot.startIndexJob(internalID, cliName);
+	        				if (start) 
+	        				{
+	        					PQLCommandLine.RegularServiceThread service = new PQLCommandLine.RegularServiceThread(bot, pqlAPI, cliName);
+	                    		service.start();
+	        					
+	        					// check if model can be indexed
+	        					System.out.println("checking model");
+	                    		boolean check = pqlAPI.checkNetSystem(internalID);
+	                    		
+	                    		if (check) {
+	                    			System.out.println("indexing started");
+	                    			boolean result = PQLCommandLine.pqlAPI.index(internalID);
+	    		        			
+	                    			if (result) {
+	                    				bot.finishIndexJob(internalID, cliName);
+	    		        				System.out.println("model indexed successfully");
+	    		        			}
+	    		        			else {
+	    		        				System.out.println("model not indexed");
+	    		        				PQLCommandLine.pqlAPI.deleteIndex(internalID);
+	    		        			}
+	                    		}
+	                    		else {
+	                    			System.out.println(String.format("the model with identifier %s cannot be indexed", id));
+	                    		}
+	                    		
+	                    		service.interrupt();
+	                    	}
+	        				else
+	        					System.out.println(String.format("failed to start indexing of the model with identifier %s.", id));
+	        			}
+	        			else if (status==IndexStatus.INDEXING) {
+	        				System.out.println("indexing of the model with the specified identifier is already in progress");
+	        			}
+	        			else if (status==IndexStatus.INDEXED) {
+	        				System.out.println("model with the specified identifier is already indexed");
+	        			}
 	        			else
-	        				System.out.println("model not indexed");
+	        				System.out.println("model with the specified identifier cannot be indexed");
 	        		}
 	        		else
 	        			System.out.println("specified identifier is not associated with any model");
@@ -317,4 +366,36 @@ public final class PQLCommandLine {
     							options, 
     							"===========================================================\n");
 	}
+	
+	
+	// Start regular service thread
+	public static class RegularServiceThread extends Thread {
+		PQLBotPersistenceLayerMySQL botPersist = null;
+		PQLAPI api = null;
+		String cliName = null;
+		
+		RegularServiceThread(PQLBotPersistenceLayerMySQL botPersist, PQLAPI api, String cliName) {
+			this.botPersist	= botPersist;
+			this.api = api;
+			this.cliName	= cliName;
+		}
+
+	    public void run() {
+	    	while (!Thread.currentThread().isInterrupted()) {
+	    		// send alive message
+	    		try {
+	    			botPersist.alive(this.cliName);
+	    			this.api.cleanupIndex();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+	    		
+	    		// sleep for 30 minutes
+	    		try { Thread.sleep(1800*1000); } 
+	    		catch (InterruptedException e) {
+	    			Thread.currentThread().interrupt();
+	    		}
+	    	}
+	    }
+	};
 }

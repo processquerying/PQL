@@ -240,43 +240,6 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		return this.isReachable(sys, pred);
 	}
 	
-	@Override
-	public boolean checkLiveProp(INetSystem<F,N,P,T,M> sys, String formula) {
-		boolean result = false;
-		
-		// TODO
- 		
-		return result;
-	}
-
-
-	@Override
-	public boolean checkCTL(INetSystem<F,N,P,T,M> sys, String formula) {
-		boolean result = false;
-		
-		// TODO  
- 		
-		return result;
-	}
-	
-	@Override
-	public boolean checkStatePredicate(INetSystem<F,N,P,T,M> sys, String formula) {
-		boolean result = false;
-		
-		// TODO
- 		
-		return result;
-	}
-	
-	@Override
-	public boolean checkEventuallyProp(INetSystem<F,N,P,T,M> sys, String formula) {
-		boolean result = false;
-		
-		// TODO
- 		
-		return result;
-	}
-	
 	private String sys2lola(INetSystem<F,N,P,T,M> sys) {
 		if (sys.getPlaces().isEmpty() || sys.getTransitions().isEmpty()) return "";
 		

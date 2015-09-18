@@ -39,6 +39,7 @@ import org.pql.core.PQLTask;
 import org.pql.core.PQLTrace;
 import org.pql.index.AbstractPQLIndexMySQL;
 import org.pql.index.IPQLIndex;
+import org.pql.index.IndexStatus;
 import org.pql.index.IndexType;
 import org.pql.label.ILabelManager;
 import org.pql.label.LabelManagerLevenshtein;
@@ -174,13 +175,13 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	}
 
 	@Override
-	public int storeNetSystem(INetSystem<F,N,P,T,M> sys, String identifier) throws SQLException {
-		return this.netPersistenceLayer.storeNetSystem(sys,identifier);
+	public int storeNetSystem(INetSystem<F,N,P,T,M> sys, String externalID) throws SQLException {
+		return this.netPersistenceLayer.storeNetSystem(sys,externalID);
 	}
 
 	@Override
-	public int storeNetSystem(File pnmlFile, String identifier) throws SQLException {
-		return this.netPersistenceLayer.storeNetSystem(pnmlFile, identifier);
+	public int storeNetSystem(File pnmlFile, String externalID) throws SQLException {
+		return this.netPersistenceLayer.storeNetSystem(pnmlFile, externalID);
 	}
 	
 	@Override
@@ -215,5 +216,15 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		PQLQueryResult result = new PQLQueryResult(this.mysqlURL, this.mysqlUser, this.mysqlPassword, query, externalIDs);
 		
 		return result;
+	}
+
+	@Override
+	public int storeNetSystem(byte[] pnmlByteContent, String externalID) throws SQLException {
+		return this.netPersistenceLayer.storeNetSystem(pnmlByteContent, externalID);
+	}
+
+	@Override
+	public IndexStatus getIndexStatus(int internalID) throws SQLException {
+		return this.pqlIndex.getIndexStatus(internalID);
 	}	
 }

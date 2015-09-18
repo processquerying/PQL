@@ -167,6 +167,8 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 				return true;	
 			}
 			catch (Exception e) {
+				e.printStackTrace();
+				
 				return false;
 			}	
 		}
