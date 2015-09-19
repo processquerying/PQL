@@ -22,12 +22,13 @@ public class PQLAPI extends AbstractPQLAPI<Flow,Node,Place,Transition,Marking> {
 			String postgreSQLUser, String postgreSQLPassword, String lolaPath,
 			ThreeValuedLogicType threeValuedLogicType, IndexType indexType,
 			LabelManagerType labelManagerType, Double defaultLabelSimilarity,
-			Set<Double> indexedLabelSimilarities)
+			Set<Double> indexedLabelSimilarities,
+			int numberOfQueryThreads)
 			throws ClassNotFoundException, SQLException {
 		super(mySQLURL, mySQLUser, mySQLPassword, postgreSQLHost, postgreSQLName,
 				postgreSQLUser, postgreSQLPassword, lolaPath, threeValuedLogicType,
 				indexType, labelManagerType, defaultLabelSimilarity,
-				indexedLabelSimilarities);
+				indexedLabelSimilarities, numberOfQueryThreads);
 	}
 
 

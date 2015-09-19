@@ -7,6 +7,8 @@ import org.pql.label.LabelManagerType;
 import org.pql.logic.ThreeValuedLogicType;
 
 /**
+ * Interface to the PQL initialization file.
+ * 
  * @author Artem Polyvyanyy
  */
 public interface IPQLIniFile {
@@ -54,4 +56,11 @@ public interface IPQLIniFile {
 	public ThreeValuedLogicType getThreeValuedLogicType();
 	
 	public IndexType getIndexType();
+	
+	/**
+	 * Get number of threads to use when interpreting PQL queries.
+	 * 
+	 * @return Number of threads.
+	 */
+	public Integer getNumberOfQueryThreads();
 }

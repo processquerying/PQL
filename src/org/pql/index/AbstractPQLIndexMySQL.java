@@ -64,6 +64,7 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 		if (status!=IndexStatus.INDEXING) return false;
 		
 		// get Petri net to index
+		@SuppressWarnings("unchecked")
 		INetSystem<F,N,P,T,M> sys = (INetSystem<F,N,P,T,M>) this.PNPersist.restoreNetSystem(internalID);
 		if (sys==null) return false;
 		sys.loadNaturalMarking();

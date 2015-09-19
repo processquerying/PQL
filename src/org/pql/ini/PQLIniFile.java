@@ -36,6 +36,7 @@ public class PQLIniFile implements IPQLIniFile {
 	private String 		mysqlPwd					= null;
 	private Integer 	defaultBotSleepTime			= 300;
 	private Integer 	defaultBotMaxIndexTime		= 86400;
+	private Integer		numberOfQueryThreads		= 1;
 	
 	@Override
 	public boolean create() {
@@ -64,6 +65,10 @@ public class PQLIniFile implements IPQLIniFile {
 			out.write("[bot]\n");
 			out.write("defaultBotSleepTime = 300\n");
 			out.write("defaultBotMaxIndexTime = 86400\n");
+			out.close();
+			out.write("\n");
+			out.write("[query]\n");
+			out.write("numberOfThreads = 4\n");
 			out.close();
 			return true;
 		} catch (Exception e) {
@@ -113,6 +118,10 @@ public class PQLIniFile implements IPQLIniFile {
 	        section = ini.get("bot");
 	        this.defaultBotSleepTime = Integer.parseInt(section.get("defaultBotSleepTime"));
 	        this.defaultBotMaxIndexTime = Integer.parseInt(section.get("defaultBotMaxIndexTime"));
+	        
+	        // load bot section
+	        section = ini.get("query");
+	        this.numberOfQueryThreads = Integer.parseInt(section.get("numberOfThreads"));
 	        
 	        return true;
 		} catch (IOException e) {
@@ -197,5 +206,10 @@ public class PQLIniFile implements IPQLIniFile {
 	@Override
 	public IndexType getIndexType() {
 		return IndexType.PREDICATES;
+	}
+
+	@Override
+	public Integer getNumberOfQueryThreads() {
+		return this.numberOfQueryThreads;
 	}
 }

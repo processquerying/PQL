@@ -30,8 +30,6 @@ import org.pql.logic.KleeneLogic;
 import org.pql.logic.ThreeValuedLogicType;
 import org.pql.mc.AbstractLoLA2ModelChecker;
 import org.pql.mc.IModelChecker;
-import org.pql.query.IPQLQuery;
-import org.pql.query.PQLQueryMySQL;
 
 /**
  * Artem Polyvyanyy
@@ -47,6 +45,7 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	private IPQLBasicPredicatesOnTasks			 basicPredicates		= null;	
 	private	IPQLIndex<F,N,P,T,M>	 	 		 pqlIndex				= null;
 	private IndexType							 indexType				= null;
+	private int									 numberOfQueryThreads	= 1;
 	
 	protected String	PQL_INDEX_CANNOT	= "{CALL pql.pql_index_cannot(?)}";
 
@@ -58,10 +57,12 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 					IndexType indexType,
 					LabelManagerType labelManagerType, 
 					Double defaultLabelSimilarity,
-					Set<Double> indexedLabelSimilarities) throws ClassNotFoundException, SQLException {
+					Set<Double> indexedLabelSimilarities,
+					int numberOfQueryThreads) throws ClassNotFoundException, SQLException {
 		super(mySQLURL,mySQLUser,mySQLPassword);
 		
 		this.indexType = indexType;
+		this.numberOfQueryThreads = numberOfQueryThreads;
 		
 		switch (threeValuedLogicType) {
 			default: 
@@ -169,19 +170,15 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	}
 	
 	@Override
-	public PQLQueryResult query(String pqlQuery) throws ClassNotFoundException, SQLException {
-		IPQLQuery query = new PQLQueryMySQL(this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, logic, labelMngr);
-		
-		PQLQueryResult result = new PQLQueryResult(this.mysqlURL, this.mysqlUser, this.mysqlPassword, query);
+	public PQLQueryResult query(String pqlQuery) throws ClassNotFoundException, SQLException {		
+		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, logic, labelMngr);
 		
 		return result;
 	}
 
 	@Override
 	public PQLQueryResult query(String pqlQuery, Set<String> externalIDs) throws ClassNotFoundException, SQLException {
-		IPQLQuery query = new PQLQueryMySQL(this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, logic, labelMngr);
-		
-		PQLQueryResult result = new PQLQueryResult(this.mysqlURL, this.mysqlUser, this.mysqlPassword, query, externalIDs);
+		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, logic, labelMngr, externalIDs);
 		
 		return result;
 	}

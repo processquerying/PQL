@@ -41,6 +41,7 @@ import org.pql.petri.TransformationLog;
  * 
  * @author Artem Polyvyanyy
  */
+@SuppressWarnings("unchecked")
 public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>>
 	implements IPQLBasicPredicatesOnTransitions<F,N,P,T,M>, 
 			   IPQLBasicPredicatesOnTasks {
@@ -469,7 +470,7 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		return result ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes" })
 	private boolean checkTotalConcur(T t1, T t2) {
 		CompletePrefixUnfoldingSetup setup = new CompletePrefixUnfoldingSetup();
 		setup.ADEQUATE_ORDER = AdequateOrderType.ESPARZA_FOR_ARBITRARY_SYSTEMS;

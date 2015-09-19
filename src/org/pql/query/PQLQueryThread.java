@@ -1,6 +1,5 @@
 package org.pql.query;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import org.pql.core.PQLException;
@@ -12,30 +11,30 @@ import org.pql.logic.ThreeValuedLogicValue;
 public class PQLQueryThread extends Thread {
 
 	private IPQLQuery query = null;
-	private Iterator<String> i = null;
+	private Set<String> externalIDs = null;
 	private Set<String> queryResult = null;
 	
-	public PQLQueryThread(IPQLQuery query, Iterator<String> i, Set<String> queryResult) {
+	public PQLQueryThread(ThreadGroup group, String name, IPQLQuery query, Set<String> externalIDs, Set<String> queryResult) {
+		super(group, name);
+		
 		this.query = query;
-		this.i = i;
+		this.externalIDs = externalIDs;
 		this.queryResult = queryResult;
 	}
 	
 	@Override
 	public void run() {
-		while (i.hasNext()) {
-			String nextID = i.next();
-			
+		
+		for (String id : this.externalIDs) {
 			try {
-				this.query.configure(nextID);
+				this.query.configure(id);
 			} catch (PQLException e) {
 				e.printStackTrace();
 			}
 			
 			if (this.query.check()==ThreeValuedLogicValue.TRUE) {
-				this.queryResult.add(nextID);
+				this.queryResult.add(id);
 			}
 		}
 	}
-
 }

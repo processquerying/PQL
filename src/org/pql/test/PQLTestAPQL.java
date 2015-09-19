@@ -26,7 +26,8 @@ public class PQLTestAPQL extends TestCase {
 				iniFile.getIndexType(),
 				iniFile.getLabelManagerType(),
 				iniFile.getDefaultLabelSimilarity(),
-				iniFile.getIndexedLabelSimilarities());
+				iniFile.getIndexedLabelSimilarities(),
+				iniFile.getNumberOfQueryThreads());
 	}
 
 	public void test001() throws ClassNotFoundException, SQLException {

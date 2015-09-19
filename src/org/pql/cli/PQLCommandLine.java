@@ -108,7 +108,8 @@ public final class PQLCommandLine {
 	        									iniFile.getIndexType(),
 	        									iniFile.getLabelManagerType(),
 	        									iniFile.getDefaultLabelSimilarity(),
-	        									iniFile.getIndexedLabelSimilarities());
+	        									iniFile.getIndexedLabelSimilarities(),
+	        									iniFile.getNumberOfQueryThreads());
 	        
 	        // handle help
 	        if(cmd.hasOption("h") || cmd.getOptions().length==0) {

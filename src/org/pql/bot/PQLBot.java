@@ -53,7 +53,8 @@ public class PQLBot {
 				iniFile.getIndexType(),
 				iniFile.getLabelManagerType(),
 				iniFile.getDefaultLabelSimilarity(),
-				iniFile.getIndexedLabelSimilarities());
+				iniFile.getIndexedLabelSimilarities(),
+				iniFile.getNumberOfQueryThreads());
 		
 		// read parameters from the CLI
 		CommandLineParser parser = new DefaultParser();
