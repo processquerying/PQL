@@ -1,5 +1,6 @@
 package org.pql.test;
 
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +22,7 @@ public class PQLExperiment extends TestCase {
 	
 	private static Random rand = new Random(System.currentTimeMillis());
 	
-	public PQLExperiment() throws ClassNotFoundException, SQLException {
+	public PQLExperiment() throws ClassNotFoundException, SQLException, IOException {
 		PQLIniFile iniFile = new PQLIniFile();
 		if (!iniFile.load()) {
 			System.out.println("ERROR: Cannot load PQL ini file.");
@@ -30,13 +31,16 @@ public class PQLExperiment extends TestCase {
 		
 		PQLExperiment.pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
 				iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
-				iniFile.getLolaPath(), 
+				iniFile.getLolaPath(),
+				iniFile.getLabelSimilaritySeacrhConfiguration(),
 				iniFile.getThreeValuedLogicType(),  
 				iniFile.getIndexType(),
 				iniFile.getLabelManagerType(),
 				iniFile.getDefaultLabelSimilarity(),
 				iniFile.getIndexedLabelSimilarities(),
-				iniFile.getNumberOfQueryThreads());
+				iniFile.getNumberOfQueryThreads(),
+				iniFile.getDefaultBotMaxIndexTime(),
+				iniFile.getDefaultBotSleepTime());
 		
 		// load all labels
 		LabelLoader ll = new LabelLoader(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword());

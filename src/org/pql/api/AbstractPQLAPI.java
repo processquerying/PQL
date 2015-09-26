@@ -1,7 +1,7 @@
 package org.pql.api;
 
 import java.io.File;
-import java.sql.CallableStatement;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 
@@ -23,6 +23,7 @@ import org.pql.index.IndexStatus;
 import org.pql.index.IndexType;
 import org.pql.label.ILabelManager;
 import org.pql.label.LabelManagerLevenshtein;
+import org.pql.label.LabelManagerLucene;
 import org.pql.label.LabelManagerType;
 import org.pql.label.LabelManagerVSM;
 import org.pql.logic.IThreeValuedLogic;
@@ -46,23 +47,29 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	private	IPQLIndex<F,N,P,T,M>	 	 		 pqlIndex				= null;
 	private IndexType							 indexType				= null;
 	private int									 numberOfQueryThreads	= 1;
-	
-	protected String	PQL_INDEX_CANNOT	= "{CALL pql.pql_index_cannot(?)}";
+	private long								 indexTime				= 86400;
+	private long								 sleepTime				= 300;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public AbstractPQLAPI(String mySQLURL, String mySQLUser, String mySQLPassword,
 					String postgreSQLHost, String postgreSQLName, String postgreSQLUser, String postgreSQLPassword, 
 					String lolaPath,
+					String labelSimilarityConfig,
 					ThreeValuedLogicType threeValuedLogicType, 
 					IndexType indexType,
 					LabelManagerType labelManagerType, 
 					Double defaultLabelSimilarity,
 					Set<Double> indexedLabelSimilarities,
-					int numberOfQueryThreads) throws ClassNotFoundException, SQLException {
+					int numberOfQueryThreads,
+					long indexTime,
+					long sleepTime) throws ClassNotFoundException, SQLException, IOException {
 		super(mySQLURL,mySQLUser,mySQLPassword);
 		
 		this.indexType = indexType;
 		this.numberOfQueryThreads = numberOfQueryThreads;
+		
+		this.indexTime = indexTime;
+		this.sleepTime = sleepTime;
 		
 		switch (threeValuedLogicType) {
 			default: 
@@ -70,10 +77,13 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		}
 		
 		switch (labelManagerType) {
-			case VSM:
+			case THEMIS_VSM:
 				this.labelMngr = new LabelManagerVSM(mySQLURL,mySQLUser,mySQLPassword,postgreSQLHost,postgreSQLName,postgreSQLUser,postgreSQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);
 				break;
-			case LEVENSHTEIN:
+			case LUCENE:
+				this.labelMngr = new LabelManagerLucene(mySQLURL, mySQLUser, mySQLPassword, defaultLabelSimilarity, indexedLabelSimilarities, labelSimilarityConfig);
+				break;
+			default:
 				this.labelMngr = new LabelManagerLevenshtein(mySQLURL,mySQLUser,mySQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);
 				break;
 		}
@@ -81,33 +91,12 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		this.netPersistenceLayer	= new AbstractPetriNetPersistenceLayerMySQL(mySQLURL,mySQLUser,mySQLPassword);
 		this.modelChecker			= new AbstractLoLA2ModelChecker(lolaPath);
 		this.basicPredicates		= new AbstractPQLBasicPredicatesMC(this.modelChecker,this.logic);
-		this.pqlIndex				= new AbstractPQLIndexMySQL(mySQLURL,mySQLUser,mySQLPassword,basicPredicates,this.labelMngr,this.logic,defaultLabelSimilarity,indexedLabelSimilarities);
+		this.pqlIndex				= new AbstractPQLIndexMySQL(mySQLURL,mySQLUser,mySQLPassword,basicPredicates,this.labelMngr,this.modelChecker,this.logic,defaultLabelSimilarity,indexedLabelSimilarities,this.indexType, this.indexTime, this.sleepTime);
 	}
 
 	@Override
 	public boolean checkNetSystem(int internalID) throws SQLException {
-		INetSystem<F,N,P,T,M> sys = this.restoreNetSystem(internalID);
-		
-		boolean result = true;
-		if (sys==null) result = false;
-		
-		sys.loadNaturalMarking();		
-		
-		if (result) result = this.modelChecker.isSoundWorkflowNet(sys);
-		
-		if (!result) this.cannnotIndex(internalID);
-		
-		return result;
-	}
-	
-	private void cannnotIndex(int internalID) throws SQLException {
-		CallableStatement cs = connection.prepareCall(this.PQL_INDEX_CANNOT);
-		
-		cs.setInt(1, internalID);
-		
-		cs.execute();
-		
-		cs.close();
+		return this.pqlIndex.checkNetSystem(internalID);
 	}
 	
 	@Override
@@ -117,7 +106,7 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	
 	@Override
 	public boolean deleteIndex(int internalID) throws SQLException {
-		return this.pqlIndex.deleteIndex(internalID)>0 ? true : false;
+		return this.pqlIndex.deleteIndex(internalID);
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import org.pql.label.LabelManagerType;
 import org.pql.logic.ThreeValuedLogicType;
 
 /**
+ * TODO: document IPQLIniFile interface.
  * Interface to the PQL initialization file.
  * 
  * @author Artem Polyvyanyy
@@ -63,4 +64,11 @@ public interface IPQLIniFile {
 	 * @return Number of threads.
 	 */
 	public Integer getNumberOfQueryThreads();
+	
+	/**
+	 * Get label similarity search configuration parameter.
+	 * 
+	 * @return Label similarity search configuration parameter.
+	 */
+	public String getLabelSimilaritySeacrhConfiguration();
 }

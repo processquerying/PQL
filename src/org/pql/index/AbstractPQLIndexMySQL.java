@@ -15,11 +15,13 @@ import org.jbpt.petri.INode;
 import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
 import org.jbpt.petri.persist.PetriNetPersistenceLayerMySQL;
+import org.pql.bot.AbstractPQLBot;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
 import org.pql.core.PQLTask;
 import org.pql.label.ILabelManager;
 import org.pql.logic.IThreeValuedLogic;
 import org.pql.logic.ThreeValuedLogicValue;
+import org.pql.mc.IModelChecker;
 
 /**
  * An implementation of the {@link IPQLIndex} interface
@@ -29,8 +31,6 @@ import org.pql.logic.ThreeValuedLogicValue;
 public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
 				extends MySQLConnection
 				implements IPQLIndex<F,N,P,T,M> {
-	
-	protected String 	PQL_INDEX_GET_NEXT_JOB		= "{? = CALL pql.pql_index_get_next_job()}";
 	
 	protected String 	PQL_INDEX_GET_TYPE			= "{? = CALL pql.pql_index_get_type(?)}";
 	protected String 	PQL_INDEX_GET_STATUS		= "{? = CALL pql.pql_index_get_status(?)}";
@@ -44,21 +44,54 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 	protected String	PQL_TOTAL_CAUSAL_CREATE		= "{CALL pql.pql_total_causal_create(?,?,?,?)}";
 	protected String	PQL_TOTAL_CONCUR_CREATE		= "{CALL pql.pql_total_concur_create(?,?,?,?)}";
 	
+	protected String	PQL_INDEX_GET_NEXT_JOB		= "{? = CALL pql.pql_index_get_next_job()}";
+	protected String	PQL_INDEX_CLAIM_JOB			= "{CALL pql.pql_index_claim_job(?,?)}";
+	protected String	PQL_INDEX_START_JOB			= "{? = CALL pql.pql_index_start_job(?,?)}";
+	protected String	PQL_INDEX_FINISH_JOB		= "{CALL pql.pql_index_finish_job(?,?)}";
+	protected String	PQL_INDEX_CANNOT			= "{CALL pql.pql_index_cannot(?)}";
+	
 	ILabelManager					labelMngr		= null;
 	IPQLBasicPredicatesOnTasks		basicPredicates = null;
+	IModelChecker<F,N,P,T,M>		MC 				= null;
 	PetriNetPersistenceLayerMySQL	PNPersist		= null;
 	
-	public AbstractPQLIndexMySQL(String mysqlURL, String mysqlUser, String mysqlPassword, IPQLBasicPredicatesOnTasks basicPredicates, ILabelManager labelManager, IThreeValuedLogic logic, double defaultSim, Set<Double> indexedSims) throws ClassNotFoundException, SQLException {
+	IndexType indexType = IndexType.PREDICATES; 
+	long indexTime = 86400;
+	long sleepTime = 300;
+	
+	public AbstractPQLIndexMySQL(String mysqlURL, String mysqlUser, String mysqlPassword, IPQLBasicPredicatesOnTasks basicPredicates, ILabelManager labelManager, 
+			IModelChecker<F,N,P,T,M> mc,
+			IThreeValuedLogic logic, double defaultSim, Set<Double> indexedSims, 
+			IndexType indexType, long indexTime, long sleepTime) throws ClassNotFoundException, SQLException {
 		super(mysqlURL,mysqlUser,mysqlPassword);
 	
 		this.labelMngr		 = labelManager;
 		this.basicPredicates = basicPredicates;
 		
+		this.MC 			 = mc;
+		
 		this.PNPersist		 = new PetriNetPersistenceLayerMySQL(mysqlURL,mysqlUser,mysqlPassword);
 	}
 	
 	@Override
-	public boolean index(int internalID, IndexType type) throws SQLException {
+	public boolean index(int internalID, IndexType type) throws SQLException {		
+		AbstractPQLBot<F,N,P,T,M> bot = null;
+		try {
+			bot = new AbstractPQLBot<F,N,P,T,M>(this.mysqlURL, this.mysqlUser, this.mysqlPassword,
+					null, this, this.MC, this.indexType, this.indexTime, this.sleepTime, false);
+		
+			boolean result = bot.performJob(internalID);
+			bot.terminate();
+			return result;
+		
+		} catch (ClassNotFoundException | InterruptedException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	@Override
+	public boolean constructIndex(int internalID, IndexType type) throws SQLException {
 		// check index status
 		IndexStatus status = this.getIndexStatus(internalID);
 		if (status!=IndexStatus.INDEXING) return false;
@@ -174,7 +207,7 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 			}	
 		}
 		
-		return false;
+		return false;		
 	}
 
 	@Override
@@ -213,7 +246,7 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 	}
 
 	@Override
-	public int deleteIndex(int internalID) throws SQLException {
+	public boolean deleteIndex(int internalID) throws SQLException {
 		CallableStatement cs = connection.prepareCall(this.PQL_INDEX_DELETE);
 		
 		cs.registerOutParameter(1, java.sql.Types.INTEGER);
@@ -221,7 +254,7 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 		
 		cs.execute();
 		
-		return cs.getInt(1);
+		return cs.getBoolean(1);
 	}
 
 	private void storeSymmetricRelation(Map<Set<String>, Map<Set<String>, ThreeValuedLogicValue>> map,
@@ -289,6 +322,90 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 	@Override
 	public void cleanupIndex() throws SQLException {
 		CallableStatement cs = connection.prepareCall(this.PQL_INDEX_CLEANUP);
+		
+		cs.execute();
+		
+		cs.close();
+	}
+	
+	@Override
+	public int getNextIndexingJob() throws SQLException {
+		CallableStatement cs = connection.prepareCall(this.PQL_INDEX_GET_NEXT_JOB);
+		
+		cs.registerOutParameter(1, java.sql.Types.INTEGER);
+		
+		cs.execute();
+		
+		int result = cs.getInt(1);
+		
+		cs.close();
+		
+		return result;
+	}
+
+	@Override
+	public void requestIndexing(int jobID, String botName) throws SQLException {
+		if (botName == null || botName.isEmpty()) return;
+		
+		CallableStatement cs = connection.prepareCall(this.PQL_INDEX_CLAIM_JOB);
+		
+		cs.setInt(1, jobID);
+		cs.setString(2, botName);
+		
+		cs.execute();
+		cs.close();
+	}
+
+	@Override
+	public boolean startIndexing(int jobID, String botName) throws SQLException {
+		CallableStatement cs = connection.prepareCall(this.PQL_INDEX_START_JOB);
+		
+		cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
+		cs.setInt(2, jobID);
+		cs.setString(3, botName);
+		
+		cs.execute();
+		
+		boolean result = cs.getBoolean(1);
+		
+		cs.close();
+		
+		return result;
+	}
+
+	@Override
+	public void finishIndexing(int jobID, String botName) throws SQLException {
+		if (botName == null || botName.isEmpty()) return;
+		
+		CallableStatement cs = connection.prepareCall(this.PQL_INDEX_FINISH_JOB);
+		
+		cs.setInt(1, jobID);
+		cs.setString(2, botName);
+		
+		cs.execute();
+		cs.close();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean checkNetSystem(int internalID) throws SQLException {
+		INetSystem<F,N,P,T,M> sys = (INetSystem<F,N,P,T,M>) this.PNPersist.restoreNetSystem(internalID);
+	
+		if (sys==null) return false;
+		
+		sys.loadNaturalMarking();		
+		
+		boolean result = this.MC.isIndexable(sys);
+		
+		if (!result) this.cannnotIndex(internalID);
+		
+		return result;
+	}
+	
+	private void cannnotIndex(int internalID) throws SQLException {
+		CallableStatement cs = connection.prepareCall(this.PQL_INDEX_CANNOT);
+		
+		cs.setInt(1, internalID);
 		
 		cs.execute();
 		

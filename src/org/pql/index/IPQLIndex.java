@@ -7,9 +7,10 @@ import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INode;
 import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
+import org.pql.bot.PQLBot;
 
 /**
- * A PQL Index interface.
+ * Interface to the PQL index.
  * 
  * @author Artem Polyvyanyy
  */
@@ -26,10 +27,21 @@ public interface IPQLIndex<F extends IFlow<N>, N extends INode, P extends IPlace
 	public boolean index(int internalID, IndexType type) throws SQLException;
 	
 	/**
+	 * Construct index of a Petri net with a given internal ID.
+	 * 
+	 * @param internalID Internal ID of a stored Petri net. 
+	 * @param type Type of index to construct.
+	 * @return {@code true} if the Petri net with the given {@code internalID} was indexed successfully; {@code false} otherwise.
+	 * @throws SQLException
+	 */
+	public boolean constructIndex(int internalID, IndexType type) throws SQLException;
+	
+	/**
 	 * Get index type.
 	 * 
-	 * @param internalID Internal ID of a stored Petri net.
-	 * @return {@link IndexType} of the index associated with the Petri net stored under {@code internalID}; {@code null} if the Petri net with the given {@code internalID} is not indexed or index type is unknown.
+	 * @param internalID Internal ID of a model.
+	 * @return {@link IndexType} of the index associated with the model with the given internal ID, or 
+	 * {@code null} if the model is not indexed or its index type cannot be identified.
 	 * @throws SQLException
 	 */
 	public IndexType getIndexType(int internalID) throws SQLException;
@@ -37,20 +49,22 @@ public interface IPQLIndex<F extends IFlow<N>, N extends INode, P extends IPlace
 	/**
 	 * Get index status.
 	 * 
-	 * @param internalID Internal ID of a stored Petri net.
-	 * @return {@link IndexStatus} for the Petri net stored under {@code internalID}; {@code null} if the index status of the Petri net with the given {@code internalID} is unknown.
+	 * @param internalID Internal ID of a model.
+	 * @return {@link IndexStatus} of the model with the given internal ID, or 
+	 * {@code null} if the index status of the model cannot be identified.
 	 * @throws SQLException
 	 */
 	public IndexStatus getIndexStatus(int internalID) throws SQLException;
 	
 	/**
-	 * Delete index of a Petri net.
+	 * Delete index of a model with a given internal ID.
 	 *  
-	 * @param internalID Internal ID of a Petri net.
-	 * @return Internal ID of the Petri net for which the index was deleted; 0, if no index was deleted.
+	 * @param internalID Internal ID of a model.
+	 * @return {@code true} if index of the model with the given internal ID existed and was deleted as the result of this call; 
+	 * {@code false} if there was no index to delete for the model with the given internal ID.
 	 * @throws SQLException
 	 */
-	public int deleteIndex(int internalID) throws SQLException;
+	public boolean deleteIndex(int internalID) throws SQLException;
 	
 	/**
 	 * Call PQL index cleanup routine (removes incomplete indexes).
@@ -58,4 +72,52 @@ public interface IPQLIndex<F extends IFlow<N>, N extends INode, P extends IPlace
 	 * @throws SQLException
 	 */
 	public void cleanupIndex() throws SQLException;
+	
+	/**
+	 * Get next indexing job.
+	 * 
+	 * @return An internal ID of a model that is not indexed.
+	 * @throws SQLException
+	 */
+	public int getNextIndexingJob() throws SQLException;
+	
+	/**
+	 * Request indexing a model with a given internal ID.
+	 * 
+	 * @param internalID Internal ID of a model.
+	 * @param botName Name of a PQL bot (see {@link PQLBot}) that requests indexing.
+	 * @throws SQLException
+	 */
+	public void requestIndexing(int internalID, String botName) throws SQLException;
+	
+	/**
+	 * Start indexing a model with a given internal ID.
+	 * This method must be preceded by {@link IPQLIndex}.{@code requestIndexing} call. 
+	 * 
+	 * @param internalID Internal ID of a model.
+	 * @param botName Name of a PQL bot (see {@link PQLBot}) that starts indexing.
+	 * @return {@code true} if the PQL bot with the given name has successfully started indexing the
+	 * model with the given internal ID; {@code false} otherwise.
+	 * @throws SQLException
+	 */
+	public boolean startIndexing(int internalID, String botName) throws SQLException;
+	
+	/**
+	 * Finish indexing a model with a given internal ID.
+	 * 
+	 * @param internalID Internal ID of a model.
+	 * @param botName Name of a PQL bot (see {@link PQLBot}) that finishes indexing.
+	 * @throws SQLException
+	 */
+	public void finishIndexing(int internalID, String botName) throws SQLException;
+	
+	/**
+	 * Check if a model with a given internal ID can be indexed.
+	 * If the model cannot be indexed, this fact is recorded in the PQL database.
+	 *  
+	 * @param internalID Internal ID of a model.
+	 * @return {@code true} if the model with the given ID can be indexed; {@code false} otherwise.
+	 * @throws SQLException
+	 */
+	public boolean checkNetSystem(int internalID) throws SQLException;
 }

@@ -296,4 +296,9 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		
 		return result;
 	}
+
+	@Override
+	public boolean isIndexable(INetSystem<F,N,P,T,M> sys) {
+		return this.isSoundWorkflowNet(sys);
+	}
 }
