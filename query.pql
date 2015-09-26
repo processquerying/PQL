@@ -1,0 +1,1 @@
+SELECT * FROM * WHERE TotalCausal("A","C") OR TotalConcurrent({"C"},{"K","D"},ANY);
