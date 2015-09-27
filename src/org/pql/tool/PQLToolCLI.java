@@ -185,6 +185,7 @@ public final class PQLToolCLI {
 	        		
 	        		if (internalID>0) {
 	        			pqlAPI.index(internalID);
+	        			System.out.println("finished indexing model with ID "+internalID);
 	        		}
 	        		else
 	        			System.out.println("specified identifier is not associated with any model");

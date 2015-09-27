@@ -168,29 +168,32 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 	    public void run() {
 	    	DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	    	
-	    	while (true) {
-	    		// send alive message
-	    		try {
-	    			this.alive.alive(this.botName);
-	    			if (verbose) System.out.println(String.format("%s> Bot %s sent an alive message.", dateFormat.format(new Date()), botName));
-				} catch (SQLException e) {
-					System.out.println(String.format("%s> Bot %s failed to send an alive message.", dateFormat.format(new Date()), botName));
-				}
-	    		
-	    		// sleep for 30 minutes
-	    		try { Thread.sleep(1800*1000); } catch (InterruptedException e) {}
-	    		
-	    		// cleanup index
-	    		try {
-	    			this.index.cleanupIndex();
-	    			if (verbose) System.out.println(String.format("%s> Bot %s has requested index cleanup.", dateFormat.format(new Date()), botName));
-				} catch (SQLException e) {
-					System.out.println(String.format("%s> Bot %s failed to request index cleanup.", dateFormat.format(new Date()), botName));
-				}
-	    		
-	    		// sleep for 30 minutes
-	    		try { Thread.sleep(1800*1000); } catch (InterruptedException e) {}
+	    	try {
+	    		for (;;) { // forever
+		    		// send alive message
+		    		try {
+		    			this.alive.alive(this.botName);
+		    			if (verbose) System.out.println(String.format("%s> Bot %s sent an alive message.", dateFormat.format(new Date()), botName));
+					} catch (SQLException e) {
+						System.out.println(String.format("%s> Bot %s failed to send an alive message.", dateFormat.format(new Date()), botName));
+					}
+		    		
+		    		// sleep for 30 minutes
+		    		Thread.sleep(1800*1000);
+		    		
+		    		// cleanup index
+		    		try {
+		    			this.index.cleanupIndex();
+		    			if (verbose) System.out.println(String.format("%s> Bot %s has requested index cleanup.", dateFormat.format(new Date()), botName));
+					} catch (SQLException e) {
+						System.out.println(String.format("%s> Bot %s failed to request index cleanup.", dateFormat.format(new Date()), botName));
+					}
+		    		
+		    		// sleep for 30 minutes
+		    		Thread.sleep(1800*1000);
+		    	}
 	    	}
+	    	catch (InterruptedException e) {}
 	    }
 	};
 	
