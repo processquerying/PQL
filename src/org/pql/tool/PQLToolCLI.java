@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
@@ -125,17 +126,16 @@ public final class PQLToolCLI {
 	        
 	        // handle reset
 	        if(cmd.hasOption("r")) {
-	        	System.out.print("Do you want to reset PQL index (Y/N): ");
-	        	try {
-					int ch = System.in.read();
-					
-					if (ch=='Y' || ch=='y') {
-						PQLToolCLI.pqlAPI.reset();
-						System.out.println("The index was reset!");
-					}
-					
-					return;
-				} catch (IOException e) {}
+	        	System.out.print("Do you want to reset the PQL index (Y/N): ");
+	        	
+	            @SuppressWarnings("resource")
+				String reset = new Scanner(System.in).next().trim().toLowerCase();
+	            
+	            if (reset.equals("y")) {
+	            	PQLToolCLI.pqlAPI.reset();
+					System.out.println("The index was reset!");
+	            }
+	            else System.out.println("The index was not reset!");
 	        }
 	        
 	        // handle store

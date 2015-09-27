@@ -80,7 +80,7 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 			bot = new AbstractPQLBot<F,N,P,T,M>(this.mysqlURL, this.mysqlUser, this.mysqlPassword,
 					null, this, this.MC, this.indexType, this.indexTime, this.sleepTime, false);
 		
-			boolean result = bot.performJob(internalID);
+			boolean result = bot.index(internalID);
 			bot.terminate();
 			return result;
 		

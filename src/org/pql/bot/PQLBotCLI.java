@@ -24,7 +24,7 @@ import org.pql.logic.KleeneLogic;
 import org.pql.mc.LoLA2ModelChecker;
 
 /**
- * PQL bot
+ * Implementation of the PQL Bot comman line interface.
  * 
  * @author Artem Polyvyanyy
  */
@@ -33,7 +33,7 @@ public class PQLBotCLI {
 	
 	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, SQLException, IOException {
 		System.out.println("===============================================================");
-		System.out.println(String.format(" Process Query Language (PQL) bot ver. %s by Artem Polyvyanyy", PQLBotCLI.version));
+		System.out.println(String.format(" Process Query Language (PQL) Bot ver. %s by Artem Polyvyanyy", PQLBotCLI.version));
 		System.out.println("===============================================================");
 		
 		String botName = null;
@@ -43,7 +43,7 @@ public class PQLBotCLI {
 		if (!iniFile.load()) { 
 			iniFile.create();
 			if (!iniFile.load()) {
-				System.out.println("ERROR: Cannot load PQL ini file. PQL bot stopped.");
+				System.out.println("ERROR: Cannot load PQL ini file. PQL Bot stopped.");
 				System.out.println("===============================================================");
 				return;
 			}
@@ -51,21 +51,7 @@ public class PQLBotCLI {
 		
 		int sleepTime = iniFile.getDefaultBotSleepTime();
 		int indexTime = iniFile.getDefaultBotMaxIndexTime();
-		
-		// build API object
-		/*PQLAPI pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
-				iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
-				iniFile.getLolaPath(), 
-				iniFile.getLabelSimilaritySeacrhConfiguration(),
-				iniFile.getThreeValuedLogicType(),  
-				iniFile.getIndexType(),
-				iniFile.getLabelManagerType(),
-				iniFile.getDefaultLabelSimilarity(),
-				iniFile.getIndexedLabelSimilarities(),
-				iniFile.getNumberOfQueryThreads(),
-				iniFile.getDefaultBotMaxIndexTime(),
-				iniFile.getDefaultBotSleepTime());
-*/		
+				
 		// read parameters from the CLI
 		CommandLineParser parser = new DefaultParser();
 		
@@ -99,7 +85,7 @@ public class PQLBotCLI {
 	        botName = cmd.getOptionValue("n");
 	        if (botName==null) botName = UUID.randomUUID().toString();
 	        else if (botName.length()>36) {
-	        	System.out.println("ERROR: Bot name exceeds maximum allowed length of 36 characters. PQL bot stopped.");
+	        	System.out.println("ERROR: Bot name exceeds maximum allowed length of 36 characters. PQL Bot stopped.");
 				System.out.println("===============================================================");
 				return;
 	        }

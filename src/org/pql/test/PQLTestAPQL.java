@@ -38,7 +38,7 @@ public class PQLTestAPQL extends TestCase {
 				iniFile.getDefaultBotMaxIndexTime(),
 				iniFile.getDefaultBotSleepTime());
 		
-		/*PQLTestAPQL.pqlAPI.reset();
+		PQLTestAPQL.pqlAPI.reset();
 		System.out.println("Reset done!");
 		PQLTestAPQL.pqlAPI.storeNetSystem(new File("./pnml/apql/1.pnml"),"1.pnml");
 		System.out.println("1.pnml stored");
@@ -80,7 +80,7 @@ public class PQLTestAPQL extends TestCase {
 		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("9.pnml"));
 		System.out.println("9.pnml indexed");
 		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("10.pnml"));
-		System.out.println("10.pnml indexed");*/
+		System.out.println("10.pnml indexed");
 	}
 
 	public void test001() throws ClassNotFoundException, SQLException {

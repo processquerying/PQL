@@ -18,8 +18,13 @@ import org.pql.index.IndexStatus;
 import org.pql.index.IndexType;
 import org.pql.mc.IModelChecker;
 
+/**
+ * An abstract implementation of a PQL bot.
+ * 
+ * @author Artem Polyvyanyy
+ */
 public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
-	extends MySQLConnection implements Runnable, IPQLBotAlive{
+	extends MySQLConnection implements Runnable, IPQLBotHeartBeat {
 
 	protected IPQLIndex<F,N,P,T,M>		index	= null;
 	protected IModelChecker<F,N,P,T,M>	MC		= null;
@@ -34,7 +39,7 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 	
 	protected PQLBotRegularServiceThread regularService = null;
 
-	DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	private DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	
 	protected String	PQL_INDEX_BOTS_ALIVE		= "{CALL pql.pql_index_bots_alive(?)}";
 	protected String	PQL_INDEX_BOTS_IS_ALIVE		= "{? = CALL pql.pql_index_bots_is_alive(?)}";
@@ -52,8 +57,7 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 		this.sleepTime	= sleepTime;
 		
 		if (this.isAlive(this.botName)) {
-			if (this.verbose) System.out.println("ERROR: PQL bot with the proposed name is already alive. PQL bot stopped.");
-			if (this.verbose) System.out.println("===============================================================");
+			if (this.verbose) System.out.println(String.format("%s> ERROR: A PQL bot with the name %s is already alive.", this.dateFormat.format(new Date()), this.botName));
 			return;
 		}
 		
@@ -66,17 +70,17 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
     	this.isActive = true;
 	}
 	
-	public boolean performJob(int jobID) throws SQLException, InterruptedException {
+	public boolean index(int modelID) throws SQLException, InterruptedException {
 		if (!this.isActive) return false;
 		
-		IndexStatus status = this.index.getIndexStatus(jobID);
+		IndexStatus status = this.index.getIndexStatus(modelID);
 		
 		if (status==IndexStatus.UNINDEXED) {
-			this.index.requestIndexing(jobID, this.botName);
+			this.index.requestIndexing(modelID, this.botName);
 			
-			boolean start = this.index.startIndexing(jobID, this.botName);
+			boolean start = this.index.startIndexing(modelID, this.botName);
 			if (start) {
-				PQLBotIndexThread indexThread = new PQLBotIndexThread(jobID,this.botName,this.MC,this.index,this.indexType,this.verbose);
+				PQLBotIndexThread indexThread = new PQLBotIndexThread(modelID,this.botName,this.MC,this.index,this.indexType,this.verbose);
         		indexThread.start();
 				
 				long startTime = System.currentTimeMillis();
@@ -86,88 +90,74 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
         		
         		if (indexThread.isAlive()) {
         			indexThread.interrupt();
-        			if (this.verbose) System.out.println(String.format("%s> Bot %s interrupted job with ID %s.", dateFormat.format(new Date()), botName, jobID));
+        			if (this.verbose) System.out.println(String.format("%s> Bot %s interrupted job with ID %s because indexing took longer than %s seconds.", this.dateFormat.format(new Date()), this.botName, modelID, this.indexTime));
         		}
         				                				
     			boolean result = indexThread.hasCompleted() ? indexThread.getResult() : false;
 				
     			if (result) {
-    				this.index.finishIndexing(jobID, this.botName);
-    				if (this.verbose) System.out.println("model indexed successfully");
+    				this.index.finishIndexing(modelID, this.botName);
+    				if (this.verbose) System.out.println(String.format("%s> Bot %s indexed model with ID %s.", this.dateFormat.format(new Date()), this.botName, modelID));
     				return true;
     			}
     			else {
-    				if (this.verbose) System.out.println("model not indexed");
-    				this.index.deleteIndex(jobID);
+    				if (this.verbose) System.out.println(String.format("%s> Bot %s did not index model with ID %s.", this.dateFormat.format(new Date()), this.botName, modelID));
+    				this.index.deleteIndex(modelID);
     				return false;
     			}
         	}
 			else {
-				if (this.verbose) System.out.println(String.format("failed to start indexing of the model with identifier %s.", jobID));
+				if (this.verbose) System.out.println(String.format("%s> Bot %s failed to start indexing the model with ID %s.", this.dateFormat.format(new Date()), this.botName, modelID));
 				return false;
 			}
 		}
 		else if (status==IndexStatus.INDEXING) {
-			if (this.verbose) System.out.println("indexing of the model with the specified identifier is already in progress");
+			if (this.verbose) System.out.println(String.format("%s> Bot %s reports that indexing of the model with ID %s is already in progress.", this.dateFormat.format(new Date()), this.botName, modelID));
 			return false;
 		}
 		else if (status==IndexStatus.INDEXED) {
-			if (this.verbose) System.out.println("model with the specified identifier is already indexed");
+			if (this.verbose) System.out.println(String.format("%s> Bot %s reports that the model with ID %s is already indexed.", this.dateFormat.format(new Date()), this.botName, modelID));
 			return false;
 		}
 		else {
-			if (this.verbose) System.out.println("model with the specified identifier cannot be indexed");
+			if (this.verbose) System.out.println(String.format("%s> Bot %s reports that the model with ID %s can not be indexed at this stage.", this.dateFormat.format(new Date()), this.botName, modelID));
 			return true;
 		}
 	}
 
 	@Override
 	public void run() {
-		// TIME TO INDEX ...
-        while (true) {
-        	try {
+		for (;;) { // forever
+			try {
         		// get next index job
-            	int jobID = this.index.getNextIndexingJob();
-            	if (jobID<=0 && this.verbose) System.out.println(String.format("%s> There are no pending jobs.", dateFormat.format(new Date())));
+            	int modelID = this.index.getNextIndexingJob();
+            	if (modelID<=0 && this.verbose) System.out.println(String.format("%s> There are no pending jobs.", dateFormat.format(new Date())));
             	else {
-            		if (this.verbose) System.out.println(String.format("%s> Bot %s fetched new job with ID %s.", dateFormat.format(new Date()), this.botName, jobID));
-            		
-            		// claim job
-            		//this.index.requestIndexing(jobID, this.botName);
-            		//if (this.verbose) System.out.println(String.format("%s> Bot %s claims job with ID %s.", dateFormat.format(new Date()), this.botName, jobID));
-                	
-                	// start job
-                	//boolean start = this.index.startIndexing(jobID, this.botName);
-                	//if (!start && this.verbose) System.out.println(String.format("%s> Bot %s FAILED to claim job with ID %s.", dateFormat.format(new Date()), this.botName, jobID));
-                	//else {
-                		//if (this.verbose) System.out.println(String.format("%s> Bot %s claimed job with ID %s.", dateFormat.format(new Date()), this.botName, jobID));
-                		
-                		this.performJob(jobID);
-                	//}
+            		if (this.verbose) System.out.println(String.format("%s> Bot %s retrieved indexing job for the model with ID %s.", this.dateFormat.format(new Date()), this.botName, modelID));
+                	this.index(modelID);
             	}
             	
             	if (this.verbose) System.out.println("---------------------------------------------------------------");
             	
             	// time to sleep before the next job
-            	if (this.verbose) System.out.println(String.format("%s> Bot %s will sleep for %s seconds.", dateFormat.format(new Date()), botName, sleepTime));
+            	if (this.verbose) System.out.println(String.format("%s> Bot %s goes to sleep for %s seconds.", this.dateFormat.format(new Date()), botName, sleepTime));
             	Thread.sleep(sleepTime*1000);
-            	if (this.verbose) System.out.println(String.format("%s> Bot %s woke up.", dateFormat.format(new Date()), botName));
+            	if (this.verbose) System.out.println(String.format("%s> Bot %s woke up.", this.dateFormat.format(new Date()), botName));
         	}
         	catch (Exception e) {
         		e.printStackTrace();
-        	}
-        	
-        }
+        	}	
+		}
 	}
 	
 	class PQLBotRegularServiceThread extends Thread {
 		protected IPQLIndex<F,N,P,T,M>	index = null;
-		protected IPQLBotAlive 			alive = null;
+		protected IPQLBotHeartBeat 			alive = null;
 		
 		protected String botName 	= null;
 		protected boolean verbose	= false;
 		
-		PQLBotRegularServiceThread(String botName, IPQLIndex<F,N,P,T,M> index, IPQLBotAlive alive, boolean verbose) {
+		PQLBotRegularServiceThread(String botName, IPQLIndex<F,N,P,T,M> index, IPQLBotHeartBeat alive, boolean verbose) {
 			this.botName = botName;
 			this.verbose = verbose;
 			
@@ -182,9 +172,9 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 	    		// send alive message
 	    		try {
 	    			this.alive.alive(this.botName);
-	    			if (verbose) System.out.println(String.format("%s> Bot %s sent alive message.", dateFormat.format(new Date()), botName));
+	    			if (verbose) System.out.println(String.format("%s> Bot %s sent an alive message.", dateFormat.format(new Date()), botName));
 				} catch (SQLException e) {
-					System.out.println(String.format("%s> Bot %s FAILED to send alive message.", dateFormat.format(new Date()), botName));
+					System.out.println(String.format("%s> Bot %s failed to send an alive message.", dateFormat.format(new Date()), botName));
 				}
 	    		
 	    		// sleep for 30 minutes
@@ -193,9 +183,9 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 	    		// cleanup index
 	    		try {
 	    			this.index.cleanupIndex();
-	    			if (verbose) System.out.println(String.format("%s> Bot %s successfully requested index cleanup.", dateFormat.format(new Date()), botName));
+	    			if (verbose) System.out.println(String.format("%s> Bot %s has requested index cleanup.", dateFormat.format(new Date()), botName));
 				} catch (SQLException e) {
-					System.out.println(String.format("%s> Bot %s FAILED to request index cleanup.", dateFormat.format(new Date()), botName));
+					System.out.println(String.format("%s> Bot %s failed to request index cleanup.", dateFormat.format(new Date()), botName));
 				}
 	    		
 	    		// sleep for 30 minutes
@@ -209,7 +199,7 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 		protected IModelChecker<F,N,P,T,M> MC = null;
 		
 		protected String botName 	= null;
-		protected int jobID 		= 0;
+		protected int modelID 		= 0;
 		protected boolean verbose	= false;
 		
 		private boolean result = false;
@@ -217,9 +207,9 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 		
 		protected IndexType indexType	= null;
 		
-		PQLBotIndexThread(int jobID, String botName, IModelChecker<F,N,P,T,M> mc, IPQLIndex<F,N,P,T,M> index, IndexType indexType, boolean verbose) {
+		PQLBotIndexThread(int modelID, String botName, IModelChecker<F,N,P,T,M> mc, IPQLIndex<F,N,P,T,M> index, IndexType indexType, boolean verbose) {
 			this.botName = botName;
-			this.jobID = jobID;
+			this.modelID = modelID;
 			this.verbose = verbose;
 			
 			this.index		= index;
@@ -229,28 +219,25 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 
 		@Override
 		public void run() {
-			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 			try {
 				// check if model can be indexed
-				if (this.verbose) System.out.println("checking model");
-        		boolean check = this.index.checkNetSystem(jobID);
+				if (this.verbose) System.out.println(String.format("%s> Bot %s starts checking model with ID %s.", dateFormat.format(new Date()), this.botName, this.modelID));
+        		boolean check = this.index.checkNetSystem(modelID);
+        		if (this.verbose) System.out.println(String.format("%s> Bot %s finished checking model with ID %s.", dateFormat.format(new Date()), this.botName, this.modelID));
         		
         		if (check) {
-        			if (this.verbose) System.out.println("indexing started");
-        			this.result = this.index.constructIndex(jobID, this.indexType);
+        			if (this.verbose) System.out.println(String.format("%s> Bot %s starts indexing model with ID %s.", dateFormat.format(new Date()), this.botName, this.modelID));
+        			this.result = this.index.constructIndex(modelID, this.indexType);
+        			
+        			if (this.result) {
+    					this.index.finishIndexing(this.modelID, this.botName);
+    					if (this.verbose) System.out.println(String.format("%s> Bot %s finished indexing model with ID %s.", dateFormat.format(new Date()), this.botName, this.modelID));
+    					this.completed = true;
+    				}
         		}
         		else {
-        			if (this.verbose) System.out.println(String.format("the model with identifier %s cannot be indexed", jobID));
+        			if (this.verbose) if (this.verbose) System.out.println(String.format("%s> Bot %s reports that the model with ID %s can not be indexed at this stage.", dateFormat.format(new Date()), this.botName, this.modelID));
         		}
-				
-				this.result = this.index.constructIndex(this.jobID, this.indexType);
-				
-				if (this.result) {
-					this.index.finishIndexing(this.jobID, this.botName);
-            		System.out.println(String.format("%s> Bot %s finished job with ID %s.", dateFormat.format(new Date()), this.botName, this.jobID));
-				}
-				
-				this.completed = true;
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
