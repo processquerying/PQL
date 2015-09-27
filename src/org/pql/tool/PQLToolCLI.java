@@ -66,10 +66,10 @@ public final class PQLToolCLI {
 	    	Option parseOption		= Option.builder("p").longOpt("parse").numberOfArgs(0).required(false).desc("show PQL query parse tree").hasArg(false).build();
 	    	Option indexOption		= Option.builder("i").longOpt("index").numberOfArgs(0).required(false).desc("index model").hasArg(false).build();
 	    	Option checkOption		= Option.builder("c").longOpt("check").numberOfArgs(0).required(false).desc("check if model can be indexed").hasArg(false).build();
-	    	Option queryOption		= Option.builder("q").longOpt("query").numberOfArgs(0).required(false).desc("run PQL query").hasArg(false).build();
+	    	Option queryOption		= Option.builder("q").longOpt("query").numberOfArgs(0).required(false).desc("execute PQL query").hasArg(false).build();
+	    	Option deleteOption		= Option.builder("d").longOpt("delete").numberOfArgs(0).required(false).desc("delete model (and its index)").hasArg(false).build();
 	    	
-	    	//Option deleteOption	= Option.builder("d").longOpt("delete").numberOfArgs(0).required(false).desc("delete model").hasArg(false).build();
-	    	//Option retrieveOption	= Option.builder("r").longOpt("retrieve").numberOfArgs(0).required(false).desc("retrieve model").hasArg(false).build();
+	    	// TODO: Option retrieveOption	= Option.builder("r").longOpt("retrieve").numberOfArgs(0).required(false).desc("retrieve model").hasArg(false).build();
 	    	
 	    	Option pnmlOption		= Option.builder("pnml").longOpt("pnmlPath").hasArg(true).optionalArg(false).valueSeparator('=').argName("path").required(false).desc("PNML path").build();
 	    	Option pqlOption		= Option.builder("pql").longOpt("pqlPath").hasArg(true).optionalArg(false).valueSeparator('=').argName("path").required(false).desc("PQL path").build();
@@ -82,11 +82,11 @@ public final class PQLToolCLI {
 	    	cmdGroup.addOption(storeOption);
 	    	cmdGroup.addOption(parseOption);
 	    	cmdGroup.addOption(indexOption);
-	    	
-	    	//cmdGroup.addOption(deleteOption);
-	    	//cmdGroup.addOption(retrieveOption);
+	    	cmdGroup.addOption(deleteOption);
 	    	cmdGroup.addOption(checkOption);
 	    	cmdGroup.addOption(queryOption);
+	    	
+	    	// cmdGroup.addOption(retrieveOption);
 	    	
 	    	cmdGroup.setRequired(true);
 	    	
@@ -191,6 +191,25 @@ public final class PQLToolCLI {
 	        			System.out.println("specified identifier is not associated with any model");
 	        	}
 	        	else throw new ParseException("-i option requires -id option");
+	        	
+	        	return;
+	        }
+	        
+	        // handle delete
+	        if (cmd.hasOption("d")) {
+	        	if (cmd.hasOption("id")) {
+	        		String id = cmd.getOptionValue("id");
+	        		
+	        		int internalID = PQLToolCLI.pqlAPI.getInternalID(id);
+	        		
+	        		if (internalID>0) {
+	        			pqlAPI.deleteNetSystem(internalID);
+	        			System.out.println("model with ID "+internalID+" (and its index) were deleted");
+	        		}
+	        		else
+	        			System.out.println("specified identifier is not associated with any model");
+	        	}
+	        	else throw new ParseException("-d option requires -id option");
 	        	
 	        	return;
 	        }

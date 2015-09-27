@@ -89,6 +89,15 @@ public interface IPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, 
 	 * @throws SQLException
 	 */
 	public boolean deleteIndex(int internalID) throws SQLException;
+	
+	/**
+	 * Delete Petri net and its index.
+	 * 
+	 * @param internalID Internal identifier of a stored Petri net.
+	 * @return {@code true} if Petri net and its index were successfully deleted; {@code false} otherwise.
+	 * @throws SQLException
+	 */
+	public boolean deleteNetSystem(int internalID) throws SQLException;
 
 	/**
 	 * Build parse tree of a PQL query. 

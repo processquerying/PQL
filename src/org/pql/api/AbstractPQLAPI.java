@@ -180,5 +180,10 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	@Override
 	public IndexStatus getIndexStatus(int internalID) throws SQLException {
 		return this.pqlIndex.getIndexStatus(internalID);
+	}
+
+	@Override
+	public boolean deleteNetSystem(int internalID) throws SQLException {
+		return this.netPersistenceLayer.deleteNetSystem(internalID) > 0;
 	}	
 }
