@@ -203,7 +203,7 @@ public final class PQLToolCLI {
 	        		int internalID = PQLToolCLI.pqlAPI.getInternalID(id);
 	        		
 	        		if (internalID>0) {
-	        			pqlAPI.deleteNetSystem(internalID);
+	        			pqlAPI.deleteModel(internalID);
 	        			System.out.println("model with ID "+internalID+" (and its index) were deleted");
 	        		}
 	        		else
@@ -222,7 +222,7 @@ public final class PQLToolCLI {
 	        		int internalID = PQLToolCLI.pqlAPI.getInternalID(id);
 	        		
 	        		if (internalID>0) {
-	        			boolean result = PQLToolCLI.pqlAPI.checkNetSystem(internalID);
+	        			boolean result = PQLToolCLI.pqlAPI.checkModel(internalID);
 	        			if (result)
 	        				System.out.println("model can be indexed");
 	        			else
@@ -311,7 +311,7 @@ public final class PQLToolCLI {
 			return;
 		}
 		
-		int result = PQLToolCLI.pqlAPI.storeNetSystem(pnmlFile, identifier);
+		int result = PQLToolCLI.pqlAPI.storeModel(pnmlFile, identifier);
 		
 		if (result>0) 
 			System.out.println(String.format("Model %s stored under unique identifier %s.", pnmlFile.getAbsolutePath(), identifier));

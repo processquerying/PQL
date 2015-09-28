@@ -95,7 +95,7 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	}
 
 	@Override
-	public boolean checkNetSystem(int internalID) throws SQLException {
+	public boolean checkModel(int internalID) throws SQLException {
 		return this.pqlIndex.checkNetSystem(internalID);
 	}
 	
@@ -128,17 +128,17 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	}
 
 	@Override
-	public INetSystem<F,N,P,T,M> restoreNetSystem(int internalID) throws SQLException {
+	public INetSystem<F,N,P,T,M> restoreModel(int internalID) throws SQLException {
 		return this.netPersistenceLayer.restoreNetSystem(internalID);
 	}
 
 	@Override
-	public int storeNetSystem(INetSystem<F,N,P,T,M> sys, String externalID) throws SQLException {
+	public int storeModel(INetSystem<F,N,P,T,M> sys, String externalID) throws SQLException {
 		return this.netPersistenceLayer.storeNetSystem(sys,externalID);
 	}
 
 	@Override
-	public int storeNetSystem(File pnmlFile, String externalID) throws SQLException {
+	public int storeModel(File pnmlFile, String externalID) throws SQLException {
 		return this.netPersistenceLayer.storeNetSystem(pnmlFile, externalID);
 	}
 	
@@ -173,7 +173,7 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	}
 
 	@Override
-	public int storeNetSystem(byte[] pnmlByteContent, String externalID) throws SQLException {
+	public int storeModel(byte[] pnmlByteContent, String externalID) throws SQLException {
 		return this.netPersistenceLayer.storeNetSystem(pnmlByteContent, externalID);
 	}
 
@@ -183,7 +183,7 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	}
 
 	@Override
-	public boolean deleteNetSystem(int internalID) throws SQLException {
+	public boolean deleteModel(int internalID) throws SQLException {
 		return this.netPersistenceLayer.deleteNetSystem(internalID) > 0;
 	}	
 }
