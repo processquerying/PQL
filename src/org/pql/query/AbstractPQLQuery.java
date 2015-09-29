@@ -55,7 +55,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	
 	protected abstract ThreeValuedLogicValue interpretUnaryPredicate(Token op, PQLTask a);
 	
-	protected abstract ThreeValuedLogicValue interpretUnaryTracePredicate(Token op, PQLTrace a);//A.P.
+	protected abstract ThreeValuedLogicValue interpretUnaryTracePredicate(Token op, PQLTrace a); //A.P.
 	
 	protected abstract ThreeValuedLogicValue interpretBinaryPredicate(Token op, PQLTask a, PQLTask b);
 	
@@ -493,21 +493,33 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	//A.P.
 	protected PQLTrace interpretTrace(ParseTree tree) {
 
-		Vector<PQLTask> trace = new Vector<PQLTask>();
+		PQLTrace trace = new PQLTrace();
 		
-		for (int i = 0; i < tree.getChildCount(); i++) {
+		for (int i = 0; i < tree.getChildCount(); i++) 
+		{
 			ParseTree child = tree.getChild(i).getChild(0); //getting a task or '*'
 			
-				if(child instanceof RuleNode) {
+			if(child instanceof RuleNode) 
+				{
+					int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
 					
-				int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
-				if (ruleIndex == PQLParser.RULE_task) {
-				trace.add(this.interpretTask(child));
-				}else{trace.add(new PQLTask("UniverseSymbol",1.0));} // creating 'PQLTask' for the universe symbol
-			}
+					if (ruleIndex == PQLParser.RULE_task) //is task
+					{
+						trace.addTask(this.interpretTask(child));
+					}else // is '*'
+					{
+						PQLTask newTask = new PQLTask("UniverseSymbol"+this.hashCode(), 1.0);
+						newTask.setStar(true);
+						trace.addTask(newTask);
+						trace.setHasStars(true);
+					} 
+				}
 		}
 		
-		return new PQLTrace(trace);
+	if(trace.hasStars())
+	{trace.addStartEnd(this.hashCode());}
+	
+	return trace;
 	
 	}
 

@@ -3,6 +3,8 @@ package org.pql.alignment;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.deckfour.xes.model.XLog;
+
 /**
  * A.P.
  */
@@ -44,4 +46,20 @@ public class PQLAlignment {
 		
 		return result;
 	}
+	
+	public int getAlignmentCost(XLog log)
+	{
+		int result = 0;
+		
+		for(int i=0; i<this.alignment.size(); i++)
+		{
+			if(alignment.get(i).getMoM().equals("SKIP_STEP"))
+			{result++;}
+			else {if(!(alignment.get(i).getMoM().equals("INV_TRANS")) && alignment.get(i).getMoL().equals("SKIP_STEP"))
+			{result++;}}
+		}
+		
+		return result;
+	}
+
 }

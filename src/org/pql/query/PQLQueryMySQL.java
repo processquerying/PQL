@@ -78,9 +78,48 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	//A.P. 
 	@Override
 	protected ThreeValuedLogicValue interpretUnaryTracePredicate(Token op, PQLTrace trace) {
+	
+		PQLTrace dbTrace = new PQLTrace();
 		
+		for(int i=0; i<trace.getTrace().size(); i++)
+		{
+			PQLTask task = trace.getTrace().elementAt(i);
+			PQLTask dbTask = this.task2task.get(task); 
+		
+		if (dbTask==null) {
+			dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+			
+			try {
+				labelMngr.loadTask(dbTask, this.labelMngr.getIndexedSimilarities());
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+			this.task2task.put(task,dbTask);
+		}	
+		dbTask.setStar(task.isStar());
+		dbTrace.addTask(dbTask);
+		}
+		
+		dbTrace.setHasStars(trace.hasStars());
+		
+		//create replacement map
+		if (dbTrace.hasStars())
+		{
+			dbTrace.createReplacementMap();
+		}
+			
+		//create XLog
+		if (dbTrace.hasStars())
+		{
+			dbTrace.createTraceLogForStars();
+		}else
+		{
+			dbTrace.createTraceLog();
+		}
+
 	switch (op.getType()) {
-	case PQLLexer.EXECUTES		: return basicPredicates.executes(trace);
+	case PQLLexer.EXECUTES		: return basicPredicates.executes(dbTrace);
 	
 	}
 
