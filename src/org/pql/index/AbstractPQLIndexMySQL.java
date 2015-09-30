@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jbpt.persist.MySQLConnection;
+import org.jbpt.persist.MySQLConnectionStatic;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INetSystem;
@@ -29,7 +29,7 @@ import org.pql.mc.IModelChecker;
  * @author Artem Polyvyanyy
  */
 public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
-				extends MySQLConnection
+				extends MySQLConnectionStatic
 				implements IPQLIndex<F,N,P,T,M> {
 	
 	protected String 	PQL_INDEX_GET_TYPE			= "{? = CALL pql.pql_index_get_type(?)}";

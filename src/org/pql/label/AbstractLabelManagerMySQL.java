@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jbpt.persist.MySQLConnection;
+import org.jbpt.persist.MySQLConnectionStatic;
 import org.pql.core.PQLTask;
 
 /**
@@ -14,7 +14,7 @@ import org.pql.core.PQLTask;
  *  
  * @author Artem Polyvyanyy
  */
-public abstract class AbstractLabelManagerMySQL extends MySQLConnection implements ILabelManager {
+public abstract class AbstractLabelManagerMySQL extends MySQLConnectionStatic implements ILabelManager {
 	protected double		defaultSim	= 1.0;
 	protected Set<Double> indexedSims = null;
 	protected double		minSim		= 1.0;

@@ -19,9 +19,9 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.pql.api.PQLAPI;
-import org.pql.api.PQLQueryResult;
 import org.pql.core.PQLTask;
 import org.pql.ini.PQLIniFile;
+import org.pql.query.PQLQueryResult;
 
 /**
  * PQL command line tool

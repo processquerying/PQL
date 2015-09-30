@@ -8,8 +8,8 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.pql.api.PQLAPI;
-import org.pql.api.PQLQueryResult;
 import org.pql.ini.PQLIniFile;
+import org.pql.query.PQLQueryResult;
 
 public class PQLTestAPQL extends TestCase {
 	private static PQLAPI	pqlAPI	= null;

@@ -11,6 +11,7 @@ import org.jbpt.petri.INode;
 import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
 import org.pql.index.IndexStatus;
+import org.pql.query.PQLQueryResult;
 
 /**
  * A PQL interface.

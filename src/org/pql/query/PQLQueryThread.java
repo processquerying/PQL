@@ -7,6 +7,8 @@ import org.pql.logic.ThreeValuedLogicValue;
 
 /**
  * @author Artem Polyvyanyy
+ * 
+ * TODO: Handle IllegalThreadStateException when starting too many query threads 
  */
 public class PQLQueryThread extends Thread {
 

@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
-import org.jbpt.persist.MySQLConnection;
+import org.jbpt.persist.MySQLConnectionStatic;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INode;
@@ -24,7 +24,7 @@ import org.pql.mc.IModelChecker;
  * @author Artem Polyvyanyy
  */
 public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
-	extends MySQLConnection implements Runnable, IPQLBotHeartBeat {
+	extends MySQLConnectionStatic implements Runnable, IPQLBotHeartBeat {
 
 	protected IPQLIndex<F,N,P,T,M>		index	= null;
 	protected IModelChecker<F,N,P,T,M>	MC		= null;
@@ -127,6 +127,8 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 
 	@Override
 	public void run() {
+		if (!this.isActive) return;
+		
 		for (;;) { // forever
 			try {
         		// get next index job

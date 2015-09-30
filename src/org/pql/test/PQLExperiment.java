@@ -10,10 +10,10 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 
-import org.jbpt.persist.MySQLConnection;
+import org.jbpt.persist.MySQLConnectionStatic;
 import org.pql.api.PQLAPI;
-import org.pql.api.PQLQueryResult;
 import org.pql.ini.PQLIniFile;
+import org.pql.query.PQLQueryResult;
 
 public class PQLExperiment extends TestCase {
 	private static PQLAPI	pqlAPI	= null;
@@ -80,7 +80,7 @@ public class PQLExperiment extends TestCase {
 	    return randomNum;
 	}
 	
-	public class LabelLoader extends MySQLConnection {
+	public class LabelLoader extends MySQLConnectionStatic {
 
 		protected LabelLoader(String url, String user, String password) throws ClassNotFoundException, SQLException {
 			super(url, user, password);

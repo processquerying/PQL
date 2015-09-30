@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import org.antlr.v4.runtime.misc.TestRig;
-import org.jbpt.persist.MySQLConnection;
+import org.jbpt.persist.MySQLConnectionStatic;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INetSystem;
@@ -31,12 +31,13 @@ import org.pql.logic.KleeneLogic;
 import org.pql.logic.ThreeValuedLogicType;
 import org.pql.mc.AbstractLoLA2ModelChecker;
 import org.pql.mc.IModelChecker;
+import org.pql.query.PQLQueryResult;
 
 /**
  * Artem Polyvyanyy
  */
 public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>>
-		extends MySQLConnection
+		extends MySQLConnectionStatic
 		implements IPQLAPI<F,N,P,T,M> {
 	
 	private IThreeValuedLogic					 logic					= null;

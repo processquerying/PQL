@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jbpt.persist.MySQLConnection;
+import org.jbpt.persist.MySQLConnectionStatic;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INetSystem;
@@ -30,7 +30,7 @@ import org.jbpt.throwable.SerializationException;
  * @author Artem Polyvyanyy
  */
 public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
-		extends MySQLConnection 
+		extends MySQLConnectionStatic 
 		implements IPetriNetPersistenceLayer<F,N,P,T,M> {
 
 	private String PETRI_NET_CREATE				= "{? = CALL pql.jbpt_petri_nets_create(?,?,?,?,?)}";
