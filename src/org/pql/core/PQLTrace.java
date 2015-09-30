@@ -1,7 +1,9 @@
 package org.pql.core;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.antlr.v4.codegen.model.chunk.ThisRulePropertyRef_ctx;
@@ -19,7 +21,7 @@ public class PQLTrace {
 	private Vector<PQLTask> trace = new Vector<PQLTask>(); 
 	private XLog traceLog = null;
 	private Map<Vector<String>,String> replacementMap = new HashMap <Vector<String>,String>();
-	private boolean hasStars = false;
+	private boolean hasAsterisk = false;
 	
 	
 	public PQLTrace() {}
@@ -32,8 +34,8 @@ public class PQLTrace {
 	public void print(){
 		
 		for(int i=0; i<trace.size(); i++)
-		System.out.println(i+": "+ trace.elementAt(i).getLabel() + ": " + trace.elementAt(i).getSimilarity() + ": " + trace.elementAt(i).getSimilarLabels() + ": " + trace.elementAt(i).isStar());
-		System.out.println("hasStars: " + this.hasStars);
+		System.out.println(i+": "+ trace.elementAt(i).getLabel() + ": " + trace.elementAt(i).getSimilarity() + ": " + trace.elementAt(i).getSimilarLabels() + ": " + trace.elementAt(i).isAsterisk());
+		System.out.println("hasStars: " + this.hasAsterisk);
 		System.out.println("replacementMap: " + this.replacementMap);
 		String logTrace = "";
 		for(XTrace t: this.traceLog)
@@ -66,14 +68,14 @@ public class PQLTrace {
 		trace.add(position,task);
 	};
 	
-	public void setHasStars(boolean hasStars){
+	public void setHasAsterisk(boolean hasStars){
 		
-		this.hasStars = hasStars;
+		this.hasAsterisk = hasStars;
 	};
 	
-	public boolean hasStars(){
+	public boolean hasAsterisk(){
 		
-		return this.hasStars;
+		return this.hasAsterisk;
 	};
 
 	
@@ -99,7 +101,7 @@ public class PQLTrace {
 		
 	};
 	
-	public void createTraceLogForStars(){
+	public void createLogForTraceWithAsterisk(){
 		
 		XFactoryNaiveImpl factory = new XFactoryNaiveImpl(); 
 		XLog log = factory.createLog();
@@ -109,55 +111,55 @@ public class PQLTrace {
 
 		Integer i = 0;
 		Integer index = 0;
-		Vector<Vector<String>> array = new Vector<Vector<String>>();
-		array.add(new Vector<String>());
+		Vector<Vector<String>> sequences = new Vector<Vector<String>>();
+		sequences.add(new Vector<String>());
 		
 	while (i<trace.size())
 	{
 		String currentTaskLabel = trace.elementAt(i).getLabel();	
 		
-		if(!trace.elementAt(i).isStar())
+		if(!trace.elementAt(i).isAsterisk())
 		{
-			array.elementAt(index).add(currentTaskLabel);
+			sequences.elementAt(index).add(currentTaskLabel);
 			i++;
 		}else
 		{
 			
-			if(array.elementAt(index).size() > 1)
+			if(sequences.elementAt(index).size() > 1)
 			{
-				String replacement = this.replacementMap.get(array.elementAt(index));
+				String replacement = this.replacementMap.get(sequences.elementAt(index));
 				XEvent event = factory.createEvent();
 				event.getAttributes().put("concept:name",new XAttributeLiteralImpl("concept:name",replacement));
 				logTrace.add(event);
 			}
 			
-			if(array.elementAt(index).size() == 1)
+			if(sequences.elementAt(index).size() == 1)
 			{
-				String task = array.elementAt(index).elementAt(0);
+				String task = sequences.elementAt(index).elementAt(0);
 				XEvent event = factory.createEvent();
 				event.getAttributes().put("concept:name",new XAttributeLiteralImpl("concept:name",task));
 				logTrace.add(event);
 				
 			}
 			
-			array.add(new Vector<String>());
+			sequences.add(new Vector<String>());
 			index++;
 			i++;
 		}
 		
 		if(i == trace.size())
 		{ 
-			if(array.elementAt(index).size() > 1)
+			if(sequences.elementAt(index).size() > 1)
 			{
-				String replacement = this.replacementMap.get(array.elementAt(index));
+				String replacement = this.replacementMap.get(sequences.elementAt(index));
 				XEvent event = factory.createEvent();
 				event.getAttributes().put("concept:name",new XAttributeLiteralImpl("concept:name",replacement));
 				logTrace.add(event);
 			}
 			
-			if(array.elementAt(index).size() == 1)
+			if(sequences.elementAt(index).size() == 1)
 			{
-				String task = array.elementAt(index).elementAt(0);
+				String task = sequences.elementAt(index).elementAt(0);
 				XEvent event = factory.createEvent();
 				event.getAttributes().put("concept:name",new XAttributeLiteralImpl("concept:name",task));
 				logTrace.add(event);
@@ -182,32 +184,43 @@ public class PQLTrace {
 		Integer i = 0;
 		Integer index = 0;
 		
-		Vector<Vector<String>> array = new Vector<Vector<String>>();
-		array.add(new Vector<String>());
+		Vector<Vector<String>> sequences = new Vector<Vector<String>>();
+		sequences.add(new Vector<String>());
 		
 		while (i<trace.size())
 		{
-		String current = trace.elementAt(i).getLabel();	
+		String currentTaskLabel = trace.elementAt(i).getLabel();	
 		
-		if(!trace.elementAt(i).isStar())
+		if(!trace.elementAt(i).isAsterisk())
 		{
-			array.elementAt(index).add(current);
+			sequences.elementAt(index).add(currentTaskLabel);
 			i++;
 		}else
 		{
-			if(array.elementAt(index).size() > 1)
+			if(sequences.elementAt(index).size() > 1)
 			{
-				this.replacementMap.put(array.elementAt(index),"repl"+index.toString()+this.hashCode());
+				this.replacementMap.put(sequences.elementAt(index),"replacement"+index.toString()+this.hashCode());
 			}
-			array.add(new Vector<String>());
+			sequences.add(new Vector<String>());
 			index++;
 			i++;
 		}
-		if(i == trace.size() && array.elementAt(index).size() > 1)
-		{this.replacementMap.put(array.elementAt(index),"repl"+index.toString()+this.hashCode());}
+		if(i == trace.size() && sequences.elementAt(index).size() > 1)
+		{this.replacementMap.put(sequences.elementAt(index),"replacement"+index.toString()+this.hashCode());}
 		}
 				
 	};
 
-	
+/*	public Set<String> getAllSimilarLabels()
+	{
+		Set<String> tasks = new HashSet<String>();
+		
+		for(int i=0; i<this.trace.size(); i++)
+		{
+			tasks.addAll(trace.elementAt(i).getSimilarLabels());
+		}
+		
+		return tasks;
+	}
+*/	
 }

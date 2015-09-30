@@ -84,35 +84,47 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 		for(int i=0; i<trace.getTrace().size(); i++)
 		{
 			PQLTask task = trace.getTrace().elementAt(i);
-			PQLTask dbTask = this.task2task.get(task); 
-		
-		if (dbTask==null) {
-			dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+			PQLTask dbTask = null;
 			
-			try {
-				labelMngr.loadTask(dbTask, this.labelMngr.getIndexedSimilarities());
-			} catch (SQLException e) {
-				e.printStackTrace();
+			if(task.getSimilarity() == 1.0)
+			{
+				dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+				Set<String> similarLabels = new HashSet<String>();
+				similarLabels.add(task.getLabel());
+				dbTask.setLabels(similarLabels);
 			}
+			else
+			{
+				dbTask = this.task2task.get(task); 
 			
-			this.task2task.put(task,dbTask);
-		}	
-		dbTask.setStar(task.isStar());
+				if (dbTask==null) 
+				{
+					dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+					
+					try 
+					{
+						labelMngr.loadTask(dbTask, this.labelMngr.getIndexedSimilarities());
+					} catch (SQLException e) {e.printStackTrace();}
+					
+					this.task2task.put(task,dbTask);
+				}
+			}
+		dbTask.setAsterisk(task.isAsterisk());
 		dbTrace.addTask(dbTask);
 		}
 		
-		dbTrace.setHasStars(trace.hasStars());
+		dbTrace.setHasAsterisk(trace.hasAsterisk());
 		
 		//create replacement map
-		if (dbTrace.hasStars())
+		if (dbTrace.hasAsterisk())
 		{
 			dbTrace.createReplacementMap();
 		}
 			
 		//create XLog
-		if (dbTrace.hasStars())
+		if (dbTrace.hasAsterisk())
 		{
-			dbTrace.createTraceLogForStars();
+			dbTrace.createLogForTraceWithAsterisk();
 		}else
 		{
 			dbTrace.createTraceLog();

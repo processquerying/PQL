@@ -1,51 +1,324 @@
-package org.pql.api;
+package org.pql.alignment;
 
-import java.sql.CallableStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import org.deckfour.xes.classification.XEventClass;
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.factory.XFactoryNaiveImpl;
 import org.deckfour.xes.info.XLogInfo;
 import org.deckfour.xes.info.XLogInfoFactory;
-import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
-import org.deckfour.xes.model.XTrace;
-import org.deckfour.xes.model.impl.XAttributeLiteralImpl;
 import org.jbpt.persist.MySQLConnection;
-import org.pql.core.PQLTask;
-import org.pql.core.PQLTrace;
 import org.processmining.models.graphbased.directed.petrinet.PetrinetGraph;
 import org.processmining.models.graphbased.directed.petrinet.elements.Place;
 import org.processmining.models.graphbased.directed.petrinet.elements.Transition;
 import org.processmining.models.semantics.petrinet.Marking;
 import org.processmining.plugins.connectionfactories.logpetrinet.TransEvClassMapping;
-import org.jbpt.petri.Flow;
+import org.jbpt.petri.IFlow;
+import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INetSystem;
+import org.jbpt.petri.INode;
+import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
-import org.jbpt.petri.NetSystem;
-import org.jbpt.petri.Node;
-import org.jbpt.petri.io.PNMLSerializer;
+
 
 /**
  * A.P.
  */
-public class AlignmentAPI extends MySQLConnection
+public class AlignmentAPI <F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
+			extends MySQLConnection
+		
 		 {
 	
 	protected static String 	JBPT_PETRI_NETS_GET_PNML_CONTENT = "{? = CALL pql.jbpt_petri_nets_get_pnml_content(?)}";
+	protected INetSystem<F,N,P,T,M> sys = null;
 	
-		public AlignmentAPI(String mySQLURL, String mySQLUser, String mySQLPassword)
+		public AlignmentAPI(String mySQLURL, String mySQLUser, String mySQLPassword, INetSystem<F,N,P,T,M> system)
 					throws ClassNotFoundException, SQLException {
-		super(mySQLURL,mySQLUser,mySQLPassword);}
+		super(mySQLURL,mySQLUser,mySQLPassword);
+		this.sys = system;}
+		
+		public PetrinetGraph constructPetrinetGraph(PetrinetGraph net) {
+			
+		// places
+		Map<P,Place> p2p = new HashMap<>();
+		for (P p : sys.getPlaces()) {
+			Place pp = net.addPlace(p.getId());
+			p2p.put(p,pp);
+		}
+		
+		// transitions
+		Map<T,Transition> t2t = new HashMap<>();
+		for (T t : sys.getTransitions()) {
+			Transition tt = net.addTransition(t.getLabel());
+			tt.setInvisible(t.isSilent());
+			t2t.put(t,tt);
+		}
+		
+		// flow
+		for (F f : sys.getFlow()) {
+			if (f.getSource() instanceof IPlace) {
+				net.addArc(p2p.get(f.getSource()),t2t.get(f.getTarget()));
+			} else {
+				net.addArc(t2t.get(f.getSource()),p2p.get(f.getTarget()));
+			}
+		}
 	
+		return net;
+	}
+	
+		public Marking getInitialMarking(PetrinetGraph net) {
+			Marking initMarking = new Marking();
+			
+			// initial marking
+			Set<P> markedPlaces = new HashSet<P>();
+			markedPlaces.addAll(sys.getMarkedPlaces());
+			
+			for(P x: markedPlaces)
+			{
+							
+				for(Place y: net.getPlaces())
+				{
+					if (y.getLabel() == x.getId())
+					{
+						initMarking.add(y);
+					}
+				}
+			}
+			
+				
+				
+			return initMarking;
+		}
+		
+		public TransEvClassMapping constructMapping(PetrinetGraph net, XLog log, XEventClass dummyEvClass, XEventClassifier eventClassifier) {
+			TransEvClassMapping mapping = new TransEvClassMapping(eventClassifier, dummyEvClass);
+			
+			XLogInfo summary = XLogInfoFactory.createLogInfo(log,eventClassifier);
+			
+			for (Transition t : net.getTransitions()) {
+				boolean mapped = false;
+				
+				for (XEventClass evClass : summary.getEventClasses().getClasses()) {
+					String id = evClass.getId();
+					
+					if (t.getLabel().equals(id)) {
+						mapping.put(t, evClass);
+						mapped = true;
+						break;
+					}
+				}
+				
+				if (!mapped && !t.isInvisible()) {
+					mapping.put(t, dummyEvClass);
+				}
+					
+			}
+			
+			return mapping;
+		}
+
+		public Map<Transition, Integer> constructMOSCostFunction(PetrinetGraph net) {
+			Map<Transition,Integer> costMOS = new HashMap<Transition,Integer>();
+			
+			for (Transition  t : net.getTransitions())
+				if (t.isInvisible() || t.getLabel().equals(""))
+					costMOS.put(t,0);
+				else
+					costMOS.put(t,1);	
+			
+			return costMOS;
+		}
+		
+		public Map<Transition, Integer> constructMOSCostFunctionForAsterisk(PetrinetGraph net) {
+			Map<Transition,Integer> costMOS = new HashMap<Transition,Integer>();
+			
+			for (Transition  t : net.getTransitions())
+				costMOS.put(t,0);	
+			
+			return costMOS;
+		}
+
+		public Map<XEventClass, Integer> constructMOTCostFunction(PetrinetGraph net, XLog log, XEventClassifier eventClassifier, XEventClass dummyEvClass) {
+			Map<XEventClass,Integer> costMOT = new HashMap<XEventClass,Integer>();		
+			XLogInfo summary = XLogInfoFactory.createLogInfo(log,eventClassifier);
+			
+			for (XEventClass evClass : summary.getEventClasses().getClasses()) {
+				costMOT.put(evClass,1);
+			}
+			
+			costMOT.put(dummyEvClass,1);
+			
+			return costMOT;
+		}
+		
+		public Map<XEventClass, Integer> constructMOTCostFunctionForAsterisk(PetrinetGraph net, XLog log, XEventClassifier eventClassifier, XEventClass dummyEvClass) {
+			Map<XEventClass,Integer> costMOT = new HashMap<XEventClass,Integer>();		
+			XLogInfo summary = XLogInfoFactory.createLogInfo(log,eventClassifier);
+			
+			for (XEventClass evClass : summary.getEventClasses().getClasses()) {
+				costMOT.put(evClass,1);
+			}
+			
+			costMOT.put(dummyEvClass,0);
+			
+			return costMOT;
+		}
+
+
+/*
+		public Marking getInitialMarkingPrev(PetrinetGraph net) {
+			Marking initMarking = new Marking();
+			
+			for (Place p : net.getPlaces()) {
+				if (net.getInEdges(p).isEmpty())
+					initMarking.add(p);
+			}
+			
+			return initMarking;
+		}
+	
+		
+*//*		
+
+		public static Marking[] getFinalMarkings(PetrinetGraph net) {			
+			Marking finalMarking = new Marking();
+			
+			for (Place p : net.getPlaces()) {
+				if (net.getOutEdges(p).isEmpty())
+					finalMarking.add(p);
+			}
+				
+			Marking[] finalMarkings = new Marking[1];
+			finalMarkings[0] = finalMarking;
+			
+			return finalMarkings;
+		}
+		
+*/		
+/*		
+		public static PetrinetGraph constructPetrinetGraphFromNetSystemWithMarking(NetSystem sys, PetrinetGraph net) {
+		
+		//int pi,ti;
+		//pi = ti = 1;
+		//for (org.jbpt.petri.Place p : sys.getPlaces()) 
+		//	p.setName("p"+pi++);
+		//for (org.jbpt.petri.Transition t : sys.getTransitions()) 
+		//	t.setName("t"+ti++);
+		
+		// places
+		Map<org.jbpt.petri.Place,Place> p2p = new HashMap<>();
+		for (org.jbpt.petri.Place p : sys.getPlaces()) {
+			Place pp = net.addPlace(p.getId());
+			p2p.put(p,pp);
+			//System.out.println("p: "+ p.getId());
+			//System.out.println("pp: "+ pp.getLabel());
+		}
+		
+		// transitions
+		Map<org.jbpt.petri.Transition,Transition> t2t = new HashMap<>();
+		for (org.jbpt.petri.Transition t : sys.getTransitions()) {
+			Transition tt = net.addTransition(t.getLabel());
+			tt.setInvisible(t.isSilent());
+			t2t.put(t,tt);
+		}
+		
+		// flow
+		for (Flow f : sys.getFlow()) {
+			if (f.getSource() instanceof org.jbpt.petri.Place) {
+				net.addArc(p2p.get(f.getSource()),t2t.get(f.getTarget()));
+			} else {
+				net.addArc(t2t.get(f.getSource()),p2p.get(f.getTarget()));
+			}
+		}
+		
+		
+		// initial marking
+		Set<org.jbpt.petri.Place> markedPlaces = new HashSet<org.jbpt.petri.Place>();
+		markedPlaces.addAll(sys.getMarkedPlaces());
+		
+		Marking initMarking = new Marking();
+		//net.a
+		
+		for(org.jbpt.petri.Place x: markedPlaces)
+		{
+			Place px = p2p.get(x);
+			initMarking.add(px);
+		}
+		
+		//System.out.println("correct init marking: "+initMarking);
+		
+		// add unique start node
+		if (sys.getSourceNodes().isEmpty()) {
+			Place i = net.addPlace("START_P");
+			Transition t = net.addTransition("");
+			t.setInvisible(true);
+			net.addArc(i,t);
+			
+			for (org.jbpt.petri.Place p : sys.getMarkedPlaces()) {
+				net.addArc(t,p2p.get(p));	
+			}
+			
+		}
+		 		
+		return net;
+	}
+
+		
+		public static PetrinetGraph constructPetrinetGraphFromNetSystem(NetSystem sys, PetrinetGraph net) {
+		
+		int pi,ti;
+		pi = ti = 1;
+		for (org.jbpt.petri.Place p : sys.getPlaces()) 
+			p.setName("p"+pi++);
+		for (org.jbpt.petri.Transition t : sys.getTransitions()) 
+			t.setName("t"+ti++);
+		
+		// places
+		Map<org.jbpt.petri.Place,Place> p2p = new HashMap<>();
+		for (org.jbpt.petri.Place p : sys.getPlaces()) {
+			Place pp = net.addPlace(p.getName());
+			p2p.put(p,pp);
+		}
+		
+		// transitions
+		Map<org.jbpt.petri.Transition,Transition> t2t = new HashMap<>();
+		for (org.jbpt.petri.Transition t : sys.getTransitions()) {
+			Transition tt = net.addTransition(t.getLabel());
+			tt.setInvisible(t.isSilent());
+			t2t.put(t,tt);
+		}
+		
+		// flow
+		for (Flow f : sys.getFlow()) {
+			if (f.getSource() instanceof org.jbpt.petri.Place) {
+				net.addArc(p2p.get(f.getSource()),t2t.get(f.getTarget()));
+			} else {
+				net.addArc(t2t.get(f.getSource()),p2p.get(f.getTarget()));
+			}
+		}
+		
+		// add unique start node
+		if (sys.getSourceNodes().isEmpty()) {
+			Place i = net.addPlace("START_P");
+			Transition t = net.addTransition("");
+			t.setInvisible(true);
+			net.addArc(i,t);
+			
+			for (org.jbpt.petri.Place p : sys.getMarkedPlaces()) {
+				net.addArc(t,p2p.get(p));	
+			}
+			
+		}
+		
+		return net;
+	}
+		
+		*/
+		
+		/*
 		public static NetSystem getStarTransformation(NetSystem sys, PQLTrace trace, Map<String, ITransition> transitionMap)
 		{
 			Map<Vector<String>,String> replacementMap = new HashMap<Vector<String>,String>();
@@ -57,13 +330,13 @@ public class AlignmentAPI extends MySQLConnection
 			controlPlace.setLabel("ControlPlace");
 			
 			//add double arcs to all unified transitions - prev. version
-		/*	for (Map.Entry<PQLTask, ITransition> entry : transitionMap.entrySet())
+			for (Map.Entry<PQLTask, ITransition> entry : transitionMap.entrySet())
 			{
 			    sys.addFlow(controlPlace, (Node) entry.getValue());
 			    sys.addFlow((Node) entry.getValue(), controlPlace);
 			}
 			sys.getMarking().put(controlPlace, 1);
-	*/		
+			
 			//add double arcs to all visible transitions
 			Set<org.jbpt.petri.Transition> trans = sys.getTransitions();
 			Iterator it0 = trans.iterator();
@@ -151,6 +424,9 @@ public class AlignmentAPI extends MySQLConnection
 			return sys;
 		}
   	
+	*/	
+
+/*		
 		//not used		
 		public static NetSystem getOneTransformation(NetSystem sys, PQLTrace trace, Vector<String> sequence, String replacement, Map<PQLTask, ITransition> transitionMap, org.jbpt.petri.Place controlPlace)
 		{
@@ -357,9 +633,9 @@ public class AlignmentAPI extends MySQLConnection
 				
 		
 			return log;
-	}
+	}*/
 
-	
+	/*
 		public static NetSystem addStartEnd(NetSystem sys, PQLTrace trace) {
 			
 			//add i
@@ -425,125 +701,11 @@ public class AlignmentAPI extends MySQLConnection
 	
 	}
 
+*/		
 		
-		public static PetrinetGraph constructPetrinetGraphFromNetSystemWithMarking(NetSystem sys, PetrinetGraph net) {
-		
-		//int pi,ti;
-		//pi = ti = 1;
-		//for (org.jbpt.petri.Place p : sys.getPlaces()) 
-		//	p.setName("p"+pi++);
-		//for (org.jbpt.petri.Transition t : sys.getTransitions()) 
-		//	t.setName("t"+ti++);
-		
-		// places
-		Map<org.jbpt.petri.Place,Place> p2p = new HashMap<>();
-		for (org.jbpt.petri.Place p : sys.getPlaces()) {
-			Place pp = net.addPlace(p.getId());
-			p2p.put(p,pp);
-			//System.out.println("p: "+ p.getId());
-			//System.out.println("pp: "+ pp.getLabel());
-		}
-		
-		// transitions
-		Map<org.jbpt.petri.Transition,Transition> t2t = new HashMap<>();
-		for (org.jbpt.petri.Transition t : sys.getTransitions()) {
-			Transition tt = net.addTransition(t.getLabel());
-			tt.setInvisible(t.isSilent());
-			t2t.put(t,tt);
-		}
-		
-		// flow
-		for (Flow f : sys.getFlow()) {
-			if (f.getSource() instanceof org.jbpt.petri.Place) {
-				net.addArc(p2p.get(f.getSource()),t2t.get(f.getTarget()));
-			} else {
-				net.addArc(t2t.get(f.getSource()),p2p.get(f.getTarget()));
-			}
-		}
-		
-		
-		// initial marking
-	/*	Set<org.jbpt.petri.Place> markedPlaces = new HashSet<org.jbpt.petri.Place>();
-		markedPlaces.addAll(sys.getMarkedPlaces());
-		
-		Marking initMarking = new Marking();
-		//net.a
-		
-		for(org.jbpt.petri.Place x: markedPlaces)
-		{
-			Place px = p2p.get(x);
-			initMarking.add(px);
-		}
-	*/	
-		//System.out.println("correct init marking: "+initMarking);
-		
-		// add unique start node
-		/*if (sys.getSourceNodes().isEmpty()) {
-			Place i = net.addPlace("START_P");
-			Transition t = net.addTransition("");
-			t.setInvisible(true);
-			net.addArc(i,t);
-			
-			for (org.jbpt.petri.Place p : sys.getMarkedPlaces()) {
-				net.addArc(t,p2p.get(p));	
-			}
-			
-		}
-		 */		
-		return net;
-	}
-
-		
-		public static PetrinetGraph constructPetrinetGraphFromNetSystem(NetSystem sys, PetrinetGraph net) {
-		
-		int pi,ti;
-		pi = ti = 1;
-		for (org.jbpt.petri.Place p : sys.getPlaces()) 
-			p.setName("p"+pi++);
-		for (org.jbpt.petri.Transition t : sys.getTransitions()) 
-			t.setName("t"+ti++);
-		
-		// places
-		Map<org.jbpt.petri.Place,Place> p2p = new HashMap<>();
-		for (org.jbpt.petri.Place p : sys.getPlaces()) {
-			Place pp = net.addPlace(p.getName());
-			p2p.put(p,pp);
-		}
-		
-		// transitions
-		Map<org.jbpt.petri.Transition,Transition> t2t = new HashMap<>();
-		for (org.jbpt.petri.Transition t : sys.getTransitions()) {
-			Transition tt = net.addTransition(t.getLabel());
-			tt.setInvisible(t.isSilent());
-			t2t.put(t,tt);
-		}
-		
-		// flow
-		for (Flow f : sys.getFlow()) {
-			if (f.getSource() instanceof org.jbpt.petri.Place) {
-				net.addArc(p2p.get(f.getSource()),t2t.get(f.getTarget()));
-			} else {
-				net.addArc(t2t.get(f.getSource()),p2p.get(f.getTarget()));
-			}
-		}
-		
-		// add unique start node
-		if (sys.getSourceNodes().isEmpty()) {
-			Place i = net.addPlace("START_P");
-			Transition t = net.addTransition("");
-			t.setInvisible(true);
-			net.addArc(i,t);
-			
-			for (org.jbpt.petri.Place p : sys.getMarkedPlaces()) {
-				net.addArc(t,p2p.get(p));	
-			}
-			
-		}
-		
-		return net;
-	}
 	
-		
+	
+/*		
 	public static PetrinetGraph constructPetriNetFromByte(byte[] netFile, PetrinetGraph net) {
 		PNMLSerializer PNML = new PNMLSerializer();
 		NetSystem sys = PNML.parse(netFile);
@@ -686,137 +848,7 @@ public class AlignmentAPI extends MySQLConnection
 		return log;
 	}
 
-	public static Marking[] getFinalMarkings(PetrinetGraph net) {			
-		Marking finalMarking = new Marking();
-		
-		for (Place p : net.getPlaces()) {
-			if (net.getOutEdges(p).isEmpty())
-				finalMarking.add(p);
-		}
-			
-		Marking[] finalMarkings = new Marking[1];
-		finalMarkings[0] = finalMarking;
-		
-		return finalMarkings;
-	}
-
-	public static Marking getInitialMarking(PetrinetGraph net) {
-		Marking initMarking = new Marking();
-		
-		for (Place p : net.getPlaces()) {
-			if (net.getInEdges(p).isEmpty())
-				initMarking.add(p);
-		}
-		
-		return initMarking;
-	}
+*/	
 	
-	public static Marking getInitialMarkingFromNS(PetrinetGraph net, NetSystem sys) {
-		Marking initMarking = new Marking();
-		
-		// initial marking
-		Set<org.jbpt.petri.Place> markedPlaces = new HashSet<org.jbpt.petri.Place>();
-		markedPlaces.addAll(sys.getMarkedPlaces());
-		
-		for(org.jbpt.petri.Place x: markedPlaces)
-		{
-						
-			for(Place y: net.getPlaces())
-			{
-				if (y.getLabel() ==x.getId())
-				{
-					initMarking.add(y);
-				}
-			}
-		}
-		
-			
-			
-		return initMarking;
-	}
-
-	public static Map<Transition, Integer> constructMOSCostFunction(PetrinetGraph net) {
-		Map<Transition,Integer> costMOS = new HashMap<Transition,Integer>();
-		
-		for (Transition  t : net.getTransitions())
-			if (t.isInvisible() || t.getLabel().equals(""))
-				costMOS.put(t,0);
-			else
-				costMOS.put(t,1);	
-		
-		return costMOS;
-	}
-	
-	public static Map<Transition, Integer> constructMOSCostFunctionForStars(PetrinetGraph net, XLog log, XEventClassifier eventClassifier) {
-		Map<Transition,Integer> costMOS = new HashMap<Transition,Integer>();
-		
-		XLogInfo summary = XLogInfoFactory.createLogInfo(log,eventClassifier);
-		
-		for (Transition  t : net.getTransitions())
-			costMOS.put(t,0);	
-		
-	/*	for (XEventClass evClass : summary.getEventClasses().getClasses()) 
-		{
-			String event = evClass.getId();
-			
-			for (Transition  t : net.getTransitions())
-				if (t.getLabel().equals(event))
-					costMOS.put(t,1);
-		}	
-	*/	return costMOS;
-	}
-
-	public static Map<XEventClass, Integer> constructMOTCostFunction(PetrinetGraph net, XLog log, XEventClassifier eventClassifier, XEventClass dummyEvClass) {
-		Map<XEventClass,Integer> costMOT = new HashMap<XEventClass,Integer>();		
-		XLogInfo summary = XLogInfoFactory.createLogInfo(log,eventClassifier);
-		
-		for (XEventClass evClass : summary.getEventClasses().getClasses()) {
-			costMOT.put(evClass,1);
-		}
-		
-		costMOT.put(dummyEvClass,1);
-		
-		return costMOT;
-	}
-	
-	public static Map<XEventClass, Integer> constructMOTCostFunctionForStars(PetrinetGraph net, XLog log, XEventClassifier eventClassifier, XEventClass dummyEvClass) {
-		Map<XEventClass,Integer> costMOT = new HashMap<XEventClass,Integer>();		
-		XLogInfo summary = XLogInfoFactory.createLogInfo(log,eventClassifier);
-		
-		for (XEventClass evClass : summary.getEventClasses().getClasses()) {
-			costMOT.put(evClass,1);
-		}
-		
-		costMOT.put(dummyEvClass,0);
-		
-		return costMOT;
-	}
-
-	public static TransEvClassMapping constructMapping(PetrinetGraph net, XLog log, XEventClass dummyEvClass, XEventClassifier eventClassifier) {
-		TransEvClassMapping mapping = new TransEvClassMapping(eventClassifier, dummyEvClass);
-		
-		XLogInfo summary = XLogInfoFactory.createLogInfo(log,eventClassifier);
-		
-		for (Transition t : net.getTransitions()) {
-			boolean mapped = false;
-			
-			for (XEventClass evClass : summary.getEventClasses().getClasses()) {
-				String id = evClass.getId();
-				
-				if (t.getLabel().equals(id)) {
-					mapping.put(t, evClass);
-					mapped = true;
-					break;
-				}
-			}
-			
-			if (!mapped && !t.isInvisible()) {
-				mapping.put(t, dummyEvClass);
-			}
-				
-		}
-		
-		return mapping;
-	}
 	
 }

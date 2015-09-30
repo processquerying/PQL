@@ -7,8 +7,12 @@ import org.deckfour.xes.classification.XEventClass;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.info.impl.XLogInfoImpl;
 import org.deckfour.xes.model.XLog;
-import org.jbpt.petri.NetSystem;
-import org.pql.api.AlignmentAPI;
+import org.jbpt.petri.IFlow;
+import org.jbpt.petri.IMarking;
+import org.jbpt.petri.INode;
+import org.jbpt.petri.IPlace;
+import org.jbpt.petri.ITransition;
+import org.pql.alignment.AlignmentAPI;
 import org.processmining.contexts.uitopia.DummyGlobalContext;
 import org.processmining.contexts.uitopia.DummyUIPluginContext;
 import org.processmining.models.graphbased.directed.petrinet.PetrinetGraph;
@@ -24,10 +28,13 @@ import org.processmining.plugins.petrinet.replayresult.StepTypes;
 /**
  * A.P.
  */
-public class Replayer extends AbstractReplayer {
+public class Replayer<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
+	extends AbstractReplayer {
 	
-	public Replayer() {
-		
+	private AlignmentAPI<F,N,P,T,M> api = null;
+	
+	public Replayer(AlignmentAPI<F,N,P,T,M> api) {
+		this.api = api;
 	}
 	
 public PQLAlignment getAlignment(PetrinetGraph net,  XLog log)
@@ -36,15 +43,13 @@ public PQLAlignment getAlignment(PetrinetGraph net,  XLog log)
 	DummyUIPluginContext 		context				= new DummyUIPluginContext(new DummyGlobalContext(), "label");
 	XEventClass 				dummyEvClass 		= new XEventClass("DUMMY",99999);
 	XEventClassifier 			eventClassifier 	= XLogInfoImpl.NAME_CLASSIFIER;
-	Marking						initMarking			= AlignmentAPI.getInitialMarking(net);
-	Marking[]					finalMarkings		= AlignmentAPI.getFinalMarkings(net); 
-	TransEvClassMapping			mapping				= AlignmentAPI.constructMapping(net, log, dummyEvClass, eventClassifier);
-	Map<XEventClass, Integer> 	events2costs 		= AlignmentAPI.constructMOTCostFunction(net, log, eventClassifier, dummyEvClass); 
-	Map<Transition, Integer> 	transitions2costs 	= AlignmentAPI.constructMOSCostFunction(net);
+	Marking						initMarking			= api.getInitialMarking(net);
+	TransEvClassMapping			mapping				= api.constructMapping(net, log, dummyEvClass, eventClassifier);
+	Map<XEventClass, Integer> 	events2costs 		= api.constructMOTCostFunction(net, log, eventClassifier, dummyEvClass); 
+	Map<Transition, Integer> 	transitions2costs 	= api.constructMOSCostFunction(net);
 	PetrinetReplayerWithoutILP 	replayEngine 		= new PetrinetReplayerWithoutILP();
 	IPNReplayParameter parameters = new CostBasedCompleteParam(events2costs,transitions2costs);
 	parameters.setInitialMarking(initMarking);
-	//parameters.setFinalMarkings(finalMarkings[0]);
 	parameters.setGUIMode(false);
     parameters.setCreateConn(false);
     
@@ -89,22 +94,19 @@ public PQLAlignment getAlignment(PetrinetGraph net,  XLog log)
 	}
 
 
-public Double getAlignmentWithStars(PetrinetGraph net,  XLog log,  NetSystem ns)
+public PQLAlignment getAlignmentWithAsterisk(PetrinetGraph net,  XLog log)
 {
 	
 DummyUIPluginContext 		context				= new DummyUIPluginContext(new DummyGlobalContext(), "label");
 XEventClass 				dummyEvClass 		= new XEventClass("DUMMY",99999);
 XEventClassifier 			eventClassifier 	= XLogInfoImpl.NAME_CLASSIFIER;
-//Marking					initMarking			= AlignmentAPI.getInitialMarking(net);
-Marking						initMarking			= AlignmentAPI.getInitialMarkingFromNS(net,ns);
-//Marking[]					finalMarkings		= AlignmentAPI.getFinalMarkings(net); 
-TransEvClassMapping			mapping				= AlignmentAPI.constructMapping(net, log, dummyEvClass, eventClassifier);
-Map<XEventClass, Integer> 	events2costs 		= AlignmentAPI.constructMOTCostFunctionForStars(net, log, eventClassifier, dummyEvClass); 
-Map<Transition, Integer> 	transitions2costs 	= AlignmentAPI.constructMOSCostFunctionForStars(net, log, eventClassifier);
+Marking						initMarking			= api.getInitialMarking(net);
+TransEvClassMapping			mapping				= api.constructMapping(net, log, dummyEvClass, eventClassifier);
+Map<XEventClass, Integer> 	events2costs 		= api.constructMOTCostFunctionForAsterisk(net, log, eventClassifier, dummyEvClass); 
+Map<Transition, Integer> 	transitions2costs 	= api.constructMOSCostFunctionForAsterisk(net);
 PetrinetReplayerWithoutILP 	replayEngine 		= new PetrinetReplayerWithoutILP();
 IPNReplayParameter parameters = new CostBasedCompleteParam(events2costs,transitions2costs);
 parameters.setInitialMarking(initMarking);
-//parameters.setFinalMarkings(finalMarkings[0]);
 parameters.setGUIMode(false);
 parameters.setCreateConn(false);
 
@@ -118,21 +120,20 @@ try {
         e.printStackTrace();
  	}
 	
-Double traceFitness = (Double) replayResult.getInfo().get("Trace Fitness");
-System.out.println("traceFitness: "+traceFitness);
+//Double traceFitness = (Double) replayResult.getInfo().get("Trace Fitness");
+//System.out.println("traceFitness: "+traceFitness);
 
 List<Object> nodes = replayResult.first().getNodeInstance();
 List<StepTypes> steps = replayResult.first().getStepTypes();
 
-System.out.println("initMarking: "+initMarking);
+/*System.out.println("initMarking: "+initMarking);
 System.out.println("places: "+net.getPlaces());
 System.out.println("mapping: "+mapping);
 System.out.println("events2costs: "+events2costs);
 System.out.println("transitions2costs: "+transitions2costs);
 System.out.println("nodes: "+nodes);
 System.out.println("steps: "+steps);
-
-
+*/
 
 for(int i=0; i<steps.size(); i++)
 {
@@ -154,9 +155,7 @@ for(int i=0; i<steps.size(); i++)
 	   
 }
 
-alignment.print();
-
-return traceFitness;
+return alignment;
 }
 
 

@@ -5,11 +5,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
-
 import org.deckfour.xes.model.XLog;
 import org.jbpt.persist.MySQLConnection;
 import org.jbpt.petri.IFlow;
@@ -18,15 +15,14 @@ import org.jbpt.petri.INetSystem;
 import org.jbpt.petri.INode;
 import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
-import org.jbpt.petri.NetSystem;
-import org.jbpt.petri.io.PNMLSerializer;
 import org.jbpt.petri.persist.AbstractPetriNetPersistenceLayerMySQL;
 import org.jbpt.petri.persist.IPetriNetPersistenceLayer;
-import org.jbpt.utils.IOUtils;
 import org.pql.alignment.AbstractReplayer;
 import org.pql.alignment.PQLAlignment;
 import org.pql.alignment.Replayer;
-import org.pql.api.AlignmentAPI;
+import org.pql.alignment.AlignmentAPI;
+import org.pql.label.ILabelManager;
+import org.pql.label.LabelManagerLevenshtein;
 import org.pql.logic.IThreeValuedLogic;
 import org.pql.logic.ThreeValuedLogicValue;
 import org.pql.petri.AbstractLabelUnificationTransformation;
@@ -35,8 +31,6 @@ import org.pql.petri.AbstractTraceExecutionWithWildcardCharactersTesterTransform
 import org.pql.petri.ILabelUnificationTransformation;
 import org.pql.petri.TransformationLog;
 import org.processmining.models.graphbased.directed.petrinet.PetrinetGraph;
-import org.processmining.models.graphbased.directed.petrinet.elements.Place;
-import org.processmining.models.graphbased.directed.petrinet.elements.Transition;
 import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactory;
 
 /**
@@ -55,11 +49,13 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	protected String PQL_TOTAL_CAUSAL	= "{? = CALL pql.pql_total_causal(?,?,?)}";
 	protected String PQL_TOTAL_CONCUR	= "{? = CALL pql.pql_total_concur(?,?,?)}";
 		
-	private IThreeValuedLogic	logic = null;
-	private String				identifier = null;	
-	private int					netID = 0;
-	private AbstractNetSystemTransformationManager<F,N,P,T,M> TM = null;//A.P.
+	private IThreeValuedLogic			logic = null;
+	private String						identifier = null;	
+	private int							netID = 0;
 	
+	private IPetriNetPersistenceLayer<F,N,P,T,M> 				PL = new AbstractPetriNetPersistenceLayerMySQL<F,N,P,T,M>(this.mysqlURL,this.mysqlUser,this.mysqlPassword);//A.P.
+	private ILabelManager 										LM = new LabelManagerLevenshtein(this.mysqlURL,this.mysqlUser,this.mysqlPassword, 1.0, new HashSet<Double>());//A.P.
+	private AbstractNetSystemTransformationManager<F,N,P,T,M> 	TM = null;//A.P.
 		
 	public PQLBasicPredicatesMySQL(String mysqlURL, String mysqlUser, String mysqlPassword, IThreeValuedLogic logic) throws ClassNotFoundException, SQLException {
 		super(mysqlURL,mysqlUser,mysqlPassword);
@@ -96,140 +92,6 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		}
 	}
 	
-//A.P.
-private ThreeValuedLogicValue checkUnaryTracePredicate(PQLTrace trace, String tracePredicate) 
-{
-		
-	ThreeValuedLogicValue 		result 				= null;
-	
-	switch (tracePredicate) 
-	{
-    	case "executes":  
-     			
-    			result = this.checkExecutes(trace);
-  						
-	} 
-	return result;
-}
-
-//A.P.
-private ThreeValuedLogicValue checkExecutes(PQLTrace trace) 
-{
-		
-	ThreeValuedLogicValue 		result 				= null;
-	XLog 						log					= trace.getTraceLog(); 
-	PetrinetGraph				net 				= PetrinetFactory.newPetrinet("PNML");
-	
-	  		try {
-  			
-  		trace.print();
-        			
-  		IPetriNetPersistenceLayer<F,N,P,T,M> api = new AbstractPetriNetPersistenceLayerMySQL("url","user","password");
-  		INetSystem<F,N,P,T,M> netSystem = api.restoreNetSystem(this.netID);
-  		String eid = api.getExternalID(this.netID);
-  		System.out.println("net: " + this.netID + " - " + eid);
-  		
-  		IOUtils.invokeDOT("./pics", eid+"-0-Original.png", netSystem.toDOT());
-  		
-  		//add Start and End transitions if trace has *
-  		if(trace.hasStars())
-		{
-  			AlignmentAPI.addStartEnd((NetSystem) netSystem, trace);
- 		}
-   		
-   		//get set of tasks for label unification
-  		Set<PQLTask> tasks = new HashSet<PQLTask>();
-  		for(int i=0; i<trace.getTrace().size(); i++)
-  		{
-  			PQLTask task = trace.getTrace().elementAt(i);
-  			if(!task.isStar())
-	     	{tasks.add(task);}
-	    }
-  		
-  		//map for unified transitions
-  		Map<String, ITransition> transitionMap = new HashMap<String, ITransition>();
- 		
-  		//label unification
-  		this.TM = new AbstractNetSystemTransformationManager<F,N,P,T,M>(netSystem);
-  		TransformationLog<F,N,P,T,M> trlog = new TransformationLog<F,N,P,T,M>();
-  		
-  		Iterator<PQLTask> it = tasks.iterator();
-  		while (it.hasNext()) 
-  		{
-  		    			
-	    		PQLTask task = it.next();
-	    		
-	    		ILabelUnificationTransformation<F,N,P,T,M> lut = new AbstractLabelUnificationTransformation<F,N,P,T,M>(netSystem,task.getSimilarLabels());
-	    		trlog.add(lut);
-	    		this.TM.transform(trlog);
-	    		
-	    		//if model does not have task
-	    		if (lut.getUnifiedTransition()==null) return ThreeValuedLogicValue.UNKNOWN;
-	    		lut.getUnifiedTransition().setLabel(task.getLabel());
-	    		
-	    		transitionMap.put(task.getLabel(), lut.getUnifiedTransition());//add unified transition to the Map
-	 	}
-  		
-  		System.out.println("transitionMap: "+transitionMap);
-  		
-  		//IOUtils.invokeDOT("./pics", eid+"-2-AfterLU.png", netSystem.toDOT());
-   			
-		
-			if(!trace.hasStars())
-			{
-								
-				// convert Net System to PetrinetGraph
-				net = AlignmentAPI.constructPetrinetGraphFromNetSystem((NetSystem) netSystem,  net);
-				
-				// get an optimal alignment
-				AbstractReplayer replayer = new Replayer();
-				PQLAlignment alignment = replayer.getAlignment(net, log);
-							
-				// get alignment cost
-				int alignmentCost = alignment.getAlignmentCost();
-							
-				if(alignmentCost == 0)
-				{result = ThreeValuedLogicValue.TRUE;}else{result = ThreeValuedLogicValue.FALSE;}
-			}else
-			{
-				
-	    		//transform the system
-				AbstractTraceExecutionWithWildcardCharactersTesterTransformation<F,N,P,T,M> wct = new AbstractTraceExecutionWithWildcardCharactersTesterTransformation<F,N,P,T,M>(netSystem); 
-				wct.applyTransformation((NetSystem) netSystem, trace, transitionMap);
-	    		IOUtils.invokeDOT("./pics", eid+"-3-AfterST.png", netSystem.toDOT());
-	    		
-	    		//create PNML - for tests
-	    		//PNMLSerializer PNML = new PNMLSerializer();
-				//String pnmlNS = PNML.serializePetriNet((NetSystem) netSystem);
-				//System.out.println(pnmlNS);
-					
-	    		// convert Net System to PetrinetGraph
-				net = AlignmentAPI.constructPetrinetGraphFromNetSystemWithMarking((NetSystem) netSystem,  net);
-				
-		 		// get an optimal alignment
-				AbstractReplayer replayer = new Replayer();
-				
-				//PQLAlignment alignment = replayer.getAlignmentWithStars(net, log, (NetSystem) netSystem);
-				Double fitness = replayer.getAlignmentWithStars(net, log, (NetSystem) netSystem);
-				
-				// get alignment cost - TO DO
-				//int alignmentCost = alignment.getAlignmentCost();
-							
-				//if(alignmentCost == 0)
-				if(fitness == 1.0)
-				{result = ThreeValuedLogicValue.TRUE;}else{result = ThreeValuedLogicValue.FALSE;}
-	
-			}	
-			
-			}catch(Exception e){return ThreeValuedLogicValue.UNKNOWN;}
-						
-	 
-	return result;
-}
-
-
-
-
 	private ThreeValuedLogicValue checkBinaryPredicate(String call, PQLTask taskA, PQLTask taskB) {
 		try {
 			CallableStatement cs = connection.prepareCall(call);
@@ -287,13 +149,6 @@ private ThreeValuedLogicValue checkExecutes(PQLTrace trace)
 	public ThreeValuedLogicValue alwaysOccurs(PQLTask task) {
 		return this.checkUnaryPredicate(this.PQL_ALWAYS_OCCURS, task);
 	}
-	
-	//A.P.
-	@Override
-	public ThreeValuedLogicValue executes(PQLTrace trace) {
-		return this.checkUnaryTracePredicate(trace,"executes");
-	}
-
 
 	@Override
 	public ThreeValuedLogicValue canConflict(PQLTask taskA, PQLTask taskB) {
@@ -329,6 +184,154 @@ private ThreeValuedLogicValue checkExecutes(PQLTrace trace)
 	@Override
 	public ThreeValuedLogicValue totalConcur(PQLTask taskA, PQLTask taskB) {
 		return this.checkBinaryPredicate(this.PQL_TOTAL_CONCUR, taskA, taskB);
+	}
+	
+	//A.P.
+	@Override
+	public ThreeValuedLogicValue executes(PQLTrace trace) {
+		ThreeValuedLogicValue 		result 				= null;
+		XLog 						log					= trace.getTraceLog(); 
+		PetrinetGraph				net 				= PetrinetFactory.newPetrinet("PNML");
+		
+		  		try {
+	  			
+		  	//check if net contains trace labels 		
+		  	String eNetID = PL.getExternalID(this.netID);
+		  	Set<String> netLabels = LM.getAllLabels(eNetID);
+		  	
+		  	if(trace.hasAsterisk())
+		  	{
+			  	for(int i=1; i<trace.getTrace().size()-1; i++)
+			  	{
+			  		
+			  		PQLTask nextTask = trace.getTrace().elementAt(i);
+			  		
+			  		if(!nextTask.isAsterisk())
+			  		{
+				  		boolean netHasLabel = false;
+				  		for(String t: nextTask.getSimilarLabels())
+				  		{
+				  			if (netLabels.contains(t)) netHasLabel = true;
+				  		}
+				  		if (!netHasLabel) 
+				  		return ThreeValuedLogicValue.FALSE;
+				  	}
+			  	}
+		  	}
+		  	else
+		  	{
+		  		for(int i=0; i<trace.getTrace().size(); i++)
+			  	{
+			  			PQLTask nextTask = trace.getTrace().elementAt(i);
+			  			
+				  		boolean netHasLabel = false;
+				  		for(String t: nextTask.getSimilarLabels())
+				  		{
+				  			if (netLabels.contains(t)) netHasLabel = true;
+				  		}
+				  		if (!netHasLabel) 
+				  		return ThreeValuedLogicValue.FALSE;
+				  	
+			  	}
+		  		
+		  	}	
+		  	
+			INetSystem<F,N,P,T,M> netSystem = PL.restoreNetSystem(this.netID);
+	  				  	
+	  		//System.out.println("net: " + this.netID + " - " + eNetID);
+	  		//trace.print();
+	  		//IOUtils.invokeDOT("./pics", eNetID+"-0-Original.png", netSystem.toDOT());
+	  		
+			AbstractTraceExecutionWithWildcardCharactersTesterTransformation<F,N,P,T,M> wct = new AbstractTraceExecutionWithWildcardCharactersTesterTransformation<F,N,P,T,M>(netSystem); 
+			AlignmentAPI<F,N,P,T,M> api = new AlignmentAPI<F,N,P,T,M>(this.mysqlURL, this.mysqlUser, this.mysqlPassword, netSystem);
+			AbstractReplayer replayer = new Replayer<F,N,P,T,M>(api);
+	  		
+	  		//add Start and End transitions if trace has *
+	  		if(trace.hasAsterisk())
+			{
+	  			wct.addStartEnd(trace);
+	 		}
+	   		
+	   		//get set of tasks for label unification
+	  		Set<PQLTask> tasks = new HashSet<PQLTask>();
+	  		for(int i=0; i<trace.getTrace().size(); i++)
+	  		{
+	  			PQLTask task = trace.getTrace().elementAt(i);
+	  			if(!task.isAsterisk())
+		     	{tasks.add(task);}
+		    }
+	  		
+	  		//map for unified transitions
+	  		Map<String, ITransition> transitionMap = new HashMap<String, ITransition>();
+	 		
+	  		//label unification
+	  		this.TM = new AbstractNetSystemTransformationManager<F,N,P,T,M>(netSystem);
+	  		TransformationLog<F,N,P,T,M> trlog = new TransformationLog<F,N,P,T,M>();
+	  		
+	  		Iterator<PQLTask> it = tasks.iterator();
+	  		while (it.hasNext()) 
+	  		{
+	  		    			
+		    		PQLTask task = it.next();
+		    		
+		    		ILabelUnificationTransformation<F,N,P,T,M> lut = new AbstractLabelUnificationTransformation<F,N,P,T,M>(netSystem,task.getSimilarLabels());
+		    		trlog.add(lut);
+		    		this.TM.transform(trlog);
+		    		
+		    		if (lut.getUnifiedTransition()==null) return ThreeValuedLogicValue.UNKNOWN;
+		    		lut.getUnifiedTransition().setLabel(task.getLabel());
+		    		
+		    		transitionMap.put(task.getLabel(), lut.getUnifiedTransition());
+		 	}
+	  		
+	  		//System.out.println("transitionMap: "+transitionMap);
+	   		//IOUtils.invokeDOT("./pics", eid+"-2-AfterLU.png", netSystem.toDOT());
+	   			
+			
+				if(!trace.hasAsterisk())
+				{
+									
+					// convert Net System to PetrinetGraph
+					net = api.constructPetrinetGraph(net);
+					
+					// get an optimal alignment
+					PQLAlignment alignment = replayer.getAlignment(net, log);
+								
+					// get alignment cost
+					int alignmentCost = alignment.getAlignmentCost();
+								
+					if(alignmentCost == 0)
+					{result = ThreeValuedLogicValue.TRUE;}else{result = ThreeValuedLogicValue.FALSE;}
+				}else
+				{
+					
+		    		//transform the system
+					wct.applyWildcardTransformation(trace,transitionMap);
+			 		//IOUtils.invokeDOT("./pics", eNetID+"-3-AfterST.png", netSystem.toDOT());
+		    		
+		    		//create PNML - for tests
+		    		//PNMLSerializer PNML = new PNMLSerializer();
+					//String pnmlNS = PNML.serializePetriNet((NetSystem) netSystem);
+					//System.out.println(pnmlNS);
+						
+		    		// convert Net System to PetrinetGraph
+					net = api.constructPetrinetGraph(net);
+					
+			 		// get an optimal alignment
+					PQLAlignment alignment = replayer.getAlignmentWithAsterisk(net, log);
+					
+					// get alignment cost
+					int alignmentCost = alignment.getAlignmentCostForAsterisk();
+								
+					if(alignmentCost == 0)
+					{result = ThreeValuedLogicValue.TRUE;}else{result = ThreeValuedLogicValue.FALSE;}
+		
+				}	
+				
+				}catch(Exception e){return ThreeValuedLogicValue.UNKNOWN;}
+							
+		 
+		return result;
 	}
 
 }

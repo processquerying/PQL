@@ -1,7 +1,6 @@
 package org.pql.alignment;
 
 import org.deckfour.xes.model.XLog;
-import org.jbpt.petri.NetSystem;
 import org.processmining.models.graphbased.directed.petrinet.PetrinetGraph;
 
 /**
@@ -12,8 +11,8 @@ public abstract class AbstractReplayer {
 	
 	public AbstractReplayer() {}
 	
-	public abstract PQLAlignment getAlignment(PetrinetGraph net,  XLog log); //net system and PQLtrace instead?
+	public abstract PQLAlignment getAlignment(PetrinetGraph net,  XLog log); 
 	
-	public abstract Double getAlignmentWithStars(PetrinetGraph net,  XLog log,  NetSystem ns); //net system and PQLtrace instead?
+	public abstract PQLAlignment getAlignmentWithAsterisk(PetrinetGraph net,  XLog log); 
 
 }

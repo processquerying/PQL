@@ -10,8 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
-
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -508,19 +506,25 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 						trace.addTask(this.interpretTask(child));
 					}else // is '*'
 					{
-						PQLTask newTask = new PQLTask("UniverseSymbol"+this.hashCode(), 1.0);
-						newTask.setStar(true);
-						trace.addTask(newTask);
-						trace.setHasStars(true);
+						trace.addTask(this.interpretTraceUniverse());
+						trace.setHasAsterisk(true);
 					} 
 				}
 		}
 		
-	if(trace.hasStars())
+	if(trace.hasAsterisk())
 	{trace.addStartEnd(this.hashCode());}
 	
 	return trace;
 	
+	}
+
+	//A.P.
+	protected PQLTask interpretTraceUniverse() {
+		
+		PQLTask task = new PQLTask("Universe"+this.hashCode(), 1.0);
+		task.setAsterisk(true);
+		return task;
 	}
 
 
