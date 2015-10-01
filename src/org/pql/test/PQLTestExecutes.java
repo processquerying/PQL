@@ -7,8 +7,8 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.pql.api.PQLAPI;
-import org.pql.api.PQLQueryResult;
 import org.pql.ini.PQLIniFile;
+import org.pql.query.PQLQueryResult;
 
 public class PQLTestExecutes extends TestCase {
 	private static PQLAPI	pqlAPI	= null;
@@ -22,12 +22,12 @@ public class PQLTestExecutes extends TestCase {
 		
 		PQLTestExecutes.pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
 				iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
-				iniFile.getLolaPath(),
+				iniFile.getLoLA2Path(),
 				iniFile.getLabelSimilaritySeacrhConfiguration(),
 				iniFile.getThreeValuedLogicType(),  
 				iniFile.getIndexType(),
 				iniFile.getLabelManagerType(),
-				iniFile.getDefaultLabelSimilarity(),
+				iniFile.getDefaultLabelSimilarityThreshold(),
 				iniFile.getIndexedLabelSimilarities(),
 				iniFile.getNumberOfQueryThreads(),
 				iniFile.getDefaultBotMaxIndexTime(),

@@ -122,22 +122,22 @@ public class PQLBotCLI {
 			case THEMIS_VSM:
 				labelMngr = new LabelManagerVSM(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),
 						iniFile.getPostgreSQLHost(),iniFile.getPostgreSQLName(),iniFile.getPostgreSQLUser(),iniFile.getPostgreSQLPassword(),
-						iniFile.getDefaultLabelSimilarity(),iniFile.getIndexedLabelSimilarities());
+						iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarities());
 				break;
 			case LUCENE:
 				labelMngr = new LabelManagerLucene(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),
-						iniFile.getDefaultLabelSimilarity(),iniFile.getIndexedLabelSimilarities(),iniFile.getLabelSimilaritySeacrhConfiguration());
+						iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarities(),iniFile.getLabelSimilaritySeacrhConfiguration());
 				break;
 			default:
 				labelMngr = new LabelManagerLevenshtein(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),
-						iniFile.getDefaultLabelSimilarity(),iniFile.getIndexedLabelSimilarities());
+						iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarities());
 				break;
 	    }
 	    
-	    LoLA2ModelChecker		mc	= new LoLA2ModelChecker(iniFile.getLolaPath());
+	    LoLA2ModelChecker		mc	= new LoLA2ModelChecker(iniFile.getLoLA2Path());
 		PQLBasicPredicatesMC    bp	= new PQLBasicPredicatesMC(mc,logic);
 		PQLIndexMySQL			index = new PQLIndexMySQL(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),bp,
-				labelMngr,mc,logic,iniFile.getDefaultLabelSimilarity(),iniFile.getIndexedLabelSimilarities(),
+				labelMngr,mc,logic,iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarities(),
 				iniFile.getIndexType(), iniFile.getDefaultBotMaxIndexTime(), iniFile.getDefaultBotSleepTime());
 		
 	    

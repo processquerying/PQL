@@ -146,12 +146,12 @@ public class PQLIniFile implements IPQLIniFile {
 	}
 
 	@Override
-	public String getLolaPath() {
+	public String getLoLA2Path() {
 		return lolaPath;
 	}
 
 	@Override
-	public Double getDefaultLabelSimilarity() {
+	public Double getDefaultLabelSimilarityThreshold() {
 		return defaultLabelSimilarity;
 	}
 
