@@ -25,6 +25,7 @@ public class PQLIniFile implements IPQLIniFile {
 	private String lolaPath = null;
 	
 	private LabelManagerType labelManagerType		= null;
+	private String		labelSimilarityConfig		= null;
 	private Double 		defaultLabelSimilarity		= null;
 	private Set<Double> indexedLabelSimilarities	= null;
 	private String 		postgresqlHost				= null;
@@ -36,6 +37,7 @@ public class PQLIniFile implements IPQLIniFile {
 	private String 		mysqlPwd					= null;
 	private Integer 	defaultBotSleepTime			= 300;
 	private Integer 	defaultBotMaxIndexTime		= 86400;
+	private Integer		numberOfQueryThreads		= 1;
 	
 	@Override
 	public boolean create() {
@@ -57,9 +59,11 @@ public class PQLIniFile implements IPQLIniFile {
 			out.write("lolaPath = .\\\\lola2\\\\win\\\\lola.exe\n");
 			out.write("\n");
 			out.write("[pql]\n");
-			out.write("labelSimilaritySearch = levenshtein\n");
+			out.write("labelSimilaritySearch = lucene\n");
+			out.write("labelSimilarityConfig = ./lucene/\n");
 			out.write("defaultLabelSimilarity = 0.75\n");
 			out.write("indexedLabelSimilarities = 0.5,0.75,1.0\n");
+			out.write("numberOfQueryThreads = 2\n");
 			out.write("\n");
 			out.write("[bot]\n");
 			out.write("defaultBotSleepTime = 300\n");
@@ -87,7 +91,19 @@ public class PQLIniFile implements IPQLIniFile {
 	        
 	        // load pql section
 	        section = ini.get("pql");
-	        this.labelManagerType = section.get("labelSimilaritySearch").trim().toLowerCase().equals("vsm") ? LabelManagerType.VSM : LabelManagerType.LEVENSHTEIN;	        
+	        String labelSimilaritySearch = section.get("labelSimilaritySearch").trim().toLowerCase();
+	        switch (labelSimilaritySearch) {
+		        case "lucene":
+		        	this.labelManagerType = LabelManagerType.LUCENE;
+		        	break;
+		        case "vsm":
+		        	this.labelManagerType = LabelManagerType.THEMIS_VSM;
+		        	break;
+		        default:
+		        	this.labelManagerType = LabelManagerType.LEVENSHTEIN;
+	        }
+	        this.labelSimilarityConfig = section.get("labelSimilarityConfig").trim();
+	        this.numberOfQueryThreads = Integer.parseInt(section.get("numberOfQueryThreads"));
 	        this.defaultLabelSimilarity = Double.parseDouble(section.get("defaultLabelSimilarity"));
 	        String similarities = section.get("indexedLabelSimilarities");
 	        StringTokenizer st = new StringTokenizer(similarities,",");
@@ -197,5 +213,15 @@ public class PQLIniFile implements IPQLIniFile {
 	@Override
 	public IndexType getIndexType() {
 		return IndexType.PREDICATES;
+	}
+
+	@Override
+	public Integer getNumberOfQueryThreads() {
+		return this.numberOfQueryThreads;
+	}
+
+	@Override
+	public String getLabelSimilaritySeacrhConfiguration() {
+		return this.labelSimilarityConfig;
 	}
 }

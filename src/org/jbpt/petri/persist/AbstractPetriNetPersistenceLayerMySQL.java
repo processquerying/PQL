@@ -25,7 +25,7 @@ import org.jbpt.petri.io.PNMLSerializer;
 import org.jbpt.throwable.SerializationException;
 
 /**
- * An implementation of the {@link IPetriNetPersistenceLayer} interface for MySQL.
+ * An abstract implementation of the {@link IPetriNetPersistenceLayer} interface using MySQL database.
  * 
  * @author Artem Polyvyanyy
  */

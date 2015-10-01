@@ -9,6 +9,8 @@ import org.jbpt.petri.Place;
 import org.jbpt.petri.Transition;
 
 /**
+ * An implementation of the {@link IPetriNetPersistenceLayer} interface using MySQL database.
+ * 
  * @author Artem Polyvyanyy
  */
 public class PetriNetPersistenceLayerMySQL extends AbstractPetriNetPersistenceLayerMySQL<Flow,Node,Place,Transition,Marking> {

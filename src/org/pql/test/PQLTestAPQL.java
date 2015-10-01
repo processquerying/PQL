@@ -1,5 +1,7 @@
 package org.pql.test;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 
@@ -11,8 +13,12 @@ import org.pql.ini.PQLIniFile;
 
 public class PQLTestAPQL extends TestCase {
 	private static PQLAPI	pqlAPI	= null;
+	private static boolean	flag	= false;
 	
-	public PQLTestAPQL() throws ClassNotFoundException, SQLException {
+	public PQLTestAPQL() throws ClassNotFoundException, SQLException, IOException {
+		if (PQLTestAPQL.flag) return;
+		PQLTestAPQL.flag = true;
+		
 		PQLIniFile iniFile = new PQLIniFile();
 		if (!iniFile.load()) { 
 			System.out.println("ERROR: Cannot load PQL ini file.");
@@ -21,12 +27,60 @@ public class PQLTestAPQL extends TestCase {
 		
 		PQLTestAPQL.pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
 				iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
-				iniFile.getLolaPath(), 
+				iniFile.getLolaPath(),
+				iniFile.getLabelSimilaritySeacrhConfiguration(),
 				iniFile.getThreeValuedLogicType(),  
 				iniFile.getIndexType(),
 				iniFile.getLabelManagerType(),
 				iniFile.getDefaultLabelSimilarity(),
-				iniFile.getIndexedLabelSimilarities());
+				iniFile.getIndexedLabelSimilarities(),
+				iniFile.getNumberOfQueryThreads(),
+				iniFile.getDefaultBotMaxIndexTime(),
+				iniFile.getDefaultBotSleepTime());
+		
+		PQLTestAPQL.pqlAPI.reset();
+		System.out.println("Reset done!");
+		PQLTestAPQL.pqlAPI.storeModel(new File("./pnml/apql/1.pnml"),"1.pnml");
+		System.out.println("1.pnml stored");
+		PQLTestAPQL.pqlAPI.storeModel(new File("./pnml/apql/2.pnml"),"2.pnml");
+		System.out.println("2.pnml stored");
+		PQLTestAPQL.pqlAPI.storeModel(new File("./pnml/apql/3.pnml"),"3.pnml");
+		System.out.println("3.pnml stored");
+		PQLTestAPQL.pqlAPI.storeModel(new File("./pnml/apql/4.pnml"),"4.pnml");
+		System.out.println("4.pnml stored");
+		PQLTestAPQL.pqlAPI.storeModel(new File("./pnml/apql/5.pnml"),"5.pnml");
+		System.out.println("5.pnml stored");
+		PQLTestAPQL.pqlAPI.storeModel(new File("./pnml/apql/6.pnml"),"6.pnml");
+		System.out.println("6.pnml stored");
+		PQLTestAPQL.pqlAPI.storeModel(new File("./pnml/apql/7.pnml"),"7.pnml");
+		System.out.println("7.pnml stored");
+		PQLTestAPQL.pqlAPI.storeModel(new File("./pnml/apql/8.pnml"),"8.pnml");
+		System.out.println("8.pnml stored");
+		PQLTestAPQL.pqlAPI.storeModel(new File("./pnml/apql/9.pnml"),"9.pnml");
+		System.out.println("9.pnml stored");
+		PQLTestAPQL.pqlAPI.storeModel(new File("./pnml/apql/10.pnml"),"10.pnml");
+		System.out.println("10.pnml stored");
+		
+		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("1.pnml"));
+		System.out.println("1.pnml indexed");
+		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("2.pnml"));
+		System.out.println("2.pnml indexed");
+		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("3.pnml"));
+		System.out.println("3.pnml indexed");
+		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("4.pnml"));
+		System.out.println("4.pnml indexed");
+		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("5.pnml"));
+		System.out.println("5.pnml indexed");
+		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("6.pnml"));
+		System.out.println("6.pnml indexed");
+		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("7.pnml"));
+		System.out.println("7.pnml indexed");
+		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("8.pnml"));
+		System.out.println("8.pnml indexed");
+		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("9.pnml"));
+		System.out.println("9.pnml indexed");
+		PQLTestAPQL.pqlAPI.index(PQLTestAPQL.pqlAPI.getInternalID("10.pnml"));
+		System.out.println("10.pnml indexed");
 	}
 
 	public void test001() throws ClassNotFoundException, SQLException {

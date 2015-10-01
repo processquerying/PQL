@@ -11,16 +11,17 @@ import org.pql.core.PQLTask;
 import org.pql.logic.ThreeValuedLogicValue;
 
 /**
- * An interface to a PQL query.
+ * Interface to a PQL query.
  * 
  * @author Artem Polyvyanyy
  */
 public interface IPQLQuery {
 	
 	/**
-	 * Check if a process model (as per configuration, {@link IPQLQuery.configure(obj)}) matches this PQL query. 
+	 * Check if a model (as per configuration, {@link IPQLQuery.configure(obj)}) matches this PQL query. 
 	 * 
-	 * @return
+	 * @return {@code TRUE} if the model matches the query, {@code FALSE} if the model does not match the query, 
+	 * or {@code UNKNOWN} if the query check cannot be accomplished due to some labels from the query missing in the model.
 	 */
 	public ThreeValuedLogicValue check();
 	

@@ -19,41 +19,41 @@ import org.jbpt.petri.ITransition;
 public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> {
 	
 	/**
-	 * Store given Petri net.
+	 * Store a Petri net.
 	 * 
 	 * @param pnmlFilePath Path string to a PNML file that contains Petri net to be stored.
 	 * @param externalID External ID to associate with the stored Petri net.
-	 * @return Internal ID of the stored Petri net; 0, if the Petri net was not stored.
+	 * @return Internal ID of the stored Petri net, or 0 if the Petri net was not stored.
 	 * @throws SQLException
 	 */
 	public int storeNetSystem(String pnmlFilePath, String externalID) throws SQLException;
 	
 	/**
-	 * Store given Petri net.
+	 * Store a Petri net.
 	 * 
-	 * @param pnmlFile File with PNML content.
+	 * @param pnmlFile File object with PNML content.
 	 * @param externalID External ID to associate with the stored Petri net.
-	 * @return Internal ID of the stored Petri net; 0, if the Petri net was not stored.
+	 * @return Internal ID of the stored Petri net, or 0 if the Petri net was not stored.
 	 * @throws SQLException
 	 */
 	public int storeNetSystem(File pnmlFile, String externalID) throws SQLException;
 	
 	/**
-	 * Store given Petri net.
+	 * Store a Petri net.
 	 * 
 	 * @param pnmlByteContent Array of bytes with PNML content.
 	 * @param externalID External ID to associate with the stored Petri net.
-	 * @return Internal ID of the stored Petri net; 0, if the Petri net was not stored.
+	 * @return Internal ID of the stored Petri net, or 0 if the Petri net was not stored.
 	 * @throws SQLException
 	 */
 	public int storeNetSystem(byte[] pnmlByteContent, String externalID) throws SQLException;
 	
 	/**
-	 * Store given Petri net.
+	 * Store a Petri net.
 	 * 
 	 * @param sys {@link INetSystem}} to be stored. 
 	 * @param externalID External ID to associate with the stored Petri net.
-	 * @return Internal ID of the stored Petri net; 0, if the Petri net was not stored.
+	 * @return Internal ID of the stored Petri net, or 0 if the Petri net was not stored.
 	 * @throws SQLException
 	 */
 	public int storeNetSystem(INetSystem<F,N,P,T,M> sys, String externalID) throws SQLException;
@@ -62,7 +62,7 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	 * Get internal ID of a Petri net.
 	 * 
 	 * @param externalID External ID of a Petri net.
-	 * @return Internal Petri net ID associated with the given external ID; 0, if the given {@code externalID} is not associated with any Petri net.
+	 * @return Internal Petri net ID associated with the given external ID, or 0 if the given {@code externalID} is not associated with any stored Petri net.
 	 * @throws SQLException
 	 */
 	public int getInternalID(String externalID) throws SQLException;
@@ -71,16 +71,16 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	 * Get external ID of a Petri net.
 	 * 
 	 * @param internalID Internal ID of a Petri net.
-	 * @return External Petri net ID associated with the given internal ID; {@code null} if the given {@code internalID} is not associated with any Petri net.
+	 * @return External Petri net ID associated with the given internal ID, or {@code null} if the given {@code internalID} is not associated with any stored Petri net.
 	 * @throws SQLException
 	 */
 	public String getExternalID(int internalID) throws SQLException;
 	
 	/**
-	 * Delete stored Petri net.
+	 * Delete a Petri net.
 	 *  
 	 * @param internalID Internal ID of a Petri net.
-	 * @return Internal ID of the deleted Petri net; 0, if no Petri net was deleted.
+	 * @return Internal ID of the deleted Petri net, or 0 if no Petri net was deleted.
 	 * @throws SQLException
 	 */
 	public int deleteNetSystem(int internalID) throws SQLException;
@@ -89,7 +89,7 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	 * Delete stored Petri net.
 	 *  
 	 * @param externalID External ID of a Petri net.
-	 * @return Internal ID of the deleted Petri net; 0, if no Petri net was deleted.
+	 * @return Internal ID of the deleted Petri net, or 0 if no Petri net was deleted.
 	 * @throws SQLException
 	 */
 	public int deleteNetSystem(String externalID) throws SQLException;
@@ -115,7 +115,7 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	 * Get PNML content stored under an internal ID.
 	 * 
 	 * @param internalID Internal ID of a Petri net.
-	 * @return PNML string stored under the given {@code internalID}; {@code null} if {@code internalID} is not associated with any Petri net.
+	 * @return PNML content stored under the given {@code internalID}, or {@code null} if {@code internalID} is not associated with any stored Petri net.
 	 * @throws SQLException
 	 */
 	public String restorePNMLContent(int internalID) throws SQLException;

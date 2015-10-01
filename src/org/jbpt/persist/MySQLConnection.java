@@ -5,13 +5,16 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
+ * An implementation of MySQL database connection.
+ * 
  * @author Artem Polyvyanyy
  */
 public class MySQLConnection {	
 	protected String mysqlURL		= null;
 	protected String mysqlUser		= null;
 	protected String mysqlPassword	= null;
-		
+	
+	// TODO: create new connection objects when performing multi-threaded querying
 	protected static Connection connection = null;
 	
 	protected MySQLConnection(String url, String user, String password) throws ClassNotFoundException, SQLException {
