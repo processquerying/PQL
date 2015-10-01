@@ -10,6 +10,7 @@ public class PQLTask {
 	private String 		label 		= null;
 	private double 		similarity	= 1.0;
 	private Set<String> labels 		= null;
+	private boolean 	isAsterisk		= false; //A.P.
 	
 	public PQLTask(String label, double similarity) {
 		this.label 		= label == null ? "" : label;
@@ -99,4 +100,17 @@ public class PQLTask {
 		
 		return false;
 	}
+	
+	
+	//A.P.
+	public boolean isAsterisk() {
+		return this.isAsterisk;
+	}
+	
+	//A.P.
+	public void setAsterisk(boolean isAsterisk) {
+		this.isAsterisk = isAsterisk;
+	}
+
+
 }

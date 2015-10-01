@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -28,6 +27,7 @@ import org.pql.core.PQLAttribute;
 import org.pql.core.PQLLocation;
 import org.pql.core.PQLQuantifier;
 import org.pql.core.PQLTask;
+import org.pql.core.PQLTrace;
 import org.pql.label.ILabelManager;
 import org.pql.logic.IThreeValuedLogic;
 import org.pql.logic.ThreeValuedLogicValue;
@@ -52,6 +52,8 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	PQLErrorListener						listener		 = null;
 	
 	protected abstract ThreeValuedLogicValue interpretUnaryPredicate(Token op, PQLTask a);
+	
+	protected abstract ThreeValuedLogicValue interpretUnaryTracePredicate(Token op, PQLTrace a); //A.P.
 	
 	protected abstract ThreeValuedLogicValue interpretBinaryPredicate(Token op, PQLTask a, PQLTask b);
 	
@@ -96,6 +98,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
         parser.addErrorListener(listener);
         
         this.parseTree = parser.query();
+       
 	}
 
 	protected String readFile(String fileName) throws IOException {
@@ -116,8 +119,10 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		if (this.getNumberOfParseErrors()>0) return ThreeValuedLogicValue.UNKNOWN;
 		ParseTree predicate = null;
 		
-		for (int i = 0; i < parseTree.getChildCount(); i++) {
-			ParseTree child = parseTree.getChild(i);
+		ParseTree queryType = parseTree.getChild(0); //A.P. getting query type: select, insert, etc.
+		
+			for (int i = 0; i < queryType.getChildCount(); i++) { //A.P. parseTree replaced with queryType
+			ParseTree child = queryType.getChild(i); //A.P. parseTree replaced with queryType
 			
 			if(child instanceof RuleNode) {
                 int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
@@ -137,8 +142,8 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	                	break;
                 }
             }
-		}
-
+		} 
+		
 		return interpretPredicate(predicate);
 	}
 	
@@ -289,6 +294,9 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			case PQLParser.RULE_unaryPredicate:
 				result = interpretUnaryPredicate(child);
 				break;
+			case PQLParser.RULE_unaryTracePredicate: //A.P.
+				result = interpretUnaryTracePredicate(child);
+				break;
 			case PQLParser.RULE_binaryPredicate:
 				result = interpretBinaryPredicate(child);
 				break;
@@ -322,6 +330,17 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		Token token = ((TerminalNode)nameChild).getSymbol();
 		
 		return this.interpretUnaryPredicate(token, this.interpretTask(taskChild));
+	}
+	
+	//A.P.
+	protected ThreeValuedLogicValue interpretUnaryTracePredicate(ParseTree tree) {
+		ParseTree nameChild = tree.getChild(0).getChild(0);
+		ParseTree traceChild = tree.getChild(2);
+		
+		Token token = ((TerminalNode)nameChild).getSymbol();
+		PQLTrace trace = this.interpretTrace(traceChild);
+		return this.interpretUnaryTracePredicate(token, trace);
+		
 	}
 	
 	protected ThreeValuedLogicValue interpretBinaryPredicate(ParseTree tree) {
@@ -468,6 +487,46 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		
 		return new PQLTask(label, similarity);
 	}
+	
+	//A.P.
+	protected PQLTrace interpretTrace(ParseTree tree) {
+
+		PQLTrace trace = new PQLTrace();
+		
+		for (int i = 0; i < tree.getChildCount(); i++) 
+		{
+			ParseTree child = tree.getChild(i).getChild(0); //getting a task or '*'
+			
+			if(child instanceof RuleNode) 
+				{
+					int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
+					
+					if (ruleIndex == PQLParser.RULE_task) //is task
+					{
+						trace.addTask(this.interpretTask(child));
+					}else // is '*'
+					{
+						trace.addTask(this.interpretTraceUniverse());
+						trace.setHasAsterisk(true);
+					} 
+				}
+		}
+		
+	if(trace.hasAsterisk())
+	{trace.addStartEnd(this.hashCode());}
+	
+	return trace;
+	
+	}
+
+	//A.P.
+	protected PQLTask interpretTraceUniverse() {
+		
+		PQLTask task = new PQLTask("Universe"+this.hashCode(), 1.0);
+		task.setAsterisk(true);
+		return task;
+	}
+
 
 	protected String interpretLabel(ParseTree tree) {
 		return interpretString(tree.getChild(0));

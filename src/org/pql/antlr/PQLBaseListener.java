@@ -147,6 +147,19 @@ public class PQLBaseListener implements PQLListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
+	@Override public void enterEvent(@NotNull PQLParser.EventContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitEvent(@NotNull PQLParser.EventContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
 	@Override public void enterApproximate(@NotNull PQLParser.ApproximateContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -219,6 +232,32 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitLabel(@NotNull PQLParser.LabelContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterUnaryTracePredicateName(@NotNull PQLParser.UnaryTracePredicateNameContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitUnaryTracePredicateName(@NotNull PQLParser.UnaryTracePredicateNameContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterSelectQuery(@NotNull PQLParser.SelectQueryContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitSelectQuery(@NotNull PQLParser.SelectQueryContext ctx) { }
 
 	/**
 	 * {@inheritDoc}
@@ -303,19 +342,6 @@ public class PQLBaseListener implements PQLListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
-	@Override public void enterBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
 	@Override public void enterDifference(@NotNull PQLParser.DifferenceContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -323,6 +349,19 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitDifference(@NotNull PQLParser.DifferenceContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx) { }
 
 	/**
 	 * {@inheritDoc}
@@ -602,6 +641,19 @@ public class PQLBaseListener implements PQLListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
+	@Override public void enterUnaryTracePredicate(@NotNull PQLParser.UnaryTracePredicateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitUnaryTracePredicate(@NotNull PQLParser.UnaryTracePredicateContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
 	@Override public void enterUnion(@NotNull PQLParser.UnionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -700,6 +752,32 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitTask(@NotNull PQLParser.TaskContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterTrace(@NotNull PQLParser.TraceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitTrace(@NotNull PQLParser.TraceContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterInsertQuery(@NotNull PQLParser.InsertQueryContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitInsertQuery(@NotNull PQLParser.InsertQueryContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

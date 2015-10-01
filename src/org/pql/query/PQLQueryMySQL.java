@@ -9,6 +9,7 @@ import org.pql.antlr.PQLLexer;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
 import org.pql.core.PQLException;
 import org.pql.core.PQLTask;
+import org.pql.core.PQLTrace;
 import org.pql.label.ILabelManager;
 import org.pql.logic.IThreeValuedLogic;
 import org.pql.logic.ThreeValuedLogicValue;
@@ -73,6 +74,70 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	
 		return ThreeValuedLogicValue.UNKNOWN;
 	}
+	
+	//A.P. 
+	@Override
+	protected ThreeValuedLogicValue interpretUnaryTracePredicate(Token op, PQLTrace trace) {
+	
+		PQLTrace dbTrace = new PQLTrace();
+		
+		for(int i=0; i<trace.getTrace().size(); i++)
+		{
+			PQLTask task = trace.getTrace().elementAt(i);
+			PQLTask dbTask = null;
+			
+			if(task.getSimilarity() == 1.0)
+			{
+				dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+				Set<String> similarLabels = new HashSet<String>();
+				similarLabels.add(task.getLabel());
+				dbTask.setLabels(similarLabels);
+			}
+			else
+			{
+				dbTask = this.task2task.get(task); 
+			
+				if (dbTask==null) 
+				{
+					dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+					
+					try 
+					{
+						labelMngr.loadTask(dbTask, this.labelMngr.getIndexedSimilarities());
+					} catch (SQLException e) {e.printStackTrace();}
+					
+					this.task2task.put(task,dbTask);
+				}
+			}
+		dbTask.setAsterisk(task.isAsterisk());
+		dbTrace.addTask(dbTask);
+		}
+		
+		dbTrace.setHasAsterisk(trace.hasAsterisk());
+		
+		//create replacement map
+		if (dbTrace.hasAsterisk())
+		{
+			dbTrace.createReplacementMap();
+		}
+			
+		//create XLog
+		if (dbTrace.hasAsterisk())
+		{
+			dbTrace.createLogForTraceWithAsterisk();
+		}else
+		{
+			dbTrace.createTraceLog();
+		}
+
+	switch (op.getType()) {
+	case PQLLexer.EXECUTES		: return basicPredicates.executes(dbTrace);
+	
+	}
+
+	return ThreeValuedLogicValue.UNKNOWN;	
+	}
+
 	
 	@Override
 	protected ThreeValuedLogicValue interpretBinaryPredicate(Token op, PQLTask taskA, PQLTask taskB) {

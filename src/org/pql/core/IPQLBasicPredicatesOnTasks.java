@@ -134,4 +134,6 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * {@code FALSE} if {@code t1} and {@code t2} are not concurrent in {@link INetSystem}.
 	 */
 	public ThreeValuedLogicValue totalConcur(PQLTask t1, PQLTask t2);
+	
+	public ThreeValuedLogicValue executes(PQLTrace trace); //A.P.
 }

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
-
 import org.antlr.v4.runtime.misc.TestRig;
 import org.jbpt.persist.MySQLConnectionStatic;
 import org.jbpt.petri.IFlow;
@@ -33,6 +32,7 @@ import org.pql.mc.AbstractLoLA2ModelChecker;
 import org.pql.mc.IModelChecker;
 import org.pql.query.PQLQueryResult;
 
+
 /**
  * Artem Polyvyanyy
  */
@@ -51,6 +51,7 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	private long								 indexTime				= 86400;
 	private long								 sleepTime				= 300;
 
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public AbstractPQLAPI(String mySQLURL, String mySQLUser, String mySQLPassword,
 					String postgreSQLHost, String postgreSQLName, String postgreSQLUser, String postgreSQLPassword, 
@@ -100,6 +101,7 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		return this.pqlIndex.checkNetSystem(internalID);
 	}
 	
+
 	@Override
 	public boolean index(int internalID) throws SQLException {		
 		return this.pqlIndex.index(internalID, this.indexType);
