@@ -1,5 +1,6 @@
 package org.pql.test;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 
@@ -12,7 +13,7 @@ import org.pql.ini.PQLIniFile;
 public class PQLTestExecutes extends TestCase {
 	private static PQLAPI	pqlAPI	= null;
 	
-	public PQLTestExecutes() throws ClassNotFoundException, SQLException {
+	public PQLTestExecutes() throws ClassNotFoundException, SQLException, IOException {
 		PQLIniFile iniFile = new PQLIniFile();
 		if (!iniFile.load()) { 
 			System.out.println("ERROR: Cannot load PQL ini file.");
@@ -21,14 +22,17 @@ public class PQLTestExecutes extends TestCase {
 		
 		PQLTestExecutes.pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
 				iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
-				iniFile.getLolaPath(), 
+				iniFile.getLolaPath(),
+				iniFile.getLabelSimilaritySeacrhConfiguration(),
 				iniFile.getThreeValuedLogicType(),  
 				iniFile.getIndexType(),
 				iniFile.getLabelManagerType(),
 				iniFile.getDefaultLabelSimilarity(),
-				iniFile.getIndexedLabelSimilarities());
-	}
-	
+				iniFile.getIndexedLabelSimilarities(),
+				iniFile.getNumberOfQueryThreads(),
+				iniFile.getDefaultBotMaxIndexTime(),
+				iniFile.getDefaultBotSleepTime());}
+		
 	public void test001() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTestExecutes.pqlAPI.query("SELECT * FROM * WHERE Executes(<\"A\",\"B\",\"C\">);");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
