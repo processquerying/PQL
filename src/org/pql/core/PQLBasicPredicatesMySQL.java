@@ -237,6 +237,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		  	}	
 		  	
 			INetSystem<F,N,P,T,M> netSystem = PL.restoreNetSystem(this.netID);
+			netSystem.loadNaturalMarking();
 	  				  	
 	  		//System.out.println("net: " + this.netID + " - " + eNetID);
 	  		//trace.print();
@@ -296,6 +297,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 					
 					// get an optimal alignment
 					PQLAlignment alignment = replayer.getAlignment(net, log);
+					//alignment.print();
 								
 					// get alignment cost
 					int alignmentCost = alignment.getAlignmentCost();
