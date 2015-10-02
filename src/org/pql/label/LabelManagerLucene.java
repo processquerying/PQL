@@ -64,7 +64,8 @@ public class LabelManagerLucene extends AbstractLabelManagerMySQL {
 				IndexWriter iwriter = new IndexWriter(directory,config);
 				
 			    Document doc = new Document();
-			    doc.add(new Field("label", label, TextField.TYPE_STORED));
+			    String indexedLabel = QueryParser.escape(label);
+			    doc.add(new Field("label", indexedLabel, TextField.TYPE_STORED));
 			    
 			    iwriter.addDocument(doc);
 			    iwriter.close();
@@ -99,7 +100,7 @@ public class LabelManagerLucene extends AbstractLabelManagerMySQL {
 		    isearcher.setSimilarity(this.similarity);
 		    
 		    QueryParser parser = new QueryParser("label", this.analyzer);
-		    Query query = parser.parse(searchString);
+		    Query query = parser.parse(QueryParser.escape(searchString));
 		    TopDocs topDocs = isearcher.search(query, n);
 		    float maxScore = topDocs.getMaxScore();
 		    ScoreDoc[] hits = topDocs.scoreDocs;
@@ -133,7 +134,7 @@ public class LabelManagerLucene extends AbstractLabelManagerMySQL {
 		    isearcher.setSimilarity(this.similarity);
 		    
 		    QueryParser parser = new QueryParser("label", this.analyzer);
-		    Query query = parser.parse(searchString);
+		    Query query = parser.parse(QueryParser.escape(searchString));
 		    TopDocs topDocs = isearcher.search(query, 10);
 		    float maxScore = topDocs.getMaxScore();
 		    ScoreDoc[] hits = topDocs.scoreDocs;
