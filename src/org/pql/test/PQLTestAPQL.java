@@ -33,7 +33,7 @@ public class PQLTestAPQL extends TestCase {
 				iniFile.getIndexType(),
 				iniFile.getLabelManagerType(),
 				iniFile.getDefaultLabelSimilarityThreshold(),
-				iniFile.getIndexedLabelSimilarities(),
+				iniFile.getIndexedLabelSimilarityThresholds(),
 				iniFile.getNumberOfQueryThreads(),
 				iniFile.getDefaultBotMaxIndexTime(),
 				iniFile.getDefaultBotSleepTime());

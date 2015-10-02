@@ -22,12 +22,13 @@ import org.pql.logic.ThreeValuedLogicType;
 public class PQLIniFile implements IPQLIniFile {
 	final private String iniFile = "./PQL.ini";
 	
-	private String lolaPath = null;
+	private String lola2Path = null;
+	
+	private Double 		defaultLabelSimilarityThreshold		= null;
+	private Set<Double> indexedLabelSimilarityThresholds	= null;
 	
 	private LabelManagerType labelManagerType		= null;
 	private String		labelSimilarityConfig		= null;
-	private Double 		defaultLabelSimilarity		= null;
-	private Set<Double> indexedLabelSimilarities	= null;
 	private String 		postgresqlHost				= null;
 	private String 		postgresqlName				= null;
 	private String 		postgresqlUser				= null;
@@ -61,8 +62,8 @@ public class PQLIniFile implements IPQLIniFile {
 			out.write("[pql]\n");
 			out.write("labelSimilaritySearch = lucene\n");
 			out.write("labelSimilarityConfig = ./lucene/\n");
-			out.write("defaultLabelSimilarity = 0.75\n");
-			out.write("indexedLabelSimilarities = 0.5,0.75,1.0\n");
+			out.write("defaultLabelSimilarityThreshold = 0.75\n");
+			out.write("indexedLabelSimilarityThresholds = 0.5,0.75,1.0\n");
 			out.write("numberOfQueryThreads = 2\n");
 			out.write("\n");
 			out.write("[bot]\n");
@@ -87,7 +88,7 @@ public class PQLIniFile implements IPQLIniFile {
 			
 			// load lola section
 	        Ini.Section section = ini.get("lola");
-	        this.lolaPath = section.get("lolaPath");
+	        this.lola2Path = section.get("lolaPath");
 	        
 	        // load pql section
 	        section = ini.get("pql");
@@ -104,13 +105,13 @@ public class PQLIniFile implements IPQLIniFile {
 	        }
 	        this.labelSimilarityConfig = section.get("labelSimilarityConfig").trim();
 	        this.numberOfQueryThreads = Integer.parseInt(section.get("numberOfQueryThreads"));
-	        this.defaultLabelSimilarity = Double.parseDouble(section.get("defaultLabelSimilarity"));
-	        String similarities = section.get("indexedLabelSimilarities");
+	        this.defaultLabelSimilarityThreshold = Double.parseDouble(section.get("defaultLabelSimilarityThreshold"));
+	        String similarities = section.get("indexedLabelSimilarityThresholds");
 	        StringTokenizer st = new StringTokenizer(similarities,",");
-	        this.indexedLabelSimilarities = new HashSet<Double>();
-	        while (st.hasMoreTokens())  this.indexedLabelSimilarities.add(Double.parseDouble(st.nextToken()));	        
-	        this.indexedLabelSimilarities.add(1.0);
-	        this.indexedLabelSimilarities.add(this.defaultLabelSimilarity);
+	        this.indexedLabelSimilarityThresholds = new HashSet<Double>();
+	        while (st.hasMoreTokens())  this.indexedLabelSimilarityThresholds.add(Double.parseDouble(st.nextToken()));	        
+	        this.indexedLabelSimilarityThresholds.add(1.0);
+	        this.indexedLabelSimilarityThresholds.add(this.defaultLabelSimilarityThreshold);
 	        
 	        // load postgresql section
 	        section = ini.get("postgresql");
@@ -142,67 +143,67 @@ public class PQLIniFile implements IPQLIniFile {
 
 	@Override
 	public LabelManagerType getLabelManagerType() {
-		return labelManagerType;
+		return this.labelManagerType;
 	}
 
 	@Override
 	public String getLoLA2Path() {
-		return lolaPath;
+		return this.lola2Path;
 	}
 
 	@Override
 	public Double getDefaultLabelSimilarityThreshold() {
-		return defaultLabelSimilarity;
+		return this.defaultLabelSimilarityThreshold;
 	}
 
 	@Override
-	public Set<Double> getIndexedLabelSimilarities() {
-		return indexedLabelSimilarities;
+	public Set<Double> getIndexedLabelSimilarityThresholds() {
+		return this.indexedLabelSimilarityThresholds;
 	}
 
 	@Override
 	public String getPostgreSQLHost() {
-		return postgresqlHost;
+		return this.postgresqlHost;
 	}
 
 	@Override
 	public String getPostgreSQLName() {
-		return postgresqlName;
+		return this.postgresqlName;
 	}
 
 	@Override
 	public String getPostgreSQLUser() {
-		return postgresqlUser;
+		return this.postgresqlUser;
 	}
 
 	@Override
 	public String getPostgreSQLPassword() {
-		return postgresqlPwd;
+		return this.postgresqlPwd;
 	}
 
 	@Override
 	public String getMySQLURL() {
-		return mysqlURL;
+		return this.mysqlURL;
 	}
 
 	@Override
 	public String getMySQLUser() {
-		return mysqlUser;
+		return this.mysqlUser;
 	}
 
 	@Override
 	public String getMySQLPassword() {
-		return mysqlPwd;
+		return this.mysqlPwd;
 	}
 
 	@Override
 	public Integer getDefaultBotSleepTime() {
-		return defaultBotSleepTime;
+		return this.defaultBotSleepTime;
 	}
 
 	@Override
 	public Integer getDefaultBotMaxIndexTime() {
-		return defaultBotMaxIndexTime;
+		return this.defaultBotMaxIndexTime;
 	}
 
 	@Override

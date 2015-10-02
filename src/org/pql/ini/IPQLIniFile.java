@@ -39,24 +39,37 @@ public interface IPQLIniFile {
 	/**
 	 * Get a path to the LoLA2 executable.
 	 * 
-	 * LoLA2 tool can be downloaded and compiled from http://service-technology.org/lola.
+	 * LoLA2 tool can be obtained and compiled from http://service-technology.org/lola.
 	 * 
 	 * @return String that contains a path to the LoLA2 executable file.
 	 */
 	public String getLoLA2Path();
 
 	/**
-	 * Get default label similarity threshold.
+	 * Get default label similarity threshold value.
 	 * 
-	 * This threshold is used for the interpretation of the PQL "~" symbol when directly preceding a label string, e.g., 
-	 * ~"A" in PQL refers to the set of all labels for which the similarity score with label "A" is equal or is larger to the threshold value.    
+	 * The default label similarity threshold is used for the interpretation of the PQL "~" symbol 
+	 * when directly preceding a label string, e.g., ~"A" in PQL refers to the set of all labels for 
+	 * which the similarity score with "A" is at least the threshold value.
 	 * 
-	 * @return Default label similarity threshold to use with this PQL instance.  
+	 * The label similarity score is obtained based on the label manager type of this PQL instance,
+	 * refer to {@link IPQLIniFile}.{@code getLabelManagerType()}.      
+	 * 
+	 * @return Default label similarity threshold value to use with this PQL instance.  
 	 */
 	public Double getDefaultLabelSimilarityThreshold();
 
-	public Set<Double> getIndexedLabelSimilarities();
-	
+	/**
+	 * Get indexed label similarity threshold values.
+	 * 
+	 * The indexed label similarity thresholds are the thresholds that are used for populating
+	 * the PQL index, i.e., the PQL instance is optimized for computing behavioral predicates/relations
+	 * for these label similarity threshold values.
+	 * 
+	 * @return Indexed label similarity threshold values to use with this PQL instance.
+	 */
+	public Set<Double> getIndexedLabelSimilarityThresholds();
+		
 	public String getPostgreSQLHost();
 
 	public String getPostgreSQLName();
