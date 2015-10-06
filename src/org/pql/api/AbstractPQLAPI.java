@@ -22,9 +22,9 @@ import org.pql.index.IndexStatus;
 import org.pql.index.IndexType;
 import org.pql.label.ILabelManager;
 import org.pql.label.LabelManagerLevenshtein;
-import org.pql.label.LabelManagerLucene;
+import org.pql.label.LabelManagerLuceneVSM;
 import org.pql.label.LabelManagerType;
-import org.pql.label.LabelManagerVSM;
+import org.pql.label.LabelManagerThemisVSM;
 import org.pql.logic.IThreeValuedLogic;
 import org.pql.logic.KleeneLogic;
 import org.pql.logic.ThreeValuedLogicType;
@@ -80,10 +80,10 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		
 		switch (labelManagerType) {
 			case THEMIS_VSM:
-				this.labelMngr = new LabelManagerVSM(mySQLURL,mySQLUser,mySQLPassword,postgreSQLHost,postgreSQLName,postgreSQLUser,postgreSQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);
+				this.labelMngr = new LabelManagerThemisVSM(mySQLURL,mySQLUser,mySQLPassword,postgreSQLHost,postgreSQLName,postgreSQLUser,postgreSQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);
 				break;
 			case LUCENE:
-				this.labelMngr = new LabelManagerLucene(mySQLURL, mySQLUser, mySQLPassword, defaultLabelSimilarity, indexedLabelSimilarities, labelSimilarityConfig);
+				this.labelMngr = new LabelManagerLuceneVSM(mySQLURL, mySQLUser, mySQLPassword, defaultLabelSimilarity, indexedLabelSimilarities, labelSimilarityConfig);
 				break;
 			default:
 				this.labelMngr = new LabelManagerLevenshtein(mySQLURL,mySQLUser,mySQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);

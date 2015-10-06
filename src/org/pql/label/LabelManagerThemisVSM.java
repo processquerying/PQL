@@ -14,11 +14,11 @@ import org.themis.util.STEMMER;
 /**
  * @author Artem Polyvyanyy
  */
-public class LabelManagerVSM extends AbstractLabelManagerMySQL {
+public class LabelManagerThemisVSM extends AbstractLabelManagerMySQL {
 	
 	private VSM	vsm = null;
 	
-	public LabelManagerVSM(String mysqlURL, String mysqlUser, String mysqlPassword,
+	public LabelManagerThemisVSM(String mysqlURL, String mysqlUser, String mysqlPassword,
 			String pgHost, String pgName, String pgUser, String pgPassword, 
 			double defaultSim, Set<Double> indexedSims) throws ClassNotFoundException, SQLException {
 		super(mysqlURL,mysqlUser,mysqlPassword,defaultSim,indexedSims);

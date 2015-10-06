@@ -17,8 +17,8 @@ import org.pql.index.PQLIndexMySQL;
 import org.pql.ini.PQLIniFile;
 import org.pql.label.ILabelManager;
 import org.pql.label.LabelManagerLevenshtein;
-import org.pql.label.LabelManagerLucene;
-import org.pql.label.LabelManagerVSM;
+import org.pql.label.LabelManagerLuceneVSM;
+import org.pql.label.LabelManagerThemisVSM;
 import org.pql.logic.IThreeValuedLogic;
 import org.pql.logic.KleeneLogic;
 import org.pql.mc.LoLA2ModelChecker;
@@ -120,12 +120,12 @@ public class PQLBotCLI {
 	    
 	    switch (iniFile.getLabelManagerType()) {
 			case THEMIS_VSM:
-				labelMngr = new LabelManagerVSM(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),
+				labelMngr = new LabelManagerThemisVSM(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),
 						iniFile.getPostgreSQLHost(),iniFile.getPostgreSQLName(),iniFile.getPostgreSQLUser(),iniFile.getPostgreSQLPassword(),
 						iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarityThresholds());
 				break;
 			case LUCENE:
-				labelMngr = new LabelManagerLucene(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),
+				labelMngr = new LabelManagerLuceneVSM(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),
 						iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarityThresholds(),iniFile.getLabelSimilaritySeacrhConfiguration());
 				break;
 			default:

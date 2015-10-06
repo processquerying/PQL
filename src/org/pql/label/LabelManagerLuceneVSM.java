@@ -34,13 +34,13 @@ import org.apache.lucene.store.LockObtainFailedException;
  * 
  * @author Artem Polyvyanyy
  */
-public class LabelManagerLucene extends AbstractLabelManagerMySQL {
+public class LabelManagerLuceneVSM extends AbstractLabelManagerMySQL {
 	
 	private String labelSimilarityConfig = null;
 	private StandardAnalyzer analyzer = null;	 
-	private Similarity similarity = new LabelManagerLucene.VSMSimilarity();
+	private Similarity similarity = new LabelManagerLuceneVSM.VSMSimilarity();
 	
-	public LabelManagerLucene(String mysqlURL, String mysqlUser, String mysqlPassword, 
+	public LabelManagerLuceneVSM(String mysqlURL, String mysqlUser, String mysqlPassword, 
 			double defaultSim, Set<Double> indexedSims, String labelSimilarityConfig) throws ClassNotFoundException, SQLException, IOException {
 		super(mysqlURL,mysqlUser,mysqlPassword,defaultSim,indexedSims);
 		
