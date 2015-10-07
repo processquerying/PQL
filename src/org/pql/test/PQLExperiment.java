@@ -17,7 +17,7 @@ import org.pql.ini.PQLIniFile;
 
 public class PQLExperiment extends TestCase {
 	private static PQLAPI	pqlAPI	= null;
-	private static int numberOfExperiments = 100;
+	private static int numberOfExperiments = 2;
 	private static List<String> labels = null;
 	
 	private static Random rand = new Random(System.currentTimeMillis());
