@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -29,8 +30,6 @@ import org.pql.core.PQLQuantifier;
 import org.pql.core.PQLTask;
 import org.pql.core.PQLTrace;
 import org.pql.label.ILabelManager;
-import org.pql.logic.IThreeValuedLogic;
-import org.pql.logic.ThreeValuedLogicValue;
 
 /**
  * An abstract implementation of the {@link IPQLQuery}} interface.
@@ -44,18 +43,17 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	protected Set<PQLLocation>				locations	= new HashSet<PQLLocation>();
 	
 	protected ParserRuleContext				parseTree		 = null;
-	protected IThreeValuedLogic				threeValuedLogic = null;
 	protected ILabelManager					labelMngr		 = null;
 	
 	protected Map<PQLTask,PQLTask>			task2task		 = null;
 	
 	PQLErrorListener						listener		 = null;
 	
-	protected abstract ThreeValuedLogicValue interpretUnaryPredicate(Token op, PQLTask a);
+	protected abstract boolean interpretUnaryPredicate(Token op, PQLTask a);
 	
-	protected abstract ThreeValuedLogicValue interpretUnaryTracePredicate(Token op, PQLTrace a); //A.P.
+	protected abstract boolean interpretUnaryTracePredicate(Token op, PQLTrace a); //A.P.
 	
-	protected abstract ThreeValuedLogicValue interpretBinaryPredicate(Token op, PQLTask a, PQLTask b);
+	protected abstract boolean interpretBinaryPredicate(Token op, PQLTask a, PQLTask b);
 	
 	protected abstract Set<PQLTask> getAllTasks();
 	
@@ -63,13 +61,11 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	 * Constructor of abstract PQL query objects.
 	 * 
 	 * @param query A PQL query given as a string or a path to a file with a query string. 
-	 * @param logic An implementation of the {@link IThreeValuedLogic} interface to use to interpret this query.
 	 * @param labelMngr An implementation of the {@link ILabelManager} interface to use to interpret this query.
 	 */
-	public AbstractPQLQuery(String query, IThreeValuedLogic logic, ILabelManager labelMngr) {
-		if (logic==null || labelMngr==null) return;
+	public AbstractPQLQuery(String query, ILabelManager labelMngr) {
+		if (labelMngr==null) return;
 		
-		this.threeValuedLogic = logic;
 		this.labelMngr  = labelMngr;
 		
 		this.task2task = new HashMap<PQLTask,PQLTask>();
@@ -115,8 +111,8 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return result;
 	}
 
-	protected ThreeValuedLogicValue interpret() {
-		if (this.getNumberOfParseErrors()>0) return ThreeValuedLogicValue.UNKNOWN;
+	protected boolean interpret() {
+		if (this.getNumberOfParseErrors()>0) return false;
 		ParseTree predicate = null;
 		
 		ParseTree queryType = parseTree.getChild(0); //A.P. getting query type: select, insert, etc.
@@ -258,10 +254,10 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
         }
 	}
 
-	protected ThreeValuedLogicValue interpretPredicate(ParseTree tree) {
-		if (tree==null) return ThreeValuedLogicValue.TRUE; // WHERE clause is not specified for this query!
+	protected boolean interpretPredicate(ParseTree tree) {
+		if (tree==null) return true; // WHERE clause is not specified for this query!
 		
-		ThreeValuedLogicValue result = ThreeValuedLogicValue.FALSE;
+		boolean result = false;
 		
 		ParseTree child = tree.getChild(0); 
 		int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
@@ -284,8 +280,8 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return result;
 	}
 	
-	protected ThreeValuedLogicValue interpretProposition(ParseTree tree) {
-		ThreeValuedLogicValue result = ThreeValuedLogicValue.FALSE;
+	protected boolean interpretProposition(ParseTree tree) {
+		boolean result = false;
 		
 		ParseTree child = tree.getChild(0);
 		int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
@@ -323,7 +319,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return result;
 	}
 	
-	protected ThreeValuedLogicValue interpretUnaryPredicate(ParseTree tree) {
+	protected boolean interpretUnaryPredicate(ParseTree tree) {
 		ParseTree nameChild = tree.getChild(0).getChild(0);
 		ParseTree taskChild = tree.getChild(2);
 		
@@ -333,17 +329,17 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	}
 	
 	//A.P.
-	protected ThreeValuedLogicValue interpretUnaryTracePredicate(ParseTree tree) {
+	protected boolean interpretUnaryTracePredicate(ParseTree tree) {
 		ParseTree nameChild = tree.getChild(0).getChild(0);
 		ParseTree traceChild = tree.getChild(2);
 		
 		Token token = ((TerminalNode)nameChild).getSymbol();
 		PQLTrace trace = this.interpretTrace(traceChild);
-		return this.interpretUnaryTracePredicate(token, trace);
 		
+		return this.interpretUnaryTracePredicate(token, trace);
 	}
 	
-	protected ThreeValuedLogicValue interpretBinaryPredicate(ParseTree tree) {
+	protected boolean interpretBinaryPredicate(ParseTree tree) {
 		ParseTree nameChild = tree.getChild(0).getChild(0);
 		ParseTree taskChildA = tree.getChild(2);
 		ParseTree taskChildB = tree.getChild(4);
@@ -353,29 +349,29 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return this.interpretBinaryPredicate(token, this.interpretTask(taskChildA), this.interpretTask(taskChildB));
 	}
 	
-	protected ThreeValuedLogicValue interpretUnaryPredicateMacro(ParseTree tree) {
+	protected boolean interpretUnaryPredicateMacro(ParseTree tree) {
 		Token op		= ((TerminalNode)tree.getChild(0)).getSymbol();
 		Set<PQLTask> tasks	= this.interpretSetOfTasks(tree.getChild(2));
 		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(4));
 		
 		for (PQLTask task : tasks) {
-			if (this.interpretUnaryPredicate(op, task)==ThreeValuedLogicValue.TRUE) {
+			if (this.interpretUnaryPredicate(op, task)==true) {
 				if (Q==PQLQuantifier.ANY)
-					return ThreeValuedLogicValue.TRUE;
+					return true;
 			}
 			else {
 				if (Q==PQLQuantifier.ALL)
-					return ThreeValuedLogicValue.FALSE;
+					return false;
 			}
 		}
 
-		if (Q==PQLQuantifier.ANY) return ThreeValuedLogicValue.FALSE;
-		if (Q==PQLQuantifier.ALL) return ThreeValuedLogicValue.TRUE;
+		if (Q==PQLQuantifier.ANY) return false;
+		if (Q==PQLQuantifier.ALL) return true;
 		
-		return ThreeValuedLogicValue.UNKNOWN;
+		return false;
 	}
 
-	protected ThreeValuedLogicValue interpretBinaryPredicateMacro(ParseTree tree) {
+	protected boolean interpretBinaryPredicateMacro(ParseTree tree) {
 		ParseTree child = tree.getChild(0);
 		int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
 	
@@ -386,10 +382,10 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 				return interpretBinaryPredicateMacroSetSet(child);
 		}
 		
-		return ThreeValuedLogicValue.UNKNOWN;
+		return false;
 	}
 	
-	protected ThreeValuedLogicValue interpretSetPredicate(ParseTree tree) {		
+	protected boolean interpretSetPredicate(ParseTree tree) {		
 		ParseTree child = tree.getChild(0);
 		int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
 	
@@ -400,10 +396,10 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 				return interpretSetComparison(child);
 		}
 		
-		return ThreeValuedLogicValue.UNKNOWN;
+		return false;
 	}
 
-	protected ThreeValuedLogicValue interpretSetComparison(ParseTree tree) {		
+	protected boolean interpretSetComparison(ParseTree tree) {		
 		Set<PQLTask> A = interpretSetOfTasks(tree.getChild(0));
 		Set<PQLTask> B = interpretSetOfTasks(tree.getChild(2));
 		
@@ -412,25 +408,25 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	
 		switch (ruleIndex) {
 			case PQLParser.RULE_identical:
-				return A.equals(B) ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+				return A.equals(B) ? true : false;
 			case PQLParser.RULE_different:
-				return A.equals(B) ? ThreeValuedLogicValue.FALSE : ThreeValuedLogicValue.TRUE;
+				return A.equals(B) ? false : true;
 			case PQLParser.RULE_overlapsWith:
 				for (PQLTask task : A) 
-					if (B.contains(task)) return ThreeValuedLogicValue.TRUE;
+					if (B.contains(task)) return true;
 				
-				return ThreeValuedLogicValue.FALSE;
+				return false;
 			case PQLParser.RULE_subsetOf:
-				return B.containsAll(A) ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+				return B.containsAll(A) ? true : false;
 			case PQLParser.RULE_properSubsetOf:
-				return B.containsAll(A) && !A.equals(B) ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+				return B.containsAll(A) && !A.equals(B) ? true : false;
 		}
 		
-		return ThreeValuedLogicValue.UNKNOWN;
+		return false;
 	}
 	
-	protected ThreeValuedLogicValue interpretNegation(ParseTree tree) {
-		ThreeValuedLogicValue result = ThreeValuedLogicValue.FALSE;
+	protected boolean interpretNegation(ParseTree tree) {
+		boolean result = false;
 		
 		ParseTree child = tree.getChild(1);
 		int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
@@ -439,10 +435,10 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			result = interpretProposition(child);
 		}
 
-		return this.threeValuedLogic.NOT(result);
+		return !result;
 	}
 
-	protected ThreeValuedLogicValue interpretTruthValue(ParseTree tree) {
+	protected boolean interpretTruthValue(ParseTree tree) {
 		ParseTree child = tree.getChild(0);
 		
 		if (child instanceof TerminalNode) {
@@ -450,15 +446,13 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
             
             switch (token.getType()) {
 	            case PQLLexer.TRUE :
-	            	return ThreeValuedLogicValue.TRUE;
+	            	return true;
 	            case PQLLexer.FALSE :
-	            	return ThreeValuedLogicValue.FALSE;
-	            case PQLLexer.UNKNOWN :
-	            	return ThreeValuedLogicValue.UNKNOWN;
+	            	return false;
             }
         }
 		
-		return ThreeValuedLogicValue.UNKNOWN;
+		return false;
 	}
 
 	protected PQLTask interpretTask(ParseTree tree) {
@@ -488,45 +482,39 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return new PQLTask(label, similarity);
 	}
 	
-	//A.P.
+	// A.P.
 	protected PQLTrace interpretTrace(ParseTree tree) {
-
 		PQLTrace trace = new PQLTrace();
 		
-		for (int i = 0; i < tree.getChildCount(); i++) 
-		{
+		for (int i = 0; i < tree.getChildCount(); i++) {
 			ParseTree child = tree.getChild(i).getChild(0); //getting a task or '*'
 			
-			if(child instanceof RuleNode) 
-				{
-					int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
-					
-					if (ruleIndex == PQLParser.RULE_task) //is task
-					{
-						trace.addTask(this.interpretTask(child));
-					}else // is '*'
-					{
-						trace.addTask(this.interpretTraceUniverse());
-						trace.setHasAsterisk(true);
-					} 
+			if(child instanceof RuleNode) {
+				int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
+				
+				if (ruleIndex == PQLParser.RULE_task) { //is task 
+					trace.addTask(this.interpretTask(child));
 				}
+				else { // is '*'
+					trace.addTask(this.interpretTraceUniverse());
+					trace.setHasAsterisk(true);
+				} 
+			}
 		}
 		
-	if(trace.hasAsterisk())
-	{trace.addStartEnd(this.hashCode());}
-	
-	return trace;
-	
+		if(trace.hasAsterisk()) {
+			trace.addStartEnd(this.hashCode());
+		}
+		
+		return trace;
 	}
 
-	//A.P.
+	// A.P.
 	protected PQLTask interpretTraceUniverse() {
-		
 		PQLTask task = new PQLTask("Universe"+this.hashCode(), 1.0);
 		task.setAsterisk(true);
 		return task;
 	}
-
 
 	protected String interpretLabel(ParseTree tree) {
 		return interpretString(tree.getChild(0));
@@ -546,7 +534,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return new Integer(result);
 	}
 
-	protected ThreeValuedLogicValue interpretParentheses(ParseTree tree) {
+	protected boolean interpretParentheses(ParseTree tree) {
 		ParseTree child = tree.getChild(1); 
 		int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
 	
@@ -561,73 +549,37 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 				return interpretLogicalTest(child);
 		}
 		
-		return ThreeValuedLogicValue.UNKNOWN;
+		return false;
 	}
 
-	protected ThreeValuedLogicValue interpretLogicalTest(ParseTree tree) {
+	protected boolean interpretLogicalTest(ParseTree tree) {
 		ParseTree child = tree.getChild(0); 
 		int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
 	
 		switch (ruleIndex) {
 			case PQLParser.RULE_isTrue:
-				return interpretLogicalTest(child,true,ThreeValuedLogicValue.TRUE);
+				return interpretLogicalTest(child,true,true);
 			case PQLParser.RULE_isNotTrue:
-				return interpretLogicalTest(child,false,ThreeValuedLogicValue.TRUE);
+				return interpretLogicalTest(child,false,true);
 			case PQLParser.RULE_isFalse:
-				return interpretLogicalTest(child,true,ThreeValuedLogicValue.FALSE);
+				return interpretLogicalTest(child,true,false);
 			case PQLParser.RULE_isNotFalse:
-				return interpretLogicalTest(child,false,ThreeValuedLogicValue.FALSE);
-			case PQLParser.RULE_isUnknown:
-				return interpretLogicalTest(child,true,ThreeValuedLogicValue.UNKNOWN);
-			case PQLParser.RULE_isNotUnknown:
-				return interpretLogicalTest(child,false,ThreeValuedLogicValue.UNKNOWN);
+				return interpretLogicalTest(child,false,false);
 		}
 		
-		return ThreeValuedLogicValue.UNKNOWN;
+		return false;
 	}
 
-	protected ThreeValuedLogicValue interpretLogicalTest(ParseTree tree, boolean test, ThreeValuedLogicValue value) {
+	protected boolean interpretLogicalTest(ParseTree tree, boolean test, boolean value) {
 		ParseTree child = tree.getChild(0);
-		ThreeValuedLogicValue pValue = this.interpretProposition(child);
+		boolean pValue = this.interpretProposition(child);
 		
-		if (test && value.equals(ThreeValuedLogicValue.TRUE)) {
-			if (pValue.equals(ThreeValuedLogicValue.TRUE))
-				return ThreeValuedLogicValue.TRUE;
-			else
-				return ThreeValuedLogicValue.FALSE;
-		}
-		else if (!test && value.equals(ThreeValuedLogicValue.TRUE)) {
-			if (!pValue.equals(ThreeValuedLogicValue.TRUE))
-				return ThreeValuedLogicValue.TRUE;
-			else
-				return ThreeValuedLogicValue.FALSE;
-		}
-		else if (test && value.equals(ThreeValuedLogicValue.FALSE)) {
-			if (pValue.equals(ThreeValuedLogicValue.FALSE))
-				return ThreeValuedLogicValue.TRUE;
-			else
-				return ThreeValuedLogicValue.FALSE;
-		}
-		else if (!test && value.equals(ThreeValuedLogicValue.FALSE)) {
-			if (!pValue.equals(ThreeValuedLogicValue.FALSE))
-				return ThreeValuedLogicValue.TRUE;
-			else
-				return ThreeValuedLogicValue.FALSE;
-		}
-		else if (test && value.equals(ThreeValuedLogicValue.UNKNOWN)) {
-			if (pValue.equals(ThreeValuedLogicValue.UNKNOWN))
-				return ThreeValuedLogicValue.TRUE;
-			else
-				return ThreeValuedLogicValue.FALSE;
-		}
-		else if (!test && value.equals(ThreeValuedLogicValue.UNKNOWN)) {
-			if (!pValue.equals(ThreeValuedLogicValue.UNKNOWN))
-				return ThreeValuedLogicValue.TRUE;
-			else
-				return ThreeValuedLogicValue.FALSE;
-		}
+		if (test && value)		 return pValue;
+		else if (!test && value) return !pValue;
+		else if (test && !value) return !pValue;
+		else if (!test && !value) return pValue;
 		
-		return ThreeValuedLogicValue.UNKNOWN;
+		return false;
 	}
 
 	protected Set<PQLTask> interpretSetOfTasks(ParseTree tree) {		
@@ -695,7 +647,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		Set<PQLTask> tasks = this.interpretSetOfTasks(tree.getChild(3));
 		
 		for (PQLTask task : tasks) {
-			if (this.interpretUnaryPredicate(op,task)==ThreeValuedLogicValue.TRUE)
+			if (this.interpretUnaryPredicate(op,task)==true)
 				result.add(task);
 		}
 		
@@ -842,12 +794,12 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		for (PQLTask task2 : set2) {
 			boolean flag = true;
 			for (PQLTask task1 : set1) {
-				ThreeValuedLogicValue value = this.interpretBinaryPredicate(op, task1, task2);
-				if (value==ThreeValuedLogicValue.TRUE && Q==PQLQuantifier.ANY) {
+				boolean value = this.interpretBinaryPredicate(op, task1, task2);
+				if (value==true && Q==PQLQuantifier.ANY) {
 					result.add(task2);
 					break;
 				}
-				else if (value!=ThreeValuedLogicValue.TRUE && Q==PQLQuantifier.ALL) {
+				else if (value!=true && Q==PQLQuantifier.ALL) {
 					flag = false;
 					break;
 				}
@@ -869,7 +821,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return this.variables.get(var);
 	}
 	
-	protected ThreeValuedLogicValue interpretBinaryPredicateMacroSetSet(ParseTree tree) {
+	protected boolean interpretBinaryPredicateMacroSetSet(ParseTree tree) {
 		ParseTree nameChild = tree.getChild(0).getChild(0);
 		Token op = ((TerminalNode)nameChild).getSymbol();
 		Set<PQLTask> set1	= this.interpretSetOfTasks(tree.getChild(2));
@@ -879,36 +831,36 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return interpretBinaryPredicateMacroSetSet(op,set1,set2,Q);
 	}
 	
-	protected ThreeValuedLogicValue interpretBinaryPredicateMacroSetSet(Token op, Set<PQLTask> set1, Set<PQLTask> set2, PQLQuantifier Q) {
+	protected boolean interpretBinaryPredicateMacroSetSet(Token op, Set<PQLTask> set1, Set<PQLTask> set2, PQLQuantifier Q) {
 		for (PQLTask task1 : set1) {
 			boolean flag = false;
 			
 			for (PQLTask task2 : set2) {
-				if (this.interpretBinaryPredicate(op,task1,task2)==ThreeValuedLogicValue.TRUE) {
-					if (Q==PQLQuantifier.ANY) return ThreeValuedLogicValue.TRUE;
+				if (this.interpretBinaryPredicate(op,task1,task2)==true) {
+					if (Q==PQLQuantifier.ANY) return true;
 					else if (Q==PQLQuantifier.EACH) {
 						flag = true;
 						break;
 					}
 				}
 				
-				if (this.interpretBinaryPredicate(op,task1,task2)!=ThreeValuedLogicValue.TRUE) {
-					if (Q==PQLQuantifier.ALL) return ThreeValuedLogicValue.FALSE;
+				if (this.interpretBinaryPredicate(op,task1,task2)!=true) {
+					if (Q==PQLQuantifier.ALL) return false;
 				}
 			}
 			
 			if (Q==PQLQuantifier.EACH && !flag)
-				return ThreeValuedLogicValue.FALSE;
+				return false;
 		}
 		
-		if (Q==PQLQuantifier.ANY) return ThreeValuedLogicValue.FALSE;
-		if (Q==PQLQuantifier.EACH) return ThreeValuedLogicValue.TRUE;
-		if (Q==PQLQuantifier.ALL) return ThreeValuedLogicValue.TRUE;
+		if (Q==PQLQuantifier.ANY) return false;
+		if (Q==PQLQuantifier.EACH) return true;
+		if (Q==PQLQuantifier.ALL) return true;
 		
-		return ThreeValuedLogicValue.UNKNOWN;
+		return false;
 	}
 
-	protected ThreeValuedLogicValue interpretBinaryPredicateMacroTaskSet(ParseTree tree) {
+	protected boolean interpretBinaryPredicateMacroTaskSet(ParseTree tree) {
 		ParseTree nameChild = tree.getChild(0).getChild(0);
 		Token op = ((TerminalNode)nameChild).getSymbol();
 		
@@ -937,18 +889,18 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return null;
 	}
 
-	protected ThreeValuedLogicValue interpretTaskInSetOfTasks(ParseTree tree) {
+	protected boolean interpretTaskInSetOfTasks(ParseTree tree) {
 		ParseTree taskTree = tree.getChild(0);
 		ParseTree setTree = tree.getChild(2);
 		
 		PQLTask task = interpretTask(taskTree);
 		Set<PQLTask> set = interpretSetOfTasks(setTree);
 		
-		return set.contains(task) ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+		return set.contains(task) ? true : false;
 	}
 
-	protected ThreeValuedLogicValue interpretConjunction(ParseTree tree) {
-		ThreeValuedLogicValue result = ThreeValuedLogicValue.TRUE;
+	protected boolean interpretConjunction(ParseTree tree) {
+		boolean result = true;
 		
 		for (int i = 0; i < tree.getChildCount(); i++) {
 			ParseTree child = tree.getChild(i);
@@ -958,25 +910,25 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
                 
                 switch (ruleIndex) {
 	                case PQLParser.RULE_proposition:
-	        			result = this.threeValuedLogic.AND(result,interpretProposition(child));
+	        			result &= interpretProposition(child);
 	        			break;
 	        		case PQLParser.RULE_logicalTest:
-	        			result = this.threeValuedLogic.AND(result,interpretLogicalTest(child));
+	        			result &= interpretLogicalTest(child);
 	        			break;
 	        		case PQLParser.RULE_disjunction:
-	        			result = this.threeValuedLogic.AND(result,interpretDisjunction(child));
+	        			result &= interpretDisjunction(child);
 	        			break;
                 }
                 
-                if (result==ThreeValuedLogicValue.FALSE) return result;
+                if (result==false) return result;
             }
         }
 		
 		return result;
 	}
 	
-	protected ThreeValuedLogicValue interpretDisjunction(ParseTree tree) {
-		ThreeValuedLogicValue result = ThreeValuedLogicValue.FALSE;
+	protected boolean interpretDisjunction(ParseTree tree) {
+		boolean result = false;
 		
 		for (int i = 0; i < tree.getChildCount(); i++) {
 			ParseTree child = tree.getChild(i);
@@ -986,14 +938,14 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
                 
                 switch (ruleIndex) {
 	                case PQLParser.RULE_proposition:
-	        			result = this.threeValuedLogic.OR(result,interpretProposition(child));
+	        			result |= interpretProposition(child);
 	        			break;
 	        		case PQLParser.RULE_logicalTest:
-	        			result = this.threeValuedLogic.OR(result,interpretLogicalTest(child));
+	        			result |= interpretLogicalTest(child);
 	        			break;
 	        	}
                 
-                if (result==ThreeValuedLogicValue.TRUE) return result;
+                if (result==true) return result;
             }
         }
 		

@@ -29,7 +29,6 @@ public class PQLTestAPQL extends TestCase {
 				iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
 				iniFile.getLoLA2Path(),
 				iniFile.getLabelSimilaritySeacrhConfiguration(),
-				iniFile.getThreeValuedLogicType(),  
 				iniFile.getIndexType(),
 				iniFile.getLabelManagerType(),
 				iniFile.getDefaultLabelSimilarityThreshold(),
@@ -144,7 +143,7 @@ public class PQLTestAPQL extends TestCase {
 	}
 	
 	public void test007() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE CanConflict(\"B\",\"C\") OR CanConflict(\"B\",\"C\") IS UNKNOWN;");
+		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE CanConflict(\"B\",\"C\");");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(5,res.size());

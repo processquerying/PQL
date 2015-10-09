@@ -3,7 +3,6 @@ package org.pql.query;
 import java.util.Set;
 
 import org.pql.core.PQLException;
-import org.pql.logic.ThreeValuedLogicValue;
 
 /**
  * @author Artem Polyvyanyy
@@ -28,13 +27,14 @@ public class PQLQueryThread extends Thread {
 	public void run() {
 		
 		for (String id : this.externalIDs) {
+			
 			try {
 				this.query.configure(id);
 			} catch (PQLException e) {
 				e.printStackTrace();
 			}
 			
-			if (this.query.check()==ThreeValuedLogicValue.TRUE) {
+			if (this.query.check()) {
 				this.queryResult.add(id);
 			}
 		}

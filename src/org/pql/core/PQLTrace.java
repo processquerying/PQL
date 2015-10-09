@@ -1,12 +1,9 @@
 package org.pql.core;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 
-import org.antlr.v4.codegen.model.chunk.ThisRulePropertyRef_ctx;
 import org.deckfour.xes.factory.XFactoryNaiveImpl;
 import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;

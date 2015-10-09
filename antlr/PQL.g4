@@ -79,10 +79,10 @@
    setOfTasksLiteral  : 
               LB (task (SEP task)*)? RB ;
  
-   trace      : LTB (event (SEP event)*)? RTB ; 
+   trace      : 
+              LTB (event (SEP event)*)? RTB ; 
    
-   event 	  :	universe
-			  | task; 
+   event 	    :	universe | task; 
    
    task       : approximate label 
               | label (LSB similarity RSB)? ; 
@@ -139,7 +139,8 @@
    binaryPredicate     : binaryPredicateName
                 LP task SEP task RP ;  
 
-   unaryTracePredicate      : unaryTracePredicateName 
+   unaryTracePredicate : 
+                unaryTracePredicateName 
                 LP trace RP ;				
               
    unaryPredicateMacro : unaryPredicateName
@@ -176,15 +177,12 @@
               | properSubsetOf ;              
 
    truthValue : TRUE
-              | FALSE
-              | UNKNOWN ;
+              | FALSE ;
 
    logicalTest: isTrue
               | isNotTrue
               | isFalse
-              | isNotFalse
-              | isUnknown
-              | isNotUnknown ;
+              | isNotFalse ;
               
    union      : (tasks | difference | 
                 intersection) UNION (tasks | 
@@ -208,8 +206,6 @@
    isNotTrue    : proposition IS NOT TRUE ;
    isFalse      : proposition IS FALSE ;
    isNotFalse   : proposition IS NOT FALSE ;
-   isUnknown    : proposition IS UNKNOWN ;
-   isNotUnknown : proposition IS NOT UNKNOWN ;
 
    disjunction  : (proposition | logicalTest | 
             conjunction) OR (proposition | 
@@ -299,8 +295,7 @@
    OF          : 'OF' ;
    
    TRUE        : 'TRUE' ; 
-   FALSE       : 'FALSE' ; 
-   UNKNOWN     : 'UNKNOWN' ; 
+   FALSE       : 'FALSE' ;
 
    identical       : EQUALS ;
    different       : NOT EQUALS ;
@@ -314,7 +309,7 @@
 
    CAN_OCCUR       : 'CanOccur' ;
    ALWAYS_OCCURS   : 'AlwaysOccurs' ;
-   EXECUTES		   : 'Executes';
+   EXECUTES		     : 'Executes';
    CAN_CONFLICT    : 'CanConflict' ;
    CAN_COOCCUR     : 'CanCooccur' ;
    CONFLICT        : 'Conflict' ;

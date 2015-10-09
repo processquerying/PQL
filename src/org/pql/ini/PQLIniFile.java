@@ -12,7 +12,6 @@ import java.util.StringTokenizer;
 import org.ini4j.Ini;
 import org.pql.index.IndexType;
 import org.pql.label.LabelManagerType;
-import org.pql.logic.ThreeValuedLogicType;
 
 /**
  * PQL ini file manager.
@@ -204,11 +203,6 @@ public class PQLIniFile implements IPQLIniFile {
 	@Override
 	public Integer getDefaultBotMaxIndexTime() {
 		return this.defaultBotMaxIndexTime;
-	}
-
-	@Override
-	public ThreeValuedLogicType getThreeValuedLogicType() {
-		return ThreeValuedLogicType.KLEENE;
 	}
 
 	@Override

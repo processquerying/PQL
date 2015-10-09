@@ -14,7 +14,6 @@ import org.pql.core.PQLAttribute;
 import org.pql.core.PQLLocation;
 import org.pql.core.PQLTask;
 import org.pql.label.ILabelManager;
-import org.pql.logic.IThreeValuedLogic;
 import org.pql.util.ConcurrentHashSet;
 
 public class PQLQueryResult extends MySQLConnection {
@@ -22,7 +21,6 @@ public class PQLQueryResult extends MySQLConnection {
 	private IPQLQuery	query = null;
 	
 	private String pqlQuery = null;
-	private IThreeValuedLogic logic = null;
 	private ILabelManager labelMngr = null;
 	
 	private int numberOfQueryThreads = 1;
@@ -30,16 +28,15 @@ public class PQLQueryResult extends MySQLConnection {
 	private List<Set<String>> netIDs = null;
 	
 	public PQLQueryResult(int numberOfQueryThreads, String mySQLURL, String mySQLUser, String mySQLPassword, 
-			String pqlQuery, IThreeValuedLogic logic, ILabelManager labelMngr) throws ClassNotFoundException, SQLException {
+			String pqlQuery, ILabelManager labelMngr) throws ClassNotFoundException, SQLException {
 		super(mySQLURL,mySQLUser,mySQLPassword);
 		
 		this.numberOfQueryThreads = numberOfQueryThreads > 0 ? numberOfQueryThreads : 1;
 		
 		this.pqlQuery = pqlQuery;
 		this.labelMngr = labelMngr;
-		this.logic = logic;
 		
-		this.query = new PQLQueryMySQL(this.mysqlURL, this.mysqlUser, this.mysqlPassword, this.pqlQuery, this.logic, this.labelMngr);
+		this.query = new PQLQueryMySQL(this.mysqlURL, this.mysqlUser, this.mysqlPassword, this.pqlQuery, this.labelMngr);
 		
 		if (this.getNumberOfParseErrors()==0) {
 			this.netIDs = new ArrayList<Set<String>>();
@@ -61,16 +58,15 @@ public class PQLQueryResult extends MySQLConnection {
 	}
 	
 	public PQLQueryResult(int numberOfQueryThreads, String mySQLURL, String mySQLUser, String mySQLPassword, 
-			String pqlQuery, IThreeValuedLogic logic, ILabelManager labelMngr, Set<String> externalIDs) throws ClassNotFoundException, SQLException {
+			String pqlQuery, ILabelManager labelMngr, Set<String> externalIDs) throws ClassNotFoundException, SQLException {
 		super(mySQLURL,mySQLUser,mySQLPassword);		
 		
 		this.numberOfQueryThreads = numberOfQueryThreads > 0 ? numberOfQueryThreads : 1;
 		
 		this.pqlQuery = pqlQuery;
 		this.labelMngr = labelMngr;
-		this.logic = logic;
 		
-		this.query = new PQLQueryMySQL(this.mysqlURL, this.mysqlUser, this.mysqlPassword, this.pqlQuery, this.logic, this.labelMngr);
+		this.query = new PQLQueryMySQL(this.mysqlURL, this.mysqlUser, this.mysqlPassword, this.pqlQuery, this.labelMngr);
 		
 		if (this.getNumberOfParseErrors()==0) {
 			this.netIDs = new ArrayList<Set<String>>();
@@ -105,7 +101,7 @@ public class PQLQueryResult extends MySQLConnection {
 		qThread.start();
 		
 		for (int j=1; j<this.numberOfQueryThreads; j++) {
-			IPQLQuery newQuery = new PQLQueryMySQL(this.mysqlURL, this.mysqlUser, this.mysqlPassword, this.pqlQuery, this.logic, this.labelMngr);
+			IPQLQuery newQuery = new PQLQueryMySQL(this.mysqlURL, this.mysqlUser, this.mysqlPassword, this.pqlQuery, this.labelMngr);
 			PQLQueryThread newThread = new PQLQueryThread(tg, "PQL"+(q++), newQuery, this.netIDs.get(j), this.queryResult);
 			newThread.setPriority(Thread.MAX_PRIORITY);
 			newThread.start();

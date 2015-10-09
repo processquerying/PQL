@@ -257,7 +257,6 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 		}
 	};
 
-
 	@Override
 	public void alive(String botName) throws SQLException {
 		if (botName == null || botName.isEmpty()) return;

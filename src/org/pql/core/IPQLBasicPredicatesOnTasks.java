@@ -1,7 +1,6 @@
 package org.pql.core;
 
 import org.jbpt.petri.INetSystem;
-import org.pql.logic.ThreeValuedLogicValue;
 
 /**
  * Interface to PQL basic predicates (on {@link PQLTask}s).
@@ -16,11 +15,9 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * @category core
 	 * @param t {@link PQLTask}
 	 * 
-	 * @return {@code UNKNOWN} if {@code t} is not a task of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@link INetSystem} has an execution in which {@code t} occurs, or 
-	 * {@code FALSE} if {@link INetSystem} has no execution in which {@code t} occurs.
+	 * @return {@code TRUE} if {@link INetSystem} has an execution in which {@code t} occurs; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue canOccur(PQLTask t);
+	public boolean canOccur(PQLTask t);
 	
 	/**
 	 * Check if a given {@link PQLTask} occurs in every execution of {@link INetSystem}.
@@ -28,11 +25,9 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * @category core
 	 * @param t {@link PQLTask}
 	 * 
-	 * @return {@code UNKNOWN} if {@code t} is not a task of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t} occurs in every execution of {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t} does not occur in some execution of {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t} occurs in every execution of {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue alwaysOccurs(PQLTask t);
+	public boolean alwaysOccurs(PQLTask t);
 	
 	/**
 	 * Check if a given {@link PQLTask} {@code t1} can conflict with a given {@link PQLTask} {@code t2} in {@link INetSystem},
@@ -44,11 +39,9 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * @param t1 {@link PQLTask}
 	 * @param t2 {@link PQLTask}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a {@link PQLTask} of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} can conflict with {@code t2} in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} cannot conflict with {@code t2} in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} can conflict with {@code t2} in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue canConflict(PQLTask t1, PQLTask t2);
+	public boolean canConflict(PQLTask t1, PQLTask t2);
 	
 	/**
 	 * Check if given {@link PQLTask}s {@code t1} and {@code t2} can cooccur in {@link INetSystem},
@@ -60,11 +53,9 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * @param t1 {@link PQLTask}
 	 * @param t2 {@link PQLTask}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a {@link PQLTask} of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} and {@code t2} can cooccur in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} and {@code t2} do not cooccur in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} and {@code t2} can cooccur in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue canCooccur(PQLTask t1, PQLTask t2);
+	public boolean canCooccur(PQLTask t1, PQLTask t2);
 	
 	/**
 	 * Check if given {@link PQLTask}s {@code t1} and {@code t2} are in conflict in {@link INetSystem},
@@ -78,11 +69,9 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * @param t1 {@link PQLTask}
 	 * @param t2 {@link PQLTask}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a {@link PQLTask} of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} and {@code t2} are in conflict in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} and {@code t2} are not in conflict in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} and {@code t2} are in conflict in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue conflict(PQLTask t1, PQLTask t2);
+	public boolean conflict(PQLTask t1, PQLTask t2);
 	
 	/**
 	 * Check if given {@link PQLTask}s {@code t1} and {@code t2} cooccur in {@link INetSystem},
@@ -97,11 +86,9 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * @param t1 {@link PQLTask}
 	 * @param t2 {@link PQLTask}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a {@link PQLTask} of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} and {@code t2} cooccur in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} and {@code t2} do not cooccur in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} and {@code t2} cooccur in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue cooccur(PQLTask t1, PQLTask t2);
+	public boolean cooccur(PQLTask t1, PQLTask t2);
 	
 	/**
 	 * Check if a given {@link PQLTask} {@code t1} is total causal with a given {@link PQLTask} {@code t2} in {@link INetSystem},
@@ -113,11 +100,9 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * @param t1 {@link PQLTask}
 	 * @param t2 {@link PQLTask}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a {@link PQLTask} of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} is total causal with {@code t2} in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} is not total causal with {@code t2} in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} is total causal with {@code t2} in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue totalCausal(PQLTask t1, PQLTask t2);
+	public boolean totalCausal(PQLTask t1, PQLTask t2);
 	
 	/**
 	 * Check if given {@link PQLTask} {@code t1} and {@code t2} are total concurrent in {@link INetSystem},
@@ -129,11 +114,9 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * @param t1 {@link PQLTask}
 	 * @param t2 {@link PQLTask}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a {@link PQLTask} of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} and {@code t2} are concurrent in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} and {@code t2} are not concurrent in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} and {@code t2} are concurrent in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue totalConcur(PQLTask t1, PQLTask t2);
+	public boolean totalConcur(PQLTask t1, PQLTask t2);
 	
-	public ThreeValuedLogicValue executes(PQLTrace trace); //A.P.
+	public boolean executes(PQLTrace trace); //A.P.
 }

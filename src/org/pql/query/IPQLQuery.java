@@ -8,7 +8,6 @@ import org.pql.core.PQLAttribute;
 import org.pql.core.PQLException;
 import org.pql.core.PQLLocation;
 import org.pql.core.PQLTask;
-import org.pql.logic.ThreeValuedLogicValue;
 
 /**
  * Interface to a PQL query.
@@ -20,10 +19,9 @@ public interface IPQLQuery {
 	/**
 	 * Check if a model (as per configuration, {@link IPQLQuery.configure(obj)}) matches this PQL query. 
 	 * 
-	 * @return {@code TRUE} if the model matches the query, {@code FALSE} if the model does not match the query, 
-	 * or {@code UNKNOWN} if the query check cannot be accomplished due to some labels from the query missing in the model.
+	 * @return {@code TRUE} if the model matches the query; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue check();
+	public boolean check();
 	
 	/**
 	 * Configure this PQL query.

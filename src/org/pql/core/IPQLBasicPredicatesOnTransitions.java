@@ -6,7 +6,6 @@ import org.jbpt.petri.INetSystem;
 import org.jbpt.petri.INode;
 import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
-import org.pql.logic.ThreeValuedLogicValue;
 
 /**
  * Interface to PQL basic predicates (on {@link INetSystem} transitions).
@@ -22,11 +21,9 @@ public interface IPQLBasicPredicatesOnTransitions<F extends IFlow<N>, N extends 
 	 * @category core
 	 * @param t {@link ITransition}
 	 * 
-	 * @return {@code UNKNOWN} if {@code t} is not a transition of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@link INetSystem} has an execution in which {@code t} occurs, or 
-	 * {@code FALSE} if {@link INetSystem} has no execution in which {@code t} occurs.
+	 * @return {@code TRUE} if {@link INetSystem} has an execution in which {@code t} occurs; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue canOccur(T t);
+	public boolean canOccur(T t);
 	
 	/**
 	 * Check if a given transition occurs in every execution of {@link INetSystem}.
@@ -34,11 +31,9 @@ public interface IPQLBasicPredicatesOnTransitions<F extends IFlow<N>, N extends 
 	 * @category core
 	 * @param t {@link ITransition}
 	 * 
-	 * @return {@code UNKNOWN} if {@code t} is not a transition of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t} occurs in every execution of {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t} does not occur in some execution of {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t} occurs in every execution of {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue alwaysOccurs(T t);
+	public boolean alwaysOccurs(T t);
 	
 	/**
 	 * Check if a given transition {@code t1} can conflict with a given transition {@code t2} in {@link INetSystem},
@@ -50,11 +45,9 @@ public interface IPQLBasicPredicatesOnTransitions<F extends IFlow<N>, N extends 
 	 * @param t1 {@link ITransition}
 	 * @param t2 {@link ITransition}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a transition of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} can conflict with {@code t2} in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} cannot conflict with {@code t2} in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} can conflict with {@code t2} in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue canConflict(T t1, T t2);
+	public boolean canConflict(T t1, T t2);
 	
 	/**
 	 * Check if given transitions {@code t1} and {@code t2} can cooccur in {@link INetSystem},
@@ -66,11 +59,9 @@ public interface IPQLBasicPredicatesOnTransitions<F extends IFlow<N>, N extends 
 	 * @param t1 {@link ITransition}
 	 * @param t2 {@link ITransition}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a transition of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} and {@code t2} can cooccur in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} and {@code t2} do not cooccur in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} and {@code t2} can cooccur in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue canCooccur(T t1, T t2);
+	public boolean canCooccur(T t1, T t2);
 	
 	/**
 	 * Check if given transitions {@code t1} and {@code t2} are in conflict in {@link INetSystem},
@@ -84,11 +75,9 @@ public interface IPQLBasicPredicatesOnTransitions<F extends IFlow<N>, N extends 
 	 * @param t1 {@link ITransition}
 	 * @param t2 {@link ITransition}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a transition of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} and {@code t2} are in conflict in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} and {@code t2} are not in conflict in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} and {@code t2} are in conflict in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue conflict(T t1, T t2);
+	public boolean conflict(T t1, T t2);
 	
 	/**
 	 * Check if given transitions {@code t1} and {@code t2} cooccur in {@link INetSystem},
@@ -103,11 +92,9 @@ public interface IPQLBasicPredicatesOnTransitions<F extends IFlow<N>, N extends 
 	 * @param t1 {@link ITransition}
 	 * @param t2 {@link ITransition}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a transition of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} and {@code t2} cooccur in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} and {@code t2} do not cooccur in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} and {@code t2} cooccur in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue cooccur(T t1, T t2);
+	public boolean cooccur(T t1, T t2);
 	
 	/**
 	 * Check if a given transition {@code t1} is total causal with a given transition {@code t2} in {@link INetSystem},
@@ -119,11 +106,9 @@ public interface IPQLBasicPredicatesOnTransitions<F extends IFlow<N>, N extends 
 	 * @param t1 {@link ITransition}
 	 * @param t2 {@link ITransition}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a transition of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} is total causal with {@code t2} in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} is not total causal with {@code t2} in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} is total causal with {@code t2} in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue totalCausal(T t1, T t2);
+	public boolean totalCausal(T t1, T t2);
 	
 	/**
 	 * Check if given transitions {@code t1} and {@code t2} are total concurrent in {@link INetSystem},
@@ -135,9 +120,7 @@ public interface IPQLBasicPredicatesOnTransitions<F extends IFlow<N>, N extends 
 	 * @param t1 {@link ITransition}
 	 * @param t2 {@link ITransition}
 	 * 
-	 * @return {@code UNKNOWN} if either {@code t1} or {@code t2} is not a transition of {@link INetSystem}; otherwise
-	 * {@code TRUE} if {@code t1} and {@code t2} are concurrent in {@link INetSystem}, or 
-	 * {@code FALSE} if {@code t1} and {@code t2} are not concurrent in {@link INetSystem}.
+	 * @return {@code TRUE} if {@code t1} and {@code t2} are concurrent in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
-	public ThreeValuedLogicValue totalConcur(T t1, T t2);
+	public boolean totalConcur(T t1, T t2);
 }

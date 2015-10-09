@@ -173,19 +173,6 @@ public class PQLBaseListener implements PQLListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
-	@Override public void enterIsUnknown(@NotNull PQLParser.IsUnknownContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitIsUnknown(@NotNull PQLParser.IsUnknownContext ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
 	@Override public void enterAttributeModel(@NotNull PQLParser.AttributeModelContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -817,19 +804,6 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitAttributeID(@NotNull PQLParser.AttributeIDContext ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void enterIsNotUnknown(@NotNull PQLParser.IsNotUnknownContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitIsNotUnknown(@NotNull PQLParser.IsNotUnknownContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

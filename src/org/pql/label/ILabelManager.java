@@ -1,6 +1,5 @@
 package org.pql.label;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 

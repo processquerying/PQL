@@ -22,8 +22,6 @@ import org.jbpt.petri.unfolding.Event;
 import org.jbpt.petri.unfolding.IEvent;
 import org.jbpt.petri.unfolding.IOccurrenceNet;
 import org.jbpt.petri.unfolding.order.AdequateOrderType;
-import org.pql.logic.IThreeValuedLogic;
-import org.pql.logic.ThreeValuedLogicValue;
 import org.pql.mc.IModelChecker;
 import org.pql.petri.AbstractControlPlaceTransformation;
 import org.pql.petri.AbstractGuardTransitionTransformation;
@@ -51,15 +49,13 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 	private Map<N,N>				 n2n				= null;
 	
 	private IModelChecker<F,N,P,T,M> modelChecker		= null;
-	private IThreeValuedLogic		 logic				= null;
 	
 	private AbstractNetSystemTransformationManager<F,N,P,T,M> TM = null;
 	
 	private P sinkPlace = null;
 
-	public AbstractPQLBasicPredicatesMC(IModelChecker<F,N,P,T,M> modelChecker, IThreeValuedLogic logic) {
+	public AbstractPQLBasicPredicatesMC(IModelChecker<F,N,P,T,M> modelChecker) {
 		this.modelChecker = modelChecker;
-		this.logic = logic;
 		this.n2n = new HashMap<N,N>();
 	}
 	
@@ -82,11 +78,11 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 	}
 		
 	@Override
-	public ThreeValuedLogicValue canOccur(T t) {
+	public boolean canOccur(T t) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		T tt = (T)this.n2n.get(t);
-		if (!this.TM.getNetSystem().getTransitions().contains(tt)) return ThreeValuedLogicValue.UNKNOWN;
+		if (!this.TM.getNetSystem().getTransitions().contains(tt)) return false;
 		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
@@ -95,16 +91,13 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		this.TM.transform(log);
 
 		// perform check
-		boolean result = this.modelChecker.canReachMarkingWithAtLeastOneTokenAtEachPlace(this.TM.getNetSystem(),this.TM.getNetSystem().getPreset(tt));
-
-		// return result
-		return result ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+		return this.modelChecker.canReachMarkingWithAtLeastOneTokenAtEachPlace(this.TM.getNetSystem(),this.TM.getNetSystem().getPreset(tt));
 	}
 	
 	@Override
-	public ThreeValuedLogicValue canOccur(PQLTask task) {
+	public boolean canOccur(PQLTask task) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
@@ -114,21 +107,18 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		// transform net system
 		this.TM.transform(log);
 		
-		if (lut.getUnifiedTransition()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (lut.getUnifiedTransition()==null) return false;
 				
 		// perform check
-		boolean result = this.modelChecker.canReachMarkingWithAtLeastOneTokenAtEachPlace(this.TM.getNetSystem(),this.TM.getNetSystem().getPreset(lut.getUnifiedTransition()));
-
-		// return result
-		return result ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+		return this.modelChecker.canReachMarkingWithAtLeastOneTokenAtEachPlace(this.TM.getNetSystem(),this.TM.getNetSystem().getPreset(lut.getUnifiedTransition()));
 	}
 	
 	@Override
-	public ThreeValuedLogicValue alwaysOccurs(T t) {
+	public boolean alwaysOccurs(T t) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		T tt = (T)this.n2n.get(t);
-		if (!this.TM.getNetSystem().getTransitions().contains(tt)) return ThreeValuedLogicValue.UNKNOWN;
+		if (!this.TM.getNetSystem().getTransitions().contains(tt)) return false;
 		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
@@ -142,16 +132,13 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		Collection<P> M = new ArrayList<P>();
 		M.add(cpt.getControlPlace());
 		M.add(this.sinkPlace);
-		boolean result = this.modelChecker.isReachable(this.TM.getNetSystem(),M);
-	
-		// return result
-		return result ? ThreeValuedLogicValue.FALSE : ThreeValuedLogicValue.TRUE;
+		return !this.modelChecker.isReachable(this.TM.getNetSystem(),M);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue alwaysOccurs(PQLTask t) {
+	public boolean alwaysOccurs(PQLTask t) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
@@ -168,29 +155,26 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		Collection<P> M = new ArrayList<P>();
 		M.add(cpt.getControlPlace());
 		M.add(this.sinkPlace);
-		boolean result = this.modelChecker.isReachable(this.TM.getNetSystem(),M);
-
-		// return result
-		return result ? ThreeValuedLogicValue.FALSE : ThreeValuedLogicValue.TRUE;
+		return !this.modelChecker.isReachable(this.TM.getNetSystem(),M);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue canConflict(T t1, T t2) {
+	public boolean canConflict(T t1, T t2) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		T tt1 = (T)this.n2n.get(t1);
 		T tt2 = (T)this.n2n.get(t2);
-		if (!this.TM.getNetSystem().getTransitions().contains(tt1)) return ThreeValuedLogicValue.UNKNOWN;
-		if (!this.TM.getNetSystem().getTransitions().contains(tt2)) return ThreeValuedLogicValue.UNKNOWN;
+		if (!this.TM.getNetSystem().getTransitions().contains(tt1)) return false;
+		if (!this.TM.getNetSystem().getTransitions().contains(tt2)) return false;
 		
 		// handle special case
 		if (t1.equals(t2))
-			return ThreeValuedLogicValue.FALSE;
+			return false;
 		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
 		IGuardTransitionTransformation<F,N,P,T,M> gtt1 = new AbstractGuardTransitionTransformation<F,N,P,T,M>(this.TM.getNetSystem(),tt1);
-		IGuardTransitionTransformation<F,N,P,T,M> gtt2= new AbstractGuardTransitionTransformation<F,N,P,T,M>(this.TM.getNetSystem(),tt2);
+		IGuardTransitionTransformation<F,N,P,T,M> gtt2 = new AbstractGuardTransitionTransformation<F,N,P,T,M>(this.TM.getNetSystem(),tt2);
 		
 		if (gtt1.equals(gtt2)) {
 			log.add(gtt1);
@@ -207,20 +191,17 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		M.add(gtt1.getControlPlace());
 		M.add(gtt2.getGuardPlace());
 		M.add(this.sinkPlace);
-		boolean result = this.modelChecker.isReachable(this.TM.getNetSystem(),M);
-	
-		// return result
-		return result ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+		return this.modelChecker.isReachable(this.TM.getNetSystem(),M);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue canConflict(PQLTask t1, PQLTask t2) {
+	public boolean canConflict(PQLTask t1, PQLTask t2) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		
 		// handle special case
 		if (t1.getSimilarLabels().equals(t2.getSimilarLabels()))
-			return ThreeValuedLogicValue.FALSE;
+			return false;
 		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
@@ -251,24 +232,21 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		M.add(gtt1.getControlPlace());
 		M.add(gtt2.getGuardPlace());
 		M.add(this.sinkPlace);
-		boolean result = this.modelChecker.isReachable(this.TM.getNetSystem(),M);
-	
-		// return result
-		return result ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+		return this.modelChecker.isReachable(this.TM.getNetSystem(),M);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue canCooccur(T t1, T t2) {
+	public boolean canCooccur(T t1, T t2) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		T tt1 = (T)this.n2n.get(t1);
 		T tt2 = (T)this.n2n.get(t2);
-		if (!this.TM.getNetSystem().getTransitions().contains(tt1)) return ThreeValuedLogicValue.UNKNOWN;
-		if (!this.TM.getNetSystem().getTransitions().contains(tt2)) return ThreeValuedLogicValue.UNKNOWN;
+		if (!this.TM.getNetSystem().getTransitions().contains(tt1)) return false;
+		if (!this.TM.getNetSystem().getTransitions().contains(tt2)) return false;
 		
 		// handle special case
 		if (t1.equals(t2))
-			return this.canOccur(t1)==ThreeValuedLogicValue.TRUE ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+			return this.canOccur(t1);
 		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
@@ -291,16 +269,13 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		M.add(gtt1.getControlPlace());
 		M.add(gtt2.getControlPlace());
 		M.add(this.sinkPlace);
-		boolean result = this.modelChecker.isReachable(this.TM.getNetSystem(),M);
-		
-		// return result
-		return result ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+		return this.modelChecker.isReachable(this.TM.getNetSystem(),M);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue canCooccur(PQLTask t1, PQLTask t2) {
+	public boolean canCooccur(PQLTask t1, PQLTask t2) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		
 		// handle special case
 		if (t1.getSimilarLabels().equals(t2.getSimilarLabels()))
@@ -335,42 +310,37 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		M.add(gtt1.getControlPlace());
 		M.add(gtt2.getControlPlace());
 		M.add(this.sinkPlace);
-		boolean result = this.modelChecker.isReachable(this.TM.getNetSystem(),M);
-		
-		// return result
-		return result ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+		return this.modelChecker.isReachable(this.TM.getNetSystem(),M);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue conflict(T t1, T t2) {
-		return this.logic.AND(this.logic.AND(this.canConflict(t1, t2), 
-				this.canConflict(t2, t1)), this.logic.NOT(this.canCooccur(t1, t2)));
+	public boolean conflict(T t1, T t2) {
+		return this.canConflict(t1,t2) && this.canConflict(t2,t1) && !this.canCooccur(t1,t2);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue conflict(PQLTask t1, PQLTask t2) {
-		return logic.AND(logic.AND(this.canConflict(t1, t2), this.canConflict(t2, t1)), logic.NOT(this.canCooccur(t1,t2)));
+	public boolean conflict(PQLTask t1, PQLTask t2) {
+		return this.canConflict(t1,t2) && this.canConflict(t2,t1) && !this.canCooccur(t1,t2);	
 	}
 
 	@Override
-	public ThreeValuedLogicValue cooccur(T t1, T t2) {
-		return this.logic.AND(this.logic.AND(this.logic.NOT(this.canConflict(t1, t2)), 
-				this.logic.NOT(this.canConflict(t2, t1))), this.canCooccur(t1, t2));
+	public boolean cooccur(T t1, T t2) {
+		return !this.canConflict(t1,t2) && !this.canConflict(t2,t1) && this.canCooccur(t1,t2);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue cooccur(PQLTask t1, PQLTask t2) {
-		return logic.AND(logic.AND(logic.NOT(this.canConflict(t1, t2)),logic.NOT(this.canConflict(t2, t1))), this.canCooccur(t1,t2));
+	public boolean cooccur(PQLTask t1, PQLTask t2) {
+		return !this.canConflict(t1,t2) && !this.canConflict(t2,t1) && this.canCooccur(t1,t2);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue totalCausal(T t1, T t2) {
+	public boolean totalCausal(T t1, T t2) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		T tt1 = (T)this.n2n.get(t1);
 		T tt2 = (T)this.n2n.get(t2);
-		if (!this.TM.getNetSystem().getTransitions().contains(tt1)) return ThreeValuedLogicValue.UNKNOWN;
-		if (!this.TM.getNetSystem().getTransitions().contains(tt2)) return ThreeValuedLogicValue.UNKNOWN;
+		if (!this.TM.getNetSystem().getTransitions().contains(tt1)) return false;
+		if (!this.TM.getNetSystem().getTransitions().contains(tt2)) return false;
 		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
@@ -384,15 +354,13 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		Collection<P> M = new ArrayList<P>();
 		M.add(ptt.getControlPlace());
 		M.add(this.sinkPlace);
-		boolean result = this.modelChecker.isReachable(this.TM.getNetSystem(),M);
-		
-		return result ? ThreeValuedLogicValue.FALSE : ThreeValuedLogicValue.TRUE;
+		return !this.modelChecker.isReachable(this.TM.getNetSystem(),M);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue totalCausal(PQLTask t1, PQLTask t2) {
+	public boolean totalCausal(PQLTask t1, PQLTask t2) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
@@ -417,20 +385,18 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		Collection<P> M = new ArrayList<P>();
 		M.add(ptt.getControlPlace());
 		M.add(this.sinkPlace);
-		boolean result = this.modelChecker.isReachable(this.TM.getNetSystem(),M);
-		
-		return result ? ThreeValuedLogicValue.FALSE : ThreeValuedLogicValue.TRUE;
+		return !this.modelChecker.isReachable(this.TM.getNetSystem(),M);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue totalConcur(T t1, T t2) {
+	public boolean totalConcur(T t1, T t2) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		T tt1 = (T)this.n2n.get(t1);
 		T tt2 = (T)this.n2n.get(t2);
 		
-		if (!this.TM.getNetSystem().getTransitions().contains(tt1)) return ThreeValuedLogicValue.UNKNOWN;
-		if (!this.TM.getNetSystem().getTransitions().contains(tt2)) return ThreeValuedLogicValue.UNKNOWN;
+		if (!this.TM.getNetSystem().getTransitions().contains(tt1)) return false;
+		if (!this.TM.getNetSystem().getTransitions().contains(tt2)) return false;
 		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
@@ -439,15 +405,13 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		this.TM.transform(log);
 		
 		// perform check
-		boolean result = this.checkTotalConcur(tt1,tt2);
-		
-		return result ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+		return this.checkTotalConcur(tt1,tt2);
 	}	
 	
 	@Override
-	public ThreeValuedLogicValue totalConcur(PQLTask t1, PQLTask t2) {
+	public boolean totalConcur(PQLTask t1, PQLTask t2) {
 		// perform initial checks
-		if (this.TM.getNetSystem()==null) return ThreeValuedLogicValue.UNKNOWN;
+		if (this.TM.getNetSystem()==null) return false;
 		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
@@ -465,9 +429,7 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		this.TM.transform(log);
 		
 		// perform check
-		boolean result = this.checkTotalConcur(lut1.getUnifiedTransition(),lut2.getUnifiedTransition());
-		
-		return result ? ThreeValuedLogicValue.TRUE : ThreeValuedLogicValue.FALSE;
+		return this.checkTotalConcur(lut1.getUnifiedTransition(),lut2.getUnifiedTransition());
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -525,10 +487,10 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 	}
 	
 	//A.P.
-		@Override
-		public ThreeValuedLogicValue executes(PQLTrace trace) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+	@Override
+	public boolean executes(PQLTrace trace) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }

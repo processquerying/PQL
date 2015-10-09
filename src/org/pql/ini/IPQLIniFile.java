@@ -8,8 +8,6 @@ import org.pql.index.IndexType;
 import org.pql.label.ILabelManager;
 import org.pql.label.LabelManagerThemisVSM;
 import org.pql.label.LabelManagerType;
-import org.pql.logic.IThreeValuedLogic;
-import org.pql.logic.ThreeValuedLogicType;
 
 /**
  * Interface to the PQL initialization file.
@@ -146,13 +144,6 @@ public interface IPQLIniFile {
 	 * @return Time (in seconds) that PQL Bots are allowed to spend indexing a single model..
 	 */
 	public Integer getDefaultBotMaxIndexTime();
-	
-	/**
-	 * Get type of {@link IThreeValuedLogic} to use with this PQL instance.
-	 * 
-	 * @return {@link ThreeValuedLogicType} to use with this PQL instance.
-	 */
-	public ThreeValuedLogicType getThreeValuedLogicType();
 	
 	/**
 	 * Get type of {@link IPQLIndex} to use with this PQL instance.

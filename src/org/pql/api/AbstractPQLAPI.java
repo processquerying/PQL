@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
+
 import org.antlr.v4.runtime.misc.TestRig;
 import org.jbpt.persist.MySQLConnectionStatic;
 import org.jbpt.petri.IFlow;
@@ -23,11 +24,8 @@ import org.pql.index.IndexType;
 import org.pql.label.ILabelManager;
 import org.pql.label.LabelManagerLevenshtein;
 import org.pql.label.LabelManagerLuceneVSM;
-import org.pql.label.LabelManagerType;
 import org.pql.label.LabelManagerThemisVSM;
-import org.pql.logic.IThreeValuedLogic;
-import org.pql.logic.KleeneLogic;
-import org.pql.logic.ThreeValuedLogicType;
+import org.pql.label.LabelManagerType;
 import org.pql.mc.AbstractLoLA2ModelChecker;
 import org.pql.mc.IModelChecker;
 import org.pql.query.PQLQueryResult;
@@ -40,7 +38,6 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		extends MySQLConnectionStatic
 		implements IPQLAPI<F,N,P,T,M> {
 	
-	private IThreeValuedLogic					 logic					= null;
 	private IPetriNetPersistenceLayer<F,N,P,T,M> netPersistenceLayer	= null;
 	private ILabelManager						 labelMngr				= null;
 	private IModelChecker<F,N,P,T,M>			 modelChecker			= null;
@@ -56,8 +53,7 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	public AbstractPQLAPI(String mySQLURL, String mySQLUser, String mySQLPassword,
 					String postgreSQLHost, String postgreSQLName, String postgreSQLUser, String postgreSQLPassword, 
 					String lolaPath,
-					String labelSimilarityConfig,
-					ThreeValuedLogicType threeValuedLogicType, 
+					String labelSimilarityConfig, 
 					IndexType indexType,
 					LabelManagerType labelManagerType, 
 					Double defaultLabelSimilarity,
@@ -73,11 +69,6 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		this.indexTime = indexTime;
 		this.sleepTime = sleepTime;
 		
-		switch (threeValuedLogicType) {
-			default: 
-				this.logic = new KleeneLogic();
-		}
-		
 		switch (labelManagerType) {
 			case THEMIS_VSM:
 				this.labelMngr = new LabelManagerThemisVSM(mySQLURL,mySQLUser,mySQLPassword,postgreSQLHost,postgreSQLName,postgreSQLUser,postgreSQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);
@@ -92,8 +83,8 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		
 		this.netPersistenceLayer	= new AbstractPetriNetPersistenceLayerMySQL(mySQLURL,mySQLUser,mySQLPassword);
 		this.modelChecker			= new AbstractLoLA2ModelChecker(lolaPath);
-		this.basicPredicates		= new AbstractPQLBasicPredicatesMC(this.modelChecker,this.logic);
-		this.pqlIndex				= new AbstractPQLIndexMySQL(mySQLURL,mySQLUser,mySQLPassword,basicPredicates,this.labelMngr,this.modelChecker,this.logic,defaultLabelSimilarity,indexedLabelSimilarities,this.indexType, this.indexTime, this.sleepTime);
+		this.basicPredicates		= new AbstractPQLBasicPredicatesMC(this.modelChecker);
+		this.pqlIndex				= new AbstractPQLIndexMySQL(mySQLURL,mySQLUser,mySQLPassword,basicPredicates,this.labelMngr,this.modelChecker,defaultLabelSimilarity,indexedLabelSimilarities,this.indexType, this.indexTime, this.sleepTime);
 	}
 
 	@Override
@@ -163,14 +154,14 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	
 	@Override
 	public PQLQueryResult query(String pqlQuery) throws ClassNotFoundException, SQLException {		
-		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, logic, labelMngr);
+		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, labelMngr);
 		
 		return result;
 	}
 
 	@Override
 	public PQLQueryResult query(String pqlQuery, Set<String> externalIDs) throws ClassNotFoundException, SQLException {
-		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, logic, labelMngr, externalIDs);
+		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, labelMngr, externalIDs);
 		
 		return result;
 	}

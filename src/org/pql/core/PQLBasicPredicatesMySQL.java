@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
 import org.deckfour.xes.model.XLog;
 import org.jbpt.persist.MySQLConnection;
 import org.jbpt.petri.IFlow;
@@ -18,13 +19,11 @@ import org.jbpt.petri.ITransition;
 import org.jbpt.petri.persist.AbstractPetriNetPersistenceLayerMySQL;
 import org.jbpt.petri.persist.IPetriNetPersistenceLayer;
 import org.pql.alignment.AbstractReplayer;
+import org.pql.alignment.AlignmentAPI;
 import org.pql.alignment.PQLAlignment;
 import org.pql.alignment.Replayer;
-import org.pql.alignment.AlignmentAPI;
 import org.pql.label.ILabelManager;
 import org.pql.label.LabelManagerLevenshtein;
-import org.pql.logic.IThreeValuedLogic;
-import org.pql.logic.ThreeValuedLogicValue;
 import org.pql.petri.AbstractLabelUnificationTransformation;
 import org.pql.petri.AbstractNetSystemTransformationManager;
 import org.pql.petri.AbstractTraceExecutionWithWildcardCharactersTesterTransformation;
@@ -42,6 +41,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 				{
 	
 	protected String PETRI_NET_IDENTIFIER_TO_ID = "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
+	
 	protected String PQL_CAN_OCCUR		= "{? = CALL pql.pql_can_occur(?,?)}";
 	protected String PQL_ALWAYS_OCCURS	= "{? = CALL pql.pql_always_occurs(?,?)}";
 	protected String PQL_CAN_CONFLICT	= "{? = CALL pql.pql_can_conflict(?,?,?)}";
@@ -49,75 +49,60 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	protected String PQL_TOTAL_CAUSAL	= "{? = CALL pql.pql_total_causal(?,?,?)}";
 	protected String PQL_TOTAL_CONCUR	= "{? = CALL pql.pql_total_concur(?,?,?)}";
 		
-	private IThreeValuedLogic			logic = null;
 	private String						identifier = null;	
 	private int							netID = 0;
 	
 	private IPetriNetPersistenceLayer<F,N,P,T,M> 				PL = new AbstractPetriNetPersistenceLayerMySQL<F,N,P,T,M>(this.mysqlURL,this.mysqlUser,this.mysqlPassword);//A.P.
 	private ILabelManager 										LM = new LabelManagerLevenshtein(this.mysqlURL,this.mysqlUser,this.mysqlPassword, 1.0, new HashSet<Double>());//A.P.
-	private AbstractNetSystemTransformationManager<F,N,P,T,M> 	TM = null;//A.P.
+	private AbstractNetSystemTransformationManager<F,N,P,T,M> 	TM = null; //A.P.
 		
-	public PQLBasicPredicatesMySQL(String mysqlURL, String mysqlUser, String mysqlPassword, IThreeValuedLogic logic) throws ClassNotFoundException, SQLException {
+	public PQLBasicPredicatesMySQL(String mysqlURL, String mysqlUser, String mysqlPassword) throws ClassNotFoundException, SQLException {
 		super(mysqlURL,mysqlUser,mysqlPassword);
-
-		this.logic = logic;
 	}
 	
-	private ThreeValuedLogicValue checkUnaryPredicate(String call, PQLTask task) {
+	private boolean checkUnaryPredicate(String call, PQLTask t) {
 		try {
 			
 			CallableStatement cs = connection.prepareCall(call);
 		
-			cs.registerOutParameter(1, java.sql.Types.TINYINT);
+			cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
 			cs.setInt(2,this.netID);
-			cs.setInt(3,task.getID());
+			cs.setInt(3,t.getID());
 						
 			cs.execute();
 			
-			ThreeValuedLogicValue result = null;
-			
-			if (cs.getInt(1)==0)
-				result = ThreeValuedLogicValue.FALSE;
-			else if (cs.getInt(1)==1) 
-				result = ThreeValuedLogicValue.TRUE;
-			else
-				return ThreeValuedLogicValue.UNKNOWN;
+			boolean result = cs.getBoolean(1);
 			
 			cs.close();
 			
 			return result;
 		}
 		catch (SQLException e) {
-			return ThreeValuedLogicValue.UNKNOWN;
+			e.printStackTrace();
+			return false;
 		}
 	}
 	
-	private ThreeValuedLogicValue checkBinaryPredicate(String call, PQLTask taskA, PQLTask taskB) {
+	private boolean checkBinaryPredicate(String call, PQLTask t1, PQLTask t2) {
 		try {
 			CallableStatement cs = connection.prepareCall(call);
 		
-			cs.registerOutParameter(1, java.sql.Types.TINYINT);
+			cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
 			cs.setInt(2,this.netID);
-			cs.setInt(3,taskA.getID());
-			cs.setInt(4,taskB.getID());
+			cs.setInt(3,t1.getID());
+			cs.setInt(4,t2.getID());
 			
 			cs.execute();
 			
-			ThreeValuedLogicValue result = null;
-			
-			if (cs.getInt(1)==0)
-				result = ThreeValuedLogicValue.FALSE;
-			else if (cs.getInt(1)==1) 
-				result = ThreeValuedLogicValue.TRUE;
-			else
-				return ThreeValuedLogicValue.UNKNOWN;
+			boolean result = cs.getBoolean(1);
 			
 			cs.close();
 			
 			return result;
 		}
 		catch (SQLException e) {
-			return ThreeValuedLogicValue.UNKNOWN;
+			e.printStackTrace();
+			return false;
 		}
 	}
 	
@@ -134,6 +119,8 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 			cs.execute();
 			
 			this.netID = cs.getInt(1);
+			
+			cs.close();		
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
@@ -141,99 +128,88 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	}
 
 	@Override
-	public ThreeValuedLogicValue canOccur(PQLTask task) {
-		return this.checkUnaryPredicate(this.PQL_CAN_OCCUR, task);
+	public boolean canOccur(PQLTask t) {
+		return this.checkUnaryPredicate(this.PQL_CAN_OCCUR, t);
 	}
 	
 	@Override
-	public ThreeValuedLogicValue alwaysOccurs(PQLTask task) {
-		return this.checkUnaryPredicate(this.PQL_ALWAYS_OCCURS, task);
+	public boolean alwaysOccurs(PQLTask t) {
+		return this.checkUnaryPredicate(this.PQL_ALWAYS_OCCURS, t);
 	}
 
 	@Override
-	public ThreeValuedLogicValue canConflict(PQLTask taskA, PQLTask taskB) {
-		return this.checkBinaryPredicate(this.PQL_CAN_CONFLICT, taskA, taskB);
+	public boolean canConflict(PQLTask t1, PQLTask t2) {
+		return this.checkBinaryPredicate(this.PQL_CAN_CONFLICT, t1, t2) || (this.canOccur(t1) && !this.canOccur(t2));
 	}
 
 	@Override
-	public ThreeValuedLogicValue canCooccur(PQLTask taskA, PQLTask taskB) {
-		return this.checkBinaryPredicate(this.PQL_CAN_COOCCUR, taskA, taskB);
-	}
-
-	/**
-	 * See Def. 4.2. in Artem Polyvyanyy, Matthias Weidlich, Raffaele Conforti, Marcello La Rosa, Arthur H. M. ter Hofstede: The 4C Spectrum of Fundamental Behavioral Relations for Concurrent Systems. Petri Nets 2014:210-232
-	 */
-	@Override
-	public ThreeValuedLogicValue conflict(PQLTask taskA, PQLTask taskB) {
-		return logic.AND(logic.AND(this.canConflict(taskA, taskB), this.canConflict(taskB, taskA)), logic.NOT(this.canCooccur(taskA,taskB)));
+	public boolean canCooccur(PQLTask t1, PQLTask t2) {
+		return this.checkBinaryPredicate(this.PQL_CAN_COOCCUR, t1, t2);
 	}
 
 	/**
 	 * See Def. 4.2. in Artem Polyvyanyy, Matthias Weidlich, Raffaele Conforti, Marcello La Rosa, Arthur H. M. ter Hofstede: The 4C Spectrum of Fundamental Behavioral Relations for Concurrent Systems. Petri Nets 2014:210-232
 	 */
 	@Override
-	public ThreeValuedLogicValue cooccur(PQLTask taskA, PQLTask taskB) {
-		return logic.AND(logic.AND(logic.NOT(this.canConflict(taskA, taskB)),logic.NOT(this.canConflict(taskB, taskA))), this.canCooccur(taskA,taskB));
+	public boolean conflict(PQLTask t1, PQLTask t2) {
+		return this.canConflict(t1,t2) && this.canConflict(t2,t1) && !this.canCooccur(t1,t2);
+	}
+
+	/**
+	 * See Def. 4.2. in Artem Polyvyanyy, Matthias Weidlich, Raffaele Conforti, Marcello La Rosa, Arthur H. M. ter Hofstede: The 4C Spectrum of Fundamental Behavioral Relations for Concurrent Systems. Petri Nets 2014:210-232
+	 */
+	@Override
+	public boolean cooccur(PQLTask t1, PQLTask t2) {
+		return !this.canConflict(t1,t2) && !this.canConflict(t2,t1) && this.canCooccur(t1,t2);
 	}
 
 	@Override
-	public ThreeValuedLogicValue totalCausal(PQLTask taskA, PQLTask taskB) {
-		return this.checkBinaryPredicate(this.PQL_TOTAL_CAUSAL, taskA, taskB);
+	public boolean totalCausal(PQLTask t1, PQLTask t2) {
+		return this.checkBinaryPredicate(this.PQL_TOTAL_CAUSAL, t1, t2);
 	}
 
 	@Override
-	public ThreeValuedLogicValue totalConcur(PQLTask taskA, PQLTask taskB) {
-		return this.checkBinaryPredicate(this.PQL_TOTAL_CONCUR, taskA, taskB);
+	public boolean totalConcur(PQLTask t1, PQLTask t2) {
+		return this.checkBinaryPredicate(this.PQL_TOTAL_CONCUR, t1, t2);
 	}
 	
 	//A.P.
 	@Override
-	public ThreeValuedLogicValue executes(PQLTrace trace) {
-		ThreeValuedLogicValue 		result 				= null;
-		XLog 						log					= trace.getTraceLog(); 
-		PetrinetGraph				net 				= PetrinetFactory.newPetrinet("PNML");
+	public boolean executes(PQLTrace trace) {
+		boolean 		result	= false;
+		XLog 			log		= trace.getTraceLog(); 
+		PetrinetGraph	net		= PetrinetFactory.newPetrinet("PNML");
 		
-		  		try {
-	  			
+		try {		
 		  	//check if net contains trace labels 		
 		  	String eNetID = PL.getExternalID(this.netID);
 		  	Set<String> netLabels = LM.getAllLabels(eNetID);
 		  	
-		  	if(trace.hasAsterisk())
-		  	{
-			  	for(int i=1; i<trace.getTrace().size()-1; i++)
-			  	{
-			  		
+		  	if(trace.hasAsterisk()) {
+			  	for(int i=1; i<trace.getTrace().size()-1; i++) {
 			  		PQLTask nextTask = trace.getTrace().elementAt(i);
 			  		
-			  		if(!nextTask.isAsterisk())
-			  		{
+			  		if(!nextTask.isAsterisk()) {
 				  		boolean netHasLabel = false;
-				  		for(String t: nextTask.getSimilarLabels())
-				  		{
+				  		for(String t: nextTask.getSimilarLabels()) {
 				  			if (netLabels.contains(t)) netHasLabel = true;
 				  		}
 				  		if (!netHasLabel) 
-				  		return ThreeValuedLogicValue.FALSE;
+				  		return false;
 				  	}
 			  	}
 		  	}
-		  	else
-		  	{
-		  		for(int i=0; i<trace.getTrace().size(); i++)
-			  	{
+		  	else {
+		  		for(int i=0; i<trace.getTrace().size(); i++) {
 			  			PQLTask nextTask = trace.getTrace().elementAt(i);
 			  			
 				  		boolean netHasLabel = false;
-				  		for(String t: nextTask.getSimilarLabels())
-				  		{
+				  		for(String t: nextTask.getSimilarLabels()) {
 				  			if (netLabels.contains(t)) netHasLabel = true;
 				  		}
 				  		if (!netHasLabel) 
-				  		return ThreeValuedLogicValue.FALSE;
-				  	
+				  			return false;
 			  	}
-		  		
 		  	}	
 		  	
 			INetSystem<F,N,P,T,M> netSystem = PL.restoreNetSystem(this.netID);
@@ -248,15 +224,13 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 			AbstractReplayer replayer = new Replayer<F,N,P,T,M>(api);
 	  		
 	  		//add Start and End transitions if trace has *
-	  		if(trace.hasAsterisk())
-			{
+	  		if(trace.hasAsterisk()) {
 	  			wct.addStartEnd(trace);
 	 		}
 	   		
 	   		//get set of tasks for label unification
 	  		Set<PQLTask> tasks = new HashSet<PQLTask>();
-	  		for(int i=0; i<trace.getTrace().size(); i++)
-	  		{
+	  		for(int i=0; i<trace.getTrace().size(); i++) {
 	  			PQLTask task = trace.getTrace().elementAt(i);
 	  			if(!task.isAsterisk())
 		     	{tasks.add(task);}
@@ -270,70 +244,66 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	  		TransformationLog<F,N,P,T,M> trlog = new TransformationLog<F,N,P,T,M>();
 	  		
 	  		Iterator<PQLTask> it = tasks.iterator();
-	  		while (it.hasNext()) 
-	  		{
-	  		    			
-		    		PQLTask task = it.next();
-		    		
-		    		ILabelUnificationTransformation<F,N,P,T,M> lut = new AbstractLabelUnificationTransformation<F,N,P,T,M>(netSystem,task.getSimilarLabels());
-		    		trlog.add(lut);
-		    		this.TM.transform(trlog);
-		    		
-		    		if (lut.getUnifiedTransition()==null) return ThreeValuedLogicValue.UNKNOWN;
-		    		lut.getUnifiedTransition().setLabel(task.getLabel());
-		    		
-		    		transitionMap.put(task.getLabel(), lut.getUnifiedTransition());
+	  		while (it.hasNext()) {
+	    		PQLTask task = it.next();
+	    		
+	    		ILabelUnificationTransformation<F,N,P,T,M> lut = new AbstractLabelUnificationTransformation<F,N,P,T,M>(netSystem,task.getSimilarLabels());
+	    		trlog.add(lut);
+	    		this.TM.transform(trlog);
+	    		
+	    		if (lut.getUnifiedTransition()==null) return false;
+	    		lut.getUnifiedTransition().setLabel(task.getLabel());
+	    		
+	    		transitionMap.put(task.getLabel(), lut.getUnifiedTransition());
 		 	}
 	  		
 	  		//System.out.println("transitionMap: "+transitionMap);
 	   		//IOUtils.invokeDOT("./pics", eid+"-2-AfterLU.png", netSystem.toDOT());
-	   			
-			
-				if(!trace.hasAsterisk())
-				{
-									
-					// convert Net System to PetrinetGraph
-					net = api.constructPetrinetGraph(net);
-					
-					// get an optimal alignment
-					PQLAlignment alignment = replayer.getAlignment(net, log);
-					//alignment.print();
-								
-					// get alignment cost
-					int alignmentCost = alignment.getAlignmentCost();
-								
-					if(alignmentCost == 0)
-					{result = ThreeValuedLogicValue.TRUE;}else{result = ThreeValuedLogicValue.FALSE;}
-				}else
-				{
-					
-		    		//transform the system
-					wct.applyWildcardTransformation(trace,transitionMap);
-			 		//IOUtils.invokeDOT("./pics", eNetID+"-3-AfterST.png", netSystem.toDOT());
-		    		
-		    		//create PNML - for tests
-		    		//PNMLSerializer PNML = new PNMLSerializer();
-					//String pnmlNS = PNML.serializePetriNet((NetSystem) netSystem);
-					//System.out.println(pnmlNS);
-						
-		    		// convert Net System to PetrinetGraph
-					net = api.constructPetrinetGraph(net);
-					
-			 		// get an optimal alignment
-					PQLAlignment alignment = replayer.getAlignmentWithAsterisk(net, log);
-					
-					// get alignment cost
-					int alignmentCost = alignment.getAlignmentCostForAsterisk();
-								
-					if(alignmentCost == 0)
-					{result = ThreeValuedLogicValue.TRUE;}else{result = ThreeValuedLogicValue.FALSE;}
-		
-				}	
+	   		
+	  		if(!trace.hasAsterisk()) {
+				// convert Net System to PetrinetGraph
+				net = api.constructPetrinetGraph(net);
 				
-				}catch(Exception e){return ThreeValuedLogicValue.UNKNOWN;}
+				// get an optimal alignment
+				PQLAlignment alignment = replayer.getAlignment(net, log);
+				//alignment.print();
 							
-		 
+				// get alignment cost
+				int alignmentCost = alignment.getAlignmentCost();
+							
+				if(alignmentCost == 0) result = true;
+				else result = false;
+			}
+	  		else {				
+	    		//transform the system
+				wct.applyWildcardTransformation(trace,transitionMap);
+		 		//IOUtils.invokeDOT("./pics", eNetID+"-3-AfterST.png", netSystem.toDOT());
+	    		
+	    		//create PNML - for tests
+	    		//PNMLSerializer PNML = new PNMLSerializer();
+				//String pnmlNS = PNML.serializePetriNet((NetSystem) netSystem);
+				//System.out.println(pnmlNS);
+					
+	    		// convert Net System to PetrinetGraph
+				net = api.constructPetrinetGraph(net);
+				
+		 		// get an optimal alignment
+				PQLAlignment alignment = replayer.getAlignmentWithAsterisk(net, log);
+				
+				// get alignment cost
+				int alignmentCost = alignment.getAlignmentCostForAsterisk();
+							
+				if(alignmentCost == 0)
+					result = true;
+				else
+					result = false;
+			}	
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+
 		return result;
 	}
-
 }

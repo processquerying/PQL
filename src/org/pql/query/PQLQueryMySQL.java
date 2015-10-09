@@ -11,8 +11,6 @@ import org.pql.core.PQLException;
 import org.pql.core.PQLTask;
 import org.pql.core.PQLTrace;
 import org.pql.label.ILabelManager;
-import org.pql.logic.IThreeValuedLogic;
-import org.pql.logic.ThreeValuedLogicValue;
 
 /**
  * An implementation of the {@link AbstractPQLQuery}} class that relies on MySQL index.
@@ -34,14 +32,15 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	 * @throws SQLException 
 	 * @throws ClassNotFoundException 
 	 */
-	public PQLQueryMySQL(String mysqlURL, String mysqlUser, String mysqlPassword, String query, IThreeValuedLogic logic, ILabelManager labelMngr) throws ClassNotFoundException, SQLException {
-		super(query,logic,labelMngr);
+	@SuppressWarnings("rawtypes")
+	public PQLQueryMySQL(String mysqlURL, String mysqlUser, String mysqlPassword, String query, ILabelManager labelMngr) throws ClassNotFoundException, SQLException {
+		super(query,labelMngr);
 		
-		this.basicPredicates = new org.pql.core.PQLBasicPredicatesMySQL(mysqlURL, mysqlUser, mysqlPassword, logic);
+		this.basicPredicates = new org.pql.core.PQLBasicPredicatesMySQL(mysqlURL, mysqlUser, mysqlPassword);
 	}
 
 	@Override
-	public ThreeValuedLogicValue check() {
+	public boolean check() {
 		return this.interpret();
 	}
 
@@ -52,7 +51,7 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	}
 
 	@Override
-	protected ThreeValuedLogicValue interpretUnaryPredicate(Token op, PQLTask task) {
+	protected boolean interpretUnaryPredicate(Token op, PQLTask task) {
 		PQLTask dbTask = this.task2task.get(task); 
 		
 		if (dbTask==null) {
@@ -72,75 +71,70 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 			case PQLLexer.ALWAYS_OCCURS	: return basicPredicates.alwaysOccurs(dbTask);
 		}
 	
-		return ThreeValuedLogicValue.UNKNOWN;
+		return false;
 	}
 	
 	//A.P. 
 	@Override
-	protected ThreeValuedLogicValue interpretUnaryTracePredicate(Token op, PQLTrace trace) {
-	
+	protected boolean interpretUnaryTracePredicate(Token op, PQLTrace trace) {
 		PQLTrace dbTrace = new PQLTrace();
 		
-		for(int i=0; i<trace.getTrace().size(); i++)
-		{
+		for(int i=0; i<trace.getTrace().size(); i++) {
 			PQLTask task = trace.getTrace().elementAt(i);
 			PQLTask dbTask = null;
 			
-			if(task.getSimilarity() == 1.0)
-			{
+			if(task.getSimilarity() == 1.0) {
 				dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
 				Set<String> similarLabels = new HashSet<String>();
 				similarLabels.add(task.getLabel());
 				dbTask.setLabels(similarLabels);
 			}
-			else
-			{
+			else {
 				dbTask = this.task2task.get(task); 
 			
-				if (dbTask==null) 
-				{
+				if (dbTask==null) {
 					dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
 					
-					try 
-					{
+					try {
 						labelMngr.loadTask(dbTask, this.labelMngr.getIndexedSimilarities());
-					} catch (SQLException e) {e.printStackTrace();}
+					} 
+					catch (SQLException e) {
+						e.printStackTrace();
+					}
 					
 					this.task2task.put(task,dbTask);
 				}
 			}
-		dbTask.setAsterisk(task.isAsterisk());
-		dbTrace.addTask(dbTask);
+			dbTask.setAsterisk(task.isAsterisk());
+			dbTrace.addTask(dbTask);
 		}
 		
 		dbTrace.setHasAsterisk(trace.hasAsterisk());
 		
 		//create replacement map
-		if (dbTrace.hasAsterisk())
-		{
+		if (dbTrace.hasAsterisk()){
 			dbTrace.createReplacementMap();
 		}
 			
 		//create XLog
-		if (dbTrace.hasAsterisk())
-		{
+		if (dbTrace.hasAsterisk()) {
 			dbTrace.createLogForTraceWithAsterisk();
-		}else
-		{
+		} 
+		else {
 			dbTrace.createTraceLog();
 		}
 
-	switch (op.getType()) {
-	case PQLLexer.EXECUTES		: return basicPredicates.executes(dbTrace);
-	
-	}
+		switch (op.getType()) {
+			case PQLLexer.EXECUTES: 
+				return basicPredicates.executes(dbTrace);
+		}
 
-	return ThreeValuedLogicValue.UNKNOWN;	
+		return false;	
 	}
 
 	
 	@Override
-	protected ThreeValuedLogicValue interpretBinaryPredicate(Token op, PQLTask taskA, PQLTask taskB) {
+	protected boolean interpretBinaryPredicate(Token op, PQLTask taskA, PQLTask taskB) {
 		PQLTask dbTaskA = this.task2task.get(taskA);
 		PQLTask dbTaskB = this.task2task.get(taskB);
 		
@@ -177,7 +171,7 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 			case PQLLexer.TOTAL_CONCUR	: return basicPredicates.totalConcur(dbTaskA, dbTaskB);
 		}
 	
-		return ThreeValuedLogicValue.UNKNOWN;
+		return false;
 	}
 
 	@Override

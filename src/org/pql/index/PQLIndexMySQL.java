@@ -10,7 +10,6 @@ import org.jbpt.petri.Place;
 import org.jbpt.petri.Transition;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
 import org.pql.label.ILabelManager;
-import org.pql.logic.IThreeValuedLogic;
 import org.pql.mc.IModelChecker;
 
 /**
@@ -20,10 +19,10 @@ public class PQLIndexMySQL extends AbstractPQLIndexMySQL<Flow,Node,Place,Transit
 
 	public PQLIndexMySQL(String mysqlURL, String mysqlUser,
 			String mysqlPassword, IPQLBasicPredicatesOnTasks basicPredicates,
-			ILabelManager labelManager, IModelChecker<Flow,Node,Place,Transition,Marking> mc, IThreeValuedLogic logic,
+			ILabelManager labelManager, IModelChecker<Flow,Node,Place,Transition,Marking> mc,
 			double defaultSim, Set<Double> indexedSims, IndexType indexType, long indexTime, long sleepTime)
 			throws ClassNotFoundException, SQLException {
-		super(mysqlURL, mysqlUser, mysqlPassword, basicPredicates, labelManager, mc, logic,
+		super(mysqlURL, mysqlUser, mysqlPassword, basicPredicates, labelManager, mc,
 				defaultSim, indexedSims, indexType, indexTime, sleepTime);
 	}
 }
