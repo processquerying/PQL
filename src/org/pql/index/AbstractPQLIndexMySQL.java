@@ -126,9 +126,9 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 				
 				Set<PQLTask> tasks = new HashSet<PQLTask>();
 				for (String label : labels) {
-					for (Double sim : this.labelMngr.getIndexedSimilarities()) {
+					for (Double sim : this.labelMngr.getIndexedLabelSimilarityThresholds()) {
 						PQLTask task = new PQLTask(label,sim);
-						labelMngr.loadTask(task, this.labelMngr.getIndexedSimilarities());
+						labelMngr.loadTask(task, this.labelMngr.getIndexedLabelSimilarityThresholds());
 						tasks.add(task);
 					}
 				}

@@ -58,7 +58,7 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 			dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
 			
 			try {
-				labelMngr.loadTask(dbTask, this.labelMngr.getIndexedSimilarities());
+				labelMngr.loadTask(dbTask, this.labelMngr.getIndexedLabelSimilarityThresholds());
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -96,7 +96,7 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 					dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
 					
 					try {
-						labelMngr.loadTask(dbTask, this.labelMngr.getIndexedSimilarities());
+						labelMngr.loadTask(dbTask, this.labelMngr.getIndexedLabelSimilarityThresholds());
 					} 
 					catch (SQLException e) {
 						e.printStackTrace();
@@ -142,7 +142,7 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 			dbTaskA = new PQLTask(taskA.getLabel(), taskA.getSimilarity());
 			
 			try {
-				labelMngr.loadTask(dbTaskA, this.labelMngr.getIndexedSimilarities());
+				labelMngr.loadTask(dbTaskA, this.labelMngr.getIndexedLabelSimilarityThresholds());
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -154,7 +154,7 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 			dbTaskB = new PQLTask(taskB.getLabel(), taskB.getSimilarity());
 			
 			try {
-				labelMngr.loadTask(dbTaskB, this.labelMngr.getIndexedSimilarities());
+				labelMngr.loadTask(dbTaskB, this.labelMngr.getIndexedLabelSimilarityThresholds());
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}

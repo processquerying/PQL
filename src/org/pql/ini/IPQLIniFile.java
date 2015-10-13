@@ -56,9 +56,9 @@ public interface IPQLIniFile {
 	 * The label similarity score is obtained based on the label manager type of this PQL instance,
 	 * refer to {@link IPQLIniFile}.{@code getLabelManagerType()}.      
 	 * 
-	 * @return Default label similarity threshold value to use with this PQL instance.  
+	 * @return Default label similarity threshold value used with this PQL instance.  
 	 */
-	public Double getDefaultLabelSimilarityThreshold();
+	public double getDefaultLabelSimilarityThreshold();
 
 	/**
 	 * Get indexed label similarity threshold values.
@@ -67,7 +67,7 @@ public interface IPQLIniFile {
 	 * the PQL index, i.e., the PQL instance is optimized for computing behavioral predicates/relations
 	 * for these label similarity threshold values.
 	 * 
-	 * @return Indexed label similarity threshold values to use with this PQL instance.
+	 * @return The set of all indexed label similarity threshold values used with this PQL instance.
 	 */
 	public Set<Double> getIndexedLabelSimilarityThresholds();
 	
@@ -136,14 +136,14 @@ public interface IPQLIniFile {
 	 * 
 	 * @return Time (in seconds) that PQL Bots are allowed to sleep between indexing jobs.
 	 */
-	public Integer getDefaultBotSleepTime();
+	public int getDefaultBotSleepTime();
 
 	/**
 	 * Get default maximal time (in seconds) that a PQL Bot can spend on indexing a model.
 	 * 
 	 * @return Time (in seconds) that PQL Bots are allowed to spend indexing a single model..
 	 */
-	public Integer getDefaultBotMaxIndexTime();
+	public int getDefaultBotMaxIndexTime();
 	
 	/**
 	 * Get type of {@link IPQLIndex} to use with this PQL instance.
@@ -157,7 +157,7 @@ public interface IPQLIniFile {
 	 * 
 	 * @return Number of threads for interpreting PQL queries.
 	 */
-	public Integer getNumberOfQueryThreads();
+	public int getNumberOfQueryThreads();
 	
 	/**
 	 * Get label similarity search configuration parameter.

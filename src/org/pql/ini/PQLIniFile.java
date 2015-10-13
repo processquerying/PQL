@@ -151,7 +151,7 @@ public class PQLIniFile implements IPQLIniFile {
 	}
 
 	@Override
-	public Double getDefaultLabelSimilarityThreshold() {
+	public double getDefaultLabelSimilarityThreshold() {
 		return this.defaultLabelSimilarityThreshold;
 	}
 
@@ -196,12 +196,12 @@ public class PQLIniFile implements IPQLIniFile {
 	}
 
 	@Override
-	public Integer getDefaultBotSleepTime() {
+	public int getDefaultBotSleepTime() {
 		return this.defaultBotSleepTime;
 	}
 
 	@Override
-	public Integer getDefaultBotMaxIndexTime() {
+	public int getDefaultBotMaxIndexTime() {
 		return this.defaultBotMaxIndexTime;
 	}
 
@@ -211,7 +211,7 @@ public class PQLIniFile implements IPQLIniFile {
 	}
 
 	@Override
-	public Integer getNumberOfQueryThreads() {
+	public int getNumberOfQueryThreads() {
 		return this.numberOfQueryThreads;
 	}
 

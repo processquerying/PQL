@@ -165,12 +165,12 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 
 	@Override
 	public boolean totalCausal(PQLTask t1, PQLTask t2) {
-		return this.checkBinaryPredicate(this.PQL_TOTAL_CAUSAL, t1, t2);
+		return !this.canOccur(t1) || !this.canOccur(t2) || this.checkBinaryPredicate(this.PQL_TOTAL_CAUSAL, t1, t2);
 	}
 
 	@Override
 	public boolean totalConcur(PQLTask t1, PQLTask t2) {
-		return this.checkBinaryPredicate(this.PQL_TOTAL_CONCUR, t1, t2);
+		return !this.canOccur(t1) || !this.canOccur(t2) || this.checkBinaryPredicate(this.PQL_TOTAL_CONCUR, t1, t2);
 	}
 	
 	//A.P.

@@ -51,7 +51,7 @@ public class LabelManagerLuceneVSM extends AbstractLabelManagerMySQL {
 	}
 
 	@Override
-	public int indexLabel(String label) {
+	public int indexLabel(String label) throws SQLException {
 		try {
 			int labelID = this.createLabel(label);
 			
@@ -82,14 +82,14 @@ public class LabelManagerLuceneVSM extends AbstractLabelManagerMySQL {
 		    directory.close();
 		    
 			return labelID;
-		} catch (SQLException | IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			return 0;
 		}
 	}
 	
 	@Override
-	public Set<LabelScore> search(String searchString, int n) {
+	public Set<LabelScore> getSimilarLabels(String searchString, int n) {
 		Set<LabelScore> result = new HashSet<LabelScore>();
 		
 		try {
@@ -123,7 +123,7 @@ public class LabelManagerLuceneVSM extends AbstractLabelManagerMySQL {
 	}
 
 	@Override
-	public Set<LabelScore> search(String searchString, double sim) {
+	public Set<LabelScore> getSimilarLabels(String searchString, double sim) {
 		Set<LabelScore> result = new HashSet<LabelScore>();
 		
 		try {
