@@ -1,1 +1,1 @@
-SELECT * FROM * WHERE Executes(<"A","B",*,"D","A",*>);
+SELECT * FROM * WHERE Executes(<"A">);

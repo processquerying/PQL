@@ -1,6 +1,7 @@
 package org.pql.label;
 
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -11,11 +12,11 @@ import java.util.Set;
  */
 public class LabelManagerLevenshtein extends AbstractLabelManagerMySQL {
 	
-	protected String PQL_LEVENSHTEIN_SEARCH		= "{CALL pql.pql_levenshtein_label_sim_search(?)}";
+	protected String PQL_LEVENSHTEIN_SEARCH					= "{CALL pql.pql_levenshtein_label_sim_search(?)}";
+	protected CallableStatement PQL_LEVENSHTEIN_SEARCH_CS 	= null;
 	
-	public LabelManagerLevenshtein(String mysqlURL, String mysqlUser, String mysqlPassword,			
-			double defaultSim, Set<Double> indexedSims) throws ClassNotFoundException, SQLException {
-		super(mysqlURL,mysqlUser,mysqlPassword,defaultSim,indexedSims);
+	public LabelManagerLevenshtein(Connection con,	double defaultSim, Set<Double> indexedSims) throws ClassNotFoundException, SQLException {
+		super(con,defaultSim,indexedSims);
 	}
 	
 	@Override
@@ -23,11 +24,12 @@ public class LabelManagerLevenshtein extends AbstractLabelManagerMySQL {
 		Set<LabelScore> result = new HashSet<LabelScore>();
 		
 		try {
-			CallableStatement cs = connection.prepareCall(PQL_LEVENSHTEIN_SEARCH);
+			if(PQL_LEVENSHTEIN_SEARCH_CS == null)
+			PQL_LEVENSHTEIN_SEARCH_CS = connection.prepareCall(PQL_LEVENSHTEIN_SEARCH);
 		
-			cs.setString(1, searchString);
+			PQL_LEVENSHTEIN_SEARCH_CS.setString(1, searchString);
 			
-			ResultSet res = cs.executeQuery();
+			ResultSet res = PQL_LEVENSHTEIN_SEARCH_CS.executeQuery();
 			
 			int count = 0;
 			while (res.next()) {
@@ -50,11 +52,12 @@ public class LabelManagerLevenshtein extends AbstractLabelManagerMySQL {
 		Set<LabelScore> result = new HashSet<LabelScore>();
 		
 		try {
-			CallableStatement cs = connection.prepareCall(PQL_LEVENSHTEIN_SEARCH);
+			if(PQL_LEVENSHTEIN_SEARCH_CS == null) 
+			PQL_LEVENSHTEIN_SEARCH_CS = connection.prepareCall(PQL_LEVENSHTEIN_SEARCH);
 		
-			cs.setString(1, searchString);
+			PQL_LEVENSHTEIN_SEARCH_CS.setString(1, searchString);
 			
-			ResultSet res = cs.executeQuery();
+			ResultSet res = PQL_LEVENSHTEIN_SEARCH_CS.executeQuery();
 			
 			while (res.next()) {
 				if (sim <= res.getDouble(2)) {
@@ -80,4 +83,5 @@ public class LabelManagerLevenshtein extends AbstractLabelManagerMySQL {
 		
 		return 0;
 	}
+
 }

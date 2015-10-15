@@ -1,9 +1,9 @@
 package org.pql.query;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.antlr.v4.runtime.Token;
 import org.pql.antlr.PQLLexer;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
@@ -22,6 +22,7 @@ import org.pql.logic.ThreeValuedLogicValue;
 public class PQLQueryMySQL extends AbstractPQLQuery {
 	
 	private String identifier = "";
+	private Connection connection = null;
 	
 	IPQLBasicPredicatesOnTasks basicPredicates = null;
 	
@@ -34,10 +35,12 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	 * @throws SQLException 
 	 * @throws ClassNotFoundException 
 	 */
-	public PQLQueryMySQL(String mysqlURL, String mysqlUser, String mysqlPassword, String query, IThreeValuedLogic logic, ILabelManager labelMngr) throws ClassNotFoundException, SQLException {
+	
+	//A.P.
+	public PQLQueryMySQL(Connection con, String query, IThreeValuedLogic logic, ILabelManager labelMngr) throws ClassNotFoundException, SQLException {
 		super(query,logic,labelMngr);
-		
-		this.basicPredicates = new org.pql.core.PQLBasicPredicatesMySQL(mysqlURL, mysqlUser, mysqlPassword, logic);
+		this.connection = con;
+		this.basicPredicates = new org.pql.core.PQLBasicPredicatesMySQL(con, logic);
 	}
 
 	@Override
@@ -49,6 +52,14 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	public void configure(Object obj) throws PQLException {
 		this.identifier = obj.toString();
 		this.basicPredicates.configure(this.identifier);
+	}
+	
+	public void disconnect() {
+		try {
+			this.connection.close();
+			} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -79,6 +90,8 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	@Override
 	protected ThreeValuedLogicValue interpretUnaryTracePredicate(Token op, PQLTrace trace) {
 	
+		if(trace.isAsterisk()) return ThreeValuedLogicValue.TRUE;
+		
 		PQLTrace dbTrace = new PQLTrace();
 		
 		for(int i=0; i<trace.getTrace().size(); i++)

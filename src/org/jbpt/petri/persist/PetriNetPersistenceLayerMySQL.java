@@ -1,5 +1,6 @@
 package org.jbpt.petri.persist;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.jbpt.petri.Flow;
@@ -15,8 +16,8 @@ import org.jbpt.petri.Transition;
  */
 public class PetriNetPersistenceLayerMySQL extends AbstractPetriNetPersistenceLayerMySQL<Flow,Node,Place,Transition,Marking> {
 
-	public PetriNetPersistenceLayerMySQL(String url, String user, String password) throws ClassNotFoundException, SQLException {
-		super(url,user,password);
+	public PetriNetPersistenceLayerMySQL(Connection con) throws ClassNotFoundException, SQLException {
+		super(con);
 	}
 
 }

@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -29,14 +28,14 @@ import org.pql.core.PQLTask;
 import org.pql.core.PQLTrace;
 
 public class LabelLoader<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>>
-extends MySQLConnection {
-	
+extends MySQLConnection
+{
 	private static Random 							rand = new Random(System.currentTimeMillis());
-	private IPetriNetPersistenceLayer<F,N,P,T,M> 	PL = new AbstractPetriNetPersistenceLayerMySQL<F,N,P,T,M>(this.mysqlURL,this.mysqlUser,this.mysqlPassword);//A.P.
+	private IPetriNetPersistenceLayer<F,N,P,T,M> 	PL = new AbstractPetriNetPersistenceLayerMySQL<F,N,P,T,M>(connection);//A.P.
 	private Set<Integer> 							netIDs = PL.getAllInternalIDs();
 	
 
-		protected LabelLoader(String url, String user, String password) throws SQLException, ClassNotFoundException {
+	protected LabelLoader(String url, String user, String password) throws SQLException, ClassNotFoundException {
 			super(url, user, password);
 			} 
 		
@@ -101,7 +100,6 @@ extends MySQLConnection {
 		Integer position = randInt(0, enabledTransitions.size()-1);
 		
 		Transition t = enabledTransitions.elementAt(position);
-		//Transition t = run.getPossibleExtensions().iterator().next();
 		
 		if(!t.isSilent())trace.add(t.getLabel());
 		sys.getMarking().fire(t);

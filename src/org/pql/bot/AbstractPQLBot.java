@@ -1,13 +1,12 @@
 package org.pql.bot;
 
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
-
-import org.jbpt.persist.MySQLConnection;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INode;
@@ -24,8 +23,8 @@ import org.pql.mc.IModelChecker;
  * @author Artem Polyvyanyy
  */
 public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
-	extends MySQLConnection implements Runnable, IPQLBotHeartBeat {
-
+	implements Runnable, IPQLBotHeartBeat {
+	protected Connection connection = null;
 	protected IPQLIndex<F,N,P,T,M>		index	= null;
 	protected IModelChecker<F,N,P,T,M>	MC		= null;
 	
@@ -44,10 +43,9 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 	protected String	PQL_INDEX_BOTS_ALIVE		= "{CALL pql.pql_index_bots_alive(?)}";
 	protected String	PQL_INDEX_BOTS_IS_ALIVE		= "{? = CALL pql.pql_index_bots_is_alive(?)}";
 	
-	public AbstractPQLBot(String mysqlURL, String mysqlUser, String mysqlPassword, 
+	public AbstractPQLBot(Connection con, 
 			String botName, IPQLIndex<F,N,P,T,M> index, IModelChecker<F,N,P,T,M> mc, IndexType indexType, long indexTime, long sleepTime, boolean verbose) throws ClassNotFoundException, SQLException {
-		super(mysqlURL,mysqlUser,mysqlPassword);
-		
+		this.connection = con;
 		this.botName	= (botName==null) ? UUID.randomUUID().toString() : botName;
 		this.index		= index;
 		this.MC			= mc;
@@ -127,6 +125,8 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 
 	@Override
 	public void run() {
+		if (!this.isActive) return;
+		
 		for (;;) { // forever
 			try {
         		// get next index job

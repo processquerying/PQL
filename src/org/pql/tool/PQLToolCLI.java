@@ -19,9 +19,9 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.pql.api.PQLAPI;
-import org.pql.api.PQLQueryResult;
 import org.pql.core.PQLTask;
 import org.pql.ini.PQLIniFile;
+import org.pql.query.PQLQueryResult;
 
 /**
  * PQL command line tool
@@ -36,7 +36,7 @@ public final class PQLToolCLI {
 	
 	private static PQLAPI pqlAPI = null;
 		
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, InterruptedException {
 		// check ini file
 		// read parameters from the ini file
 		PQLIniFile iniFile = new PQLIniFile();
@@ -101,13 +101,13 @@ public final class PQLToolCLI {
 	        
 	        PQLToolCLI.pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
 	        									iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
-	        									iniFile.getLolaPath(),
+	        									iniFile.getLoLA2Path(),
 	        									iniFile.getLabelSimilaritySeacrhConfiguration(),
 	        									iniFile.getThreeValuedLogicType(),  
 	        									iniFile.getIndexType(),
 	        									iniFile.getLabelManagerType(),
-	        									iniFile.getDefaultLabelSimilarity(),
-	        									iniFile.getIndexedLabelSimilarities(),
+	        									iniFile.getDefaultLabelSimilarityThreshold(),
+	        									iniFile.getIndexedLabelSimilarityThresholds(),
 	        									iniFile.getNumberOfQueryThreads(),
 	        									iniFile.getDefaultBotMaxIndexTime(),
 	        									iniFile.getDefaultBotSleepTime());

@@ -3,28 +3,20 @@ package org.pql.test;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import java.util.Vector;
 
-import junit.framework.TestCase;
-
-import org.jbpt.persist.MySQLConnection;
+import org.pql.api.AbstractPQLAPI;
 import org.pql.api.PQLAPI;
-import org.pql.api.PQLQueryResult;
 import org.pql.core.PQLTrace;
 import org.pql.ini.PQLIniFile;
+import org.pql.query.PQLQueryResult;
 
 public class PQLExperimentExecutes {
-	private static PQLAPI	pqlAPI	= null;
+	private static PQLAPI pqlAPI	= null;
+	static LabelLoader ll = null;
 	
-public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
+public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, InterruptedException {
 	
 	  int numberOfExperiments = Integer.parseInt(args[0]); //6
 	  int maxTraceLength = Integer.parseInt(args[1]); //10
@@ -34,17 +26,18 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 	
 		PQLIniFile iniFile = new PQLIniFile();
 		if (!iniFile.load()) {
-			System.out.println("ERROR: Cannot load PQL ini file.");
-			return;
+			iniFile.create();
+			iniFile.load();
+			//System.out.println("ERROR: Cannot load PQL ini file.");
+			//return;
 		}
 
+			
 	Vector<String> results = new Vector<String>();
-	//String titleLine = "numberOfExperiments,traceLength,numberOfThreads,numberOfAsterisks,numberOfTildas,totalTime,timePerQuery,answersPerQuery,trace\r\n";
 	String titleLine = "numberOfExperiments;traceLength;numberOfThreads;numberOfAsterisks;numberOfTildas;totalTime;timePerQuery;answersPerQuery;trace\r\n";
 
 	results.add(titleLine);
-	LabelLoader ll = new LabelLoader(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword());
-	//int counter = 0;
+	ll = new LabelLoader(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword());
 	
 	for(int traceLength=0; traceLength <= maxTraceLength; traceLength++)
 	{
@@ -55,13 +48,13 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 		
 			pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
 					iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
-					iniFile.getLolaPath(),
+					iniFile.getLoLA2Path(),
 					iniFile.getLabelSimilaritySeacrhConfiguration(),
 					iniFile.getThreeValuedLogicType(),  
 					iniFile.getIndexType(),
 					iniFile.getLabelManagerType(),
-					iniFile.getDefaultLabelSimilarity(),
-					iniFile.getIndexedLabelSimilarities(),
+					iniFile.getDefaultLabelSimilarityThreshold(),
+					iniFile.getIndexedLabelSimilarityThresholds(),
 					numberOfThreads,
 					iniFile.getDefaultBotMaxIndexTime(),
 					iniFile.getDefaultBotSleepTime());
@@ -92,8 +85,8 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 						//long start = System.currentTimeMillis();
 						long start = System.nanoTime();
 						PQLQueryResult queryResult = pqlAPI.query(pqlQuery);
-						//long stop = System.currentTimeMillis();
 						long stop = System.nanoTime();
+						//long stop = System.currentTimeMillis();
 						
 						if(i>0)
 						{
@@ -102,14 +95,11 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 						}
 					}
 					
-					//System.out.println(counter);
-					//counter++;
-					
 					//System.out.println("Total time:\t"+time);
-					//System.out.println("Time per query:\t"+(double)time/(numberOfExperiments-1));
+					System.out.println("Number of threads: "+numberOfThreads);
+					System.out.println("Time per query:\t"+(double)time/(numberOfExperiments-1));
 					//System.out.println("Answers per query:\t"+(double)answersCount/(numberOfExperiments-1));
 					
-					//String outcomeLine = numberOfExperiments + ","+traceLength+","+numberOfThreads+","+numberOfAsterisks+","+numberOfTildas+","+time+","+(double)time/(numberOfExperiments-1)+","+(double)answersCount/(numberOfExperiments-1)+",<"+queryTrace+">\r\n";
 					String outcomeLine = numberOfExperiments + ";"+traceLength+";"+numberOfThreads+";"+numberOfAsterisks+";"+numberOfTildas+";"+time+";"+(double)time/(numberOfExperiments-1)+";"+(double)answersCount/(numberOfExperiments-1)+";<"+queryTrace+">\r\n";
 					
 					results.add(outcomeLine);
@@ -117,6 +107,8 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 				}
 				trace = ll.removeAsterisks(trace);
 			}
+		pqlAPI.disconnect();
+				
 		}
 	}	
 		File file = writeCSV(results);

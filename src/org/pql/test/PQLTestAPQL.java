@@ -8,8 +8,8 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.pql.api.PQLAPI;
-import org.pql.api.PQLQueryResult;
 import org.pql.ini.PQLIniFile;
+import org.pql.query.PQLQueryResult;
 
 public class PQLTestAPQL extends TestCase {
 	private static PQLAPI	pqlAPI	= null;
@@ -27,13 +27,13 @@ public class PQLTestAPQL extends TestCase {
 		
 		PQLTestAPQL.pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
 				iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
-				iniFile.getLolaPath(),
+				iniFile.getLoLA2Path(),
 				iniFile.getLabelSimilaritySeacrhConfiguration(),
 				iniFile.getThreeValuedLogicType(),  
 				iniFile.getIndexType(),
 				iniFile.getLabelManagerType(),
-				iniFile.getDefaultLabelSimilarity(),
-				iniFile.getIndexedLabelSimilarities(),
+				iniFile.getDefaultLabelSimilarityThreshold(),
+				iniFile.getIndexedLabelSimilarityThresholds(),
 				iniFile.getNumberOfQueryThreads(),
 				iniFile.getDefaultBotMaxIndexTime(),
 				iniFile.getDefaultBotSleepTime());

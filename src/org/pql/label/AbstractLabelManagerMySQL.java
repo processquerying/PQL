@@ -1,12 +1,11 @@
 package org.pql.label;
 
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.jbpt.persist.MySQLConnection;
 import org.pql.core.PQLTask;
 
 /**
@@ -14,9 +13,11 @@ import org.pql.core.PQLTask;
  *  
  * @author Artem Polyvyanyy
  */
-public abstract class AbstractLabelManagerMySQL extends MySQLConnection implements ILabelManager {
+public abstract class AbstractLabelManagerMySQL 
+				implements ILabelManager {
+	protected Connection 	connection 	= null;
 	protected double		defaultSim	= 1.0;
-	protected Set<Double> indexedSims = null;
+	protected Set<Double> 	indexedSims = null;
 	protected double		minSim		= 1.0;
 	
 	// MySQL matters
@@ -25,11 +26,18 @@ public abstract class AbstractLabelManagerMySQL extends MySQLConnection implemen
 	protected String PQL_TASKS_SIM_CREATE		= "{? = CALL pql.pql_tasks_sim_create(?,?,?)}";
 	protected String PQL_TASKS_GET_SIM			= "{CALL pql.pql_tasks_get_sim(?)}";
 	protected String PETRI_NET_GET_NET_LABELS	= "{CALL pql.jbpt_get_net_labels(?)}";
+	
+	//A.P.
+	protected CallableStatement JBPT_LABELS_CREATE_CS = null;
+	protected CallableStatement PQL_TASKS_CREATE_CS = null;
+	protected CallableStatement PQL_TASKS_SIM_CREATE_CS = null;
+	protected CallableStatement PQL_TASKS_GET_SIM_CS = null;
+	protected CallableStatement PETRI_NET_GET_NET_LABELS_CS = null;
 
-	protected AbstractLabelManagerMySQL(String url, String user, String password,double defaultSim, Set<Double> indexedSims)
+
+	protected AbstractLabelManagerMySQL(Connection con,double defaultSim, Set<Double> indexedSims)
 			throws ClassNotFoundException, SQLException {
-		super(url, user, password);
-		
+		this.connection = con;		
 		this.defaultSim	 = defaultSim;
 		this.indexedSims = indexedSims;
 		
@@ -78,17 +86,17 @@ public abstract class AbstractLabelManagerMySQL extends MySQLConnection implemen
 
 	@Override
 	public int getTaskID(String label, double similarity) throws SQLException {
-		CallableStatement cs = connection.prepareCall(PQL_TASKS_CREATE);
 		
-		cs.registerOutParameter(1, java.sql.Types.TINYINT);
-		cs.setString(2,label);
-		cs.setDouble(3,similarity);
+		if(this.PQL_TASKS_CREATE_CS == null)
+		this.PQL_TASKS_CREATE_CS = this.connection.prepareCall(PQL_TASKS_CREATE);
 		
-		cs.execute();
+		this.PQL_TASKS_CREATE_CS.registerOutParameter(1, java.sql.Types.TINYINT);
+		this.PQL_TASKS_CREATE_CS.setString(2,label);
+		this.PQL_TASKS_CREATE_CS.setDouble(3,similarity);
 		
-		int result = cs.getInt(1);
+		this.PQL_TASKS_CREATE_CS.execute();
 		
-		cs.close();
+		int result = this.PQL_TASKS_CREATE_CS.getInt(1); 
 		
 		return result;
 	}
@@ -97,10 +105,12 @@ public abstract class AbstractLabelManagerMySQL extends MySQLConnection implemen
 	public Set<String> getLabels(int taskID) throws SQLException {
 		Set<String> result = new HashSet<String>();
 		
-		CallableStatement cs = connection.prepareCall(PQL_TASKS_GET_SIM);
-		cs.setInt(1,taskID);
+		if(this.PQL_TASKS_GET_SIM_CS == null)
+		PQL_TASKS_GET_SIM_CS = connection.prepareCall(PQL_TASKS_GET_SIM);
 		
-		ResultSet res = cs.executeQuery();
+		PQL_TASKS_GET_SIM_CS.setInt(1,taskID);
+		
+		ResultSet res = PQL_TASKS_GET_SIM_CS.executeQuery();
 		
 		while (res.next()) {
 			result.add(res.getString(1));
@@ -177,10 +187,12 @@ public abstract class AbstractLabelManagerMySQL extends MySQLConnection implemen
 	public Set<String> getAllLabels(String externalID) throws SQLException {
 		Set<String> result = new HashSet<String>();
 		
-		CallableStatement cs = connection.prepareCall(this.PETRI_NET_GET_NET_LABELS);
-		cs.setString(1, externalID);
+		if(PETRI_NET_GET_NET_LABELS_CS == null)
+		PETRI_NET_GET_NET_LABELS_CS = connection.prepareCall(this.PETRI_NET_GET_NET_LABELS);
 		
-		ResultSet res = cs.executeQuery();
+		PETRI_NET_GET_NET_LABELS_CS.setString(1, externalID);
+		
+		ResultSet res = PETRI_NET_GET_NET_LABELS_CS.executeQuery();
 		
 		while (res.next()) {
 			result.add(res.getString(1));
@@ -190,51 +202,52 @@ public abstract class AbstractLabelManagerMySQL extends MySQLConnection implemen
 	}
 	
 	private int createTask(String label, Double similarity) throws SQLException {
-		CallableStatement cs = connection.prepareCall(PQL_TASKS_CREATE);
 		
-		cs.registerOutParameter(1, java.sql.Types.TINYINT);
-		cs.setString(2,label);
-		cs.setDouble(3,similarity);
+		if(PQL_TASKS_CREATE_CS == null)
+		PQL_TASKS_CREATE_CS = connection.prepareCall(PQL_TASKS_CREATE);
 		
-		cs.execute();
+		PQL_TASKS_CREATE_CS.registerOutParameter(1, java.sql.Types.TINYINT);
+		PQL_TASKS_CREATE_CS.setString(2,label);
+		PQL_TASKS_CREATE_CS.setDouble(3,similarity);
 		
-		int result = cs.getInt(1);
+		PQL_TASKS_CREATE_CS.execute();
 		
-		cs.close();
+		int result = PQL_TASKS_CREATE_CS.getInt(1);
 		
 		return result;
 	}
 	
 	private int createTaskSim(String labelA, String labelB, Double similarity) throws SQLException {
-		CallableStatement cs = connection.prepareCall(PQL_TASKS_SIM_CREATE);
 		
-		cs.registerOutParameter(1,java.sql.Types.TINYINT);
-		cs.setString(2,labelA);
-		cs.setString(3,labelB);
-		cs.setDouble(4,similarity);
+		if(PQL_TASKS_SIM_CREATE_CS == null)
+		PQL_TASKS_SIM_CREATE_CS = connection.prepareCall(PQL_TASKS_SIM_CREATE);
 		
-		cs.execute();
+		PQL_TASKS_SIM_CREATE_CS.registerOutParameter(1,java.sql.Types.TINYINT);
+		PQL_TASKS_SIM_CREATE_CS.setString(2,labelA);
+		PQL_TASKS_SIM_CREATE_CS.setString(3,labelB);
+		PQL_TASKS_SIM_CREATE_CS.setDouble(4,similarity);
 		
-		int result = cs.getInt(1);
+		PQL_TASKS_SIM_CREATE_CS.execute();
 		
-		cs.close();
+		int result = PQL_TASKS_SIM_CREATE_CS.getInt(1);
 		
 		return result;
 		
 	}
 	
 	protected int createLabel(String label) throws SQLException {
-		CallableStatement cs = connection.prepareCall(JBPT_LABELS_CREATE);
 		
-		cs.registerOutParameter(1, java.sql.Types.TINYINT);
-		cs.setString(2,label);
+		if(JBPT_LABELS_CREATE_CS == null)
+		JBPT_LABELS_CREATE_CS = connection.prepareCall(JBPT_LABELS_CREATE);
 		
-		cs.execute();
+		JBPT_LABELS_CREATE_CS.registerOutParameter(1, java.sql.Types.TINYINT);
+		JBPT_LABELS_CREATE_CS.setString(2,label);
 		
-		int result = cs.getInt(1);
+		JBPT_LABELS_CREATE_CS.execute();
 		
-		cs.close();
+		int result = JBPT_LABELS_CREATE_CS.getInt(1);
 		
 		return result;
 	}
+
 }

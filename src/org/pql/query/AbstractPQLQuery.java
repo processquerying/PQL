@@ -514,7 +514,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		
 	if(trace.hasAsterisk())
 	{trace.addStartEnd(this.hashCode());}
-	
+		
 	return trace;
 	
 	}

@@ -1,5 +1,6 @@
 package org.pql.index;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Set;
 
@@ -18,12 +19,11 @@ import org.pql.mc.IModelChecker;
  */
 public class PQLIndexMySQL extends AbstractPQLIndexMySQL<Flow,Node,Place,Transition,Marking> {
 
-	public PQLIndexMySQL(String mysqlURL, String mysqlUser,
-			String mysqlPassword, IPQLBasicPredicatesOnTasks basicPredicates,
+	public PQLIndexMySQL(Connection con, IPQLBasicPredicatesOnTasks basicPredicates,
 			ILabelManager labelManager, IModelChecker<Flow,Node,Place,Transition,Marking> mc, IThreeValuedLogic logic,
 			double defaultSim, Set<Double> indexedSims, IndexType indexType, long indexTime, long sleepTime)
 			throws ClassNotFoundException, SQLException {
-		super(mysqlURL, mysqlUser, mysqlPassword, basicPredicates, labelManager, mc, logic,
+		super(con, basicPredicates, labelManager, mc, logic,
 				defaultSim, indexedSims, indexType, indexTime, sleepTime);
 	}
 }

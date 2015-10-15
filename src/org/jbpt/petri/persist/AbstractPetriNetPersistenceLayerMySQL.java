@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jbpt.persist.MySQLConnection;
+import java.sql.Connection;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INetSystem;
@@ -24,31 +24,39 @@ import org.jbpt.petri.NetSystem;
 import org.jbpt.petri.io.PNMLSerializer;
 import org.jbpt.throwable.SerializationException;
 
+
 /**
  * An abstract implementation of the {@link IPetriNetPersistenceLayer} interface using MySQL database.
  * 
  * @author Artem Polyvyanyy
  */
 public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
-		extends MySQLConnection 
-		implements IPetriNetPersistenceLayer<F,N,P,T,M> {
-
-	private String PETRI_NET_CREATE				= "{? = CALL pql.jbpt_petri_nets_create(?,?,?,?,?)}";
-	private String PETRI_NET_GET_INT_ID			= "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
-	private String PETRI_NET_GET_EXT_ID			= "{? = CALL pql.jbpt_petri_nets_get_external_id(?)}";
-	private String PETRI_NET_GET_PNML			= "{? = CALL pql.jbpt_petri_nets_get_pnml_content(?)}";
-	private String PETRI_NET_DELETE				= "{? = CALL pql.jbpt_petri_nets_delete(?)}";
+	implements IPetriNetPersistenceLayer<F,N,P,T,M> {
 	
-	private String PETRI_NET_GET_INT_IDS		= "{CALL pql.jbpt_petri_nets_get_internal_ids()}";
+	private Connection connection = null;
+	private String PETRI_NET_CREATE						= "{? = CALL pql.jbpt_petri_nets_create(?,?,?,?,?)}";
+	private CallableStatement PETRI_NET_CREATE_CS 		= null;
+	private String PETRI_NET_GET_INT_ID					= "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
+	private CallableStatement PETRI_NET_GET_INT_ID_CS 	= null;
+	private String PETRI_NET_GET_EXT_ID					= "{? = CALL pql.jbpt_petri_nets_get_external_id(?)}";
+	private CallableStatement PETRI_NET_GET_EXT_ID_CS 	= null;
+	private String PETRI_NET_GET_PNML					= "{? = CALL pql.jbpt_petri_nets_get_pnml_content(?)}";
+	private CallableStatement PETRI_NET_GET_PNML_CS 	= null;
+	private String PETRI_NET_DELETE						= "{? = CALL pql.jbpt_petri_nets_delete(?)}";
+	private CallableStatement PETRI_NET_DELETE_CS 		= null;
+	private String PETRI_NET_GET_INT_IDS				= "{CALL pql.jbpt_petri_nets_get_internal_ids()}";
+	private CallableStatement PETRI_NET_GET_INT_IDS_CS 	= null;
+	private String PETRI_NODE_CREATE					= "{? = CALL pql.jbpt_petri_nodes_create(?,?,?,?,?,?)}";
+	private CallableStatement PETRI_NODE_CREATE_CS		= null;
+	private String PETRI_FLOW_CREATE					= "{? = CALL pql.jbpt_petri_flow_create(?,?,?,?)}";
+	private CallableStatement PETRI_FLOW_CREATE_CS 		= null;
+	private String PETRI_MARKINGS_CREATE				= "{? = CALL pql.jbpt_petri_markings_create(?,?)}";
+	private CallableStatement PETRI_MARKINGS_CREATE_CS 	= null;
+	private String PETRI_NET_RESET						= "{CALL pql.reset()}";
+	private CallableStatement PETRI_NET_RESET_CS 		= null;
 	
-	private String PETRI_NODE_CREATE			= "{? = CALL pql.jbpt_petri_nodes_create(?,?,?,?,?,?)}";
-	private String PETRI_FLOW_CREATE			= "{? = CALL pql.jbpt_petri_flow_create(?,?,?,?)}";
-	private String PETRI_MARKINGS_CREATE		= "{? = CALL pql.jbpt_petri_markings_create(?,?)}";
-	
-	private String PETRI_NET_RESET				= "{CALL pql.reset()}";
-	
-	public AbstractPetriNetPersistenceLayerMySQL(String url, String user, String password) throws ClassNotFoundException, SQLException {
-		super(url,user,password);
+	public AbstractPetriNetPersistenceLayerMySQL(Connection con) throws ClassNotFoundException, SQLException {
+		this.connection = con;
 	}
 	
 	@Override
@@ -150,73 +158,82 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		}
 		
 		// create net record
-		CallableStatement cs = connection.prepareCall(this.PETRI_NET_CREATE);
+		if(PETRI_NET_CREATE_CS == null)
+		PETRI_NET_CREATE_CS = connection.prepareCall(this.PETRI_NET_CREATE);
 		
-		cs.registerOutParameter(1, java.sql.Types.INTEGER);
-		cs.setString(2, sys.getId());
-		cs.setString(3, sys.getName());
-		cs.setString(4, sys.getDescription());
-		cs.setString(5, externalID);
-		cs.setString(6, pnmlContent);
+		PETRI_NET_CREATE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+		PETRI_NET_CREATE_CS.setString(2, sys.getId());
+		PETRI_NET_CREATE_CS.setString(3, sys.getName());
+		PETRI_NET_CREATE_CS.setString(4, sys.getDescription());
+		PETRI_NET_CREATE_CS.setString(5, externalID);
+		PETRI_NET_CREATE_CS.setString(6, pnmlContent);
 		
-		cs.execute();
+		PETRI_NET_CREATE_CS.execute();
 		
-		int result = cs.getInt(1);
+		int result = PETRI_NET_CREATE_CS.getInt(1);
 		if (result==0) return result;
 		
 		Map<N,Integer> n2id = new HashMap<N, Integer>(); 
 		
 		// create node records
-		cs = connection.prepareCall(this.PETRI_NODE_CREATE);
+		if(PETRI_NODE_CREATE_CS == null)
+		PETRI_NODE_CREATE_CS = connection.prepareCall(this.PETRI_NODE_CREATE);
+		
 		for(P p : sys.getPlaces()) {
-			cs.registerOutParameter(1, java.sql.Types.INTEGER);
-			cs.setInt(2, result);
-			cs.setString(3, p.getId());
-			cs.setString(4, p.getName());
-			cs.setString(5, p.getDescription());
-			cs.setString(6, "");
-			cs.setBoolean(7, false);
+			PETRI_NODE_CREATE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+			PETRI_NODE_CREATE_CS.setInt(2, result);
+			PETRI_NODE_CREATE_CS.setString(3, p.getId());
+			PETRI_NODE_CREATE_CS.setString(4, p.getName());
+			PETRI_NODE_CREATE_CS.setString(5, p.getDescription());
+			PETRI_NODE_CREATE_CS.setString(6, "");
+			PETRI_NODE_CREATE_CS.setBoolean(7, false);
 			
-			cs.execute();
-			int id = cs.getInt(1);
+			PETRI_NODE_CREATE_CS.execute();
+			int id = PETRI_NODE_CREATE_CS.getInt(1);
 			n2id.put((N)p,id);
 		}
 		
 		for(T t : sys.getTransitions()) {
-			cs = connection.prepareCall(this.PETRI_NODE_CREATE);
-			cs.registerOutParameter(1, java.sql.Types.INTEGER);
-			cs.setInt(2, result);
-			cs.setString(3, t.getId());
-			cs.setString(4, t.getName());
-			cs.setString(5, t.getDescription());
-			cs.setString(6, t.isObservable() ? t.getLabel() : "");
-			cs.setBoolean(7, true);
+			if(PETRI_NODE_CREATE_CS == null)
+			PETRI_NODE_CREATE_CS = connection.prepareCall(this.PETRI_NODE_CREATE);
 			
-			cs.execute();
-			int id = cs.getInt(1);
+			PETRI_NODE_CREATE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+			PETRI_NODE_CREATE_CS.setInt(2, result);
+			PETRI_NODE_CREATE_CS.setString(3, t.getId());
+			PETRI_NODE_CREATE_CS.setString(4, t.getName());
+			PETRI_NODE_CREATE_CS.setString(5, t.getDescription());
+			PETRI_NODE_CREATE_CS.setString(6, t.isObservable() ? t.getLabel() : "");
+			PETRI_NODE_CREATE_CS.setBoolean(7, true);
+			
+			PETRI_NODE_CREATE_CS.execute();
+			int id = PETRI_NODE_CREATE_CS.getInt(1);
 			n2id.put((N)t,id);
 		}
 		
 		// create flow records
 		for(F f : sys.getFlow()) {
-			cs = connection.prepareCall(this.PETRI_FLOW_CREATE);
-			cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
-			cs.setInt(2, n2id.get(f.getSource()));
-			cs.setInt(3, n2id.get(f.getTarget()));
-			cs.setString(4, f.getName());
-			cs.setString(5, f.getDescription());
+			if(PETRI_FLOW_CREATE_CS == null)
+			PETRI_FLOW_CREATE_CS = connection.prepareCall(this.PETRI_FLOW_CREATE);
 			
-			cs.execute();
+			PETRI_FLOW_CREATE_CS.registerOutParameter(1, java.sql.Types.BOOLEAN);
+			PETRI_FLOW_CREATE_CS.setInt(2, n2id.get(f.getSource()));
+			PETRI_FLOW_CREATE_CS.setInt(3, n2id.get(f.getTarget()));
+			PETRI_FLOW_CREATE_CS.setString(4, f.getName());
+			PETRI_FLOW_CREATE_CS.setString(5, f.getDescription());
+			
+			PETRI_FLOW_CREATE_CS.execute();
 		}
 		
 		// create marking records
 		for (Map.Entry<P,Integer> entry : sys.getMarking().entrySet()) {
-			cs = connection.prepareCall(this.PETRI_MARKINGS_CREATE);
-			cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
-			cs.setInt(2, n2id.get(entry.getKey()));
-			cs.setInt(3, entry.getValue());
+			if(PETRI_MARKINGS_CREATE_CS == null)
+			PETRI_MARKINGS_CREATE_CS = connection.prepareCall(this.PETRI_MARKINGS_CREATE);
 			
-			cs.execute();
+			PETRI_MARKINGS_CREATE_CS.registerOutParameter(1, java.sql.Types.BOOLEAN);
+			PETRI_MARKINGS_CREATE_CS.setInt(2, n2id.get(entry.getKey()));
+			PETRI_MARKINGS_CREATE_CS.setInt(3, entry.getValue());
+			
+			PETRI_MARKINGS_CREATE_CS.execute();
 		}
 
 		return result;
@@ -224,38 +241,41 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	
 	@Override
 	public int getInternalID(String externalID) throws SQLException {
-		CallableStatement cs = connection.prepareCall(this.PETRI_NET_GET_INT_ID);
+		if(PETRI_NET_GET_INT_ID_CS == null)
+		PETRI_NET_GET_INT_ID_CS = connection.prepareCall(this.PETRI_NET_GET_INT_ID);
 		
-		cs.registerOutParameter(1, java.sql.Types.INTEGER);
-		cs.setString(2, externalID);
+		PETRI_NET_GET_INT_ID_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+		PETRI_NET_GET_INT_ID_CS.setString(2, externalID);
 		
-		cs.execute();
+		PETRI_NET_GET_INT_ID_CS.execute();
 		
-		return cs.getInt(1);
+		return PETRI_NET_GET_INT_ID_CS.getInt(1);
 	}
 	
 	@Override
 	public String getExternalID(int internalID) throws SQLException {
-		CallableStatement cs = connection.prepareCall(this.PETRI_NET_GET_EXT_ID);
+		if(PETRI_NET_GET_EXT_ID_CS == null)
+		PETRI_NET_GET_EXT_ID_CS = connection.prepareCall(this.PETRI_NET_GET_EXT_ID);
 		
-		cs.registerOutParameter(1, java.sql.Types.VARCHAR);
-		cs.setInt(2, internalID);
+		PETRI_NET_GET_EXT_ID_CS.registerOutParameter(1, java.sql.Types.VARCHAR);
+		PETRI_NET_GET_EXT_ID_CS.setInt(2, internalID);
 		
-		cs.execute();
+		PETRI_NET_GET_EXT_ID_CS.execute();
 		
-		return cs.getString(1);
+		return PETRI_NET_GET_EXT_ID_CS.getString(1);
 	}
 	
 	@Override
 	public int deleteNetSystem(int internalID) throws SQLException {
-		CallableStatement cs = connection.prepareCall(this.PETRI_NET_DELETE);
+		if(PETRI_NET_DELETE_CS == null)
+		PETRI_NET_DELETE_CS = connection.prepareCall(this.PETRI_NET_DELETE);
 		
-		cs.registerOutParameter(1, java.sql.Types.INTEGER);
-		cs.setInt(2, internalID);
+		PETRI_NET_DELETE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+		PETRI_NET_DELETE_CS.setInt(2, internalID);
 		
-		cs.execute();
+		PETRI_NET_DELETE_CS.execute();
 		
-		return cs.getInt(1);
+		return PETRI_NET_DELETE_CS.getInt(1);
 	}
 	
 	@Override
@@ -272,9 +292,10 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	public Set<Integer> getAllInternalIDs() throws SQLException {
 		Set<Integer> result = new HashSet<Integer>();
 		
-		CallableStatement cs = connection.prepareCall(this.PETRI_NET_GET_INT_IDS);
+		if(PETRI_NET_GET_INT_IDS_CS == null)
+		PETRI_NET_GET_INT_IDS_CS = connection.prepareCall(this.PETRI_NET_GET_INT_IDS);
 		
-		ResultSet res = cs.executeQuery();
+		ResultSet res = PETRI_NET_GET_INT_IDS_CS.executeQuery();
 		
 		while (res.next()) {
 			result.add(new Integer(res.getInt(1)));
@@ -310,23 +331,24 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	
 	@Override
 	public String restorePNMLContent(int internalID) throws SQLException {
-		CallableStatement cs = connection.prepareCall(this.PETRI_NET_GET_PNML);
 		
-		cs.registerOutParameter(1, java.sql.Types.VARCHAR);
-		cs.setInt(2, internalID);
+		if(PETRI_NET_GET_PNML_CS == null)
+		PETRI_NET_GET_PNML_CS = connection.prepareCall(this.PETRI_NET_GET_PNML);
 		
-		cs.execute();
+		PETRI_NET_GET_PNML_CS.registerOutParameter(1, java.sql.Types.VARCHAR);
+		PETRI_NET_GET_PNML_CS.setInt(2, internalID);
 		
-		String result = cs.getString(1);
+		PETRI_NET_GET_PNML_CS.execute();
 		
-		cs.close();
+		String result = PETRI_NET_GET_PNML_CS.getString(1);
 		
 		return result;
 	}
 
 	@Override
 	public void reset() throws SQLException {
-		CallableStatement cs = connection.prepareCall(this.PETRI_NET_RESET);
-		cs.executeQuery();		
+		if(PETRI_NET_RESET_CS == null)
+		PETRI_NET_RESET_CS = connection.prepareCall(this.PETRI_NET_RESET);
+		PETRI_NET_RESET_CS.executeQuery();		
 	}
 }

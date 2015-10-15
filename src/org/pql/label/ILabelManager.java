@@ -1,6 +1,5 @@
 package org.pql.label;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 
@@ -11,7 +10,7 @@ import org.pql.core.PQLTask;
  * 
  * @author Artem Polyvyanyy
  */
-public interface ILabelManager {
+public interface ILabelManager{
 	
 	public double getDefaultLabelSimilarityThreshold();
 	
@@ -32,4 +31,5 @@ public interface ILabelManager {
 	public Set<LabelScore> search(String searchString, int n);
 	
 	public Set<LabelScore> search(String searchString, double sim);
+	
 }

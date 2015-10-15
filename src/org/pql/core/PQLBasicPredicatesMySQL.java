@@ -1,6 +1,7 @@
 package org.pql.core;
 
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,7 +9,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.deckfour.xes.model.XLog;
-import org.jbpt.persist.MySQLConnection;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INetSystem;
@@ -21,8 +21,6 @@ import org.pql.alignment.AbstractReplayer;
 import org.pql.alignment.PQLAlignment;
 import org.pql.alignment.Replayer;
 import org.pql.alignment.AlignmentAPI;
-import org.pql.label.ILabelManager;
-import org.pql.label.LabelManagerLevenshtein;
 import org.pql.logic.IThreeValuedLogic;
 import org.pql.logic.ThreeValuedLogicValue;
 import org.pql.petri.AbstractLabelUnificationTransformation;
@@ -37,30 +35,42 @@ import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactor
  * @author Artem Polyvyanyy
  */
 public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> //A.P. <...>added 
-				extends MySQLConnection
 				implements IPQLBasicPredicatesOnTasks
 				{
 	
 	protected String PETRI_NET_IDENTIFIER_TO_ID = "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
-	protected String PQL_CAN_OCCUR		= "{? = CALL pql.pql_can_occur(?,?)}";
-	protected String PQL_ALWAYS_OCCURS	= "{? = CALL pql.pql_always_occurs(?,?)}";
-	protected String PQL_CAN_CONFLICT	= "{? = CALL pql.pql_can_conflict(?,?,?)}";
-	protected String PQL_CAN_COOCCUR	= "{? = CALL pql.pql_can_cooccur(?,?,?)}";
-	protected String PQL_TOTAL_CAUSAL	= "{? = CALL pql.pql_total_causal(?,?,?)}";
-	protected String PQL_TOTAL_CONCUR	= "{? = CALL pql.pql_total_concur(?,?,?)}";
+	protected String PQL_CAN_OCCUR				= "{? = CALL pql.pql_can_occur(?,?)}";
+	protected String PQL_ALWAYS_OCCURS			= "{? = CALL pql.pql_always_occurs(?,?)}";
+	protected String PQL_CAN_CONFLICT			= "{? = CALL pql.pql_can_conflict(?,?,?)}";
+	protected String PQL_CAN_COOCCUR			= "{? = CALL pql.pql_can_cooccur(?,?,?)}";
+	protected String PQL_TOTAL_CAUSAL			= "{? = CALL pql.pql_total_causal(?,?,?)}";
+	protected String PQL_TOTAL_CONCUR			= "{? = CALL pql.pql_total_concur(?,?,?)}";
+	
+	//A.P.
+	protected CallableStatement PETRI_NET_IDENTIFIER_TO_ID_CS = null;
+	
+	//A.P. TODO check if CallableStatement exists
+	protected CallableStatement PQL_CAN_OCCUR_CS		= null;
+	protected CallableStatement PQL_ALWAYS_OCCURS_CS	= null;
+	protected CallableStatement PQL_CAN_CONFLICT_CS		= null;
+	protected CallableStatement PQL_CAN_COOCCUR_CS		= null;
+	protected CallableStatement PQL_TOTAL_CAUSAL_CS		= null;
+	protected CallableStatement PQL_TOTAL_CONCUR_CS		= null;
+
 		
 	private IThreeValuedLogic			logic = null;
 	private String						identifier = null;	
 	private int							netID = 0;
+	private Connection 					connection = null;
 	
-	private IPetriNetPersistenceLayer<F,N,P,T,M> 				PL = new AbstractPetriNetPersistenceLayerMySQL<F,N,P,T,M>(this.mysqlURL,this.mysqlUser,this.mysqlPassword);//A.P.
-	private ILabelManager 										LM = new LabelManagerLevenshtein(this.mysqlURL,this.mysqlUser,this.mysqlPassword, 1.0, new HashSet<Double>());//A.P.
+	private IPetriNetPersistenceLayer<F,N,P,T,M> 				PL = null;
 	private AbstractNetSystemTransformationManager<F,N,P,T,M> 	TM = null;//A.P.
 		
-	public PQLBasicPredicatesMySQL(String mysqlURL, String mysqlUser, String mysqlPassword, IThreeValuedLogic logic) throws ClassNotFoundException, SQLException {
-		super(mysqlURL,mysqlUser,mysqlPassword);
-
+	public PQLBasicPredicatesMySQL(Connection con, IThreeValuedLogic logic) throws ClassNotFoundException, SQLException {
+		this.connection = con;
 		this.logic = logic;
+		this.PL = new AbstractPetriNetPersistenceLayerMySQL<F,N,P,T,M>(this.connection);//A.P.
+		
 	}
 	
 	private ThreeValuedLogicValue checkUnaryPredicate(String call, PQLTask task) {
@@ -126,14 +136,15 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		this.identifier = (String) obj;
 		
 		try {
-			CallableStatement cs = connection.prepareCall(this.PETRI_NET_IDENTIFIER_TO_ID);
+			if(PETRI_NET_IDENTIFIER_TO_ID_CS == null)
+			PETRI_NET_IDENTIFIER_TO_ID_CS = connection.prepareCall(this.PETRI_NET_IDENTIFIER_TO_ID);
 			
-			cs.registerOutParameter(1, java.sql.Types.INTEGER);
-			cs.setString(2, identifier);
+			PETRI_NET_IDENTIFIER_TO_ID_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+			PETRI_NET_IDENTIFIER_TO_ID_CS.setString(2, identifier);
 			
-			cs.execute();
+			PETRI_NET_IDENTIFIER_TO_ID_CS.execute();
 			
-			this.netID = cs.getInt(1);
+			this.netID = PETRI_NET_IDENTIFIER_TO_ID_CS.getInt(1);
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
@@ -194,57 +205,22 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		PetrinetGraph				net 				= PetrinetFactory.newPetrinet("PNML");
 		
 		  		try {
-	  			
-		  	//check if net contains trace labels 		
-		  	String eNetID = PL.getExternalID(this.netID);
-		  	Set<String> netLabels = LM.getAllLabels(eNetID);
-		  	
-		  	if(trace.hasAsterisk())
-		  	{
-			  	for(int i=1; i<trace.getTrace().size()-1; i++)
-			  	{
-			  		
-			  		PQLTask nextTask = trace.getTrace().elementAt(i);
-			  		
-			  		if(!nextTask.isAsterisk())
-			  		{
-				  		boolean netHasLabel = false;
-				  		for(String t: nextTask.getSimilarLabels())
-				  		{
-				  			if (netLabels.contains(t)) netHasLabel = true;
-				  		}
-				  		if (!netHasLabel) 
-				  		return ThreeValuedLogicValue.FALSE;
-				  	}
-			  	}
-		  	}
-		  	else
-		  	{
-		  		for(int i=0; i<trace.getTrace().size(); i++)
-			  	{
-			  			PQLTask nextTask = trace.getTrace().elementAt(i);
-			  			
-				  		boolean netHasLabel = false;
-				  		for(String t: nextTask.getSimilarLabels())
-				  		{
-				  			if (netLabels.contains(t)) netHasLabel = true;
-				  		}
-				  		if (!netHasLabel) 
-				  		return ThreeValuedLogicValue.FALSE;
-				  	
-			  	}
-		  		
-		  	}	
-		  	
-			INetSystem<F,N,P,T,M> netSystem = PL.restoreNetSystem(this.netID);
-			netSystem.loadNaturalMarking();
-	  				  	
-	  		//System.out.println("net: " + this.netID + " - " + eNetID);
-	  		//trace.print();
-	  		//IOUtils.invokeDOT("./pics", eNetID+"-0-Original.png", netSystem.toDOT());
 	  		
+		  	INetSystem<F,N,P,T,M> netSystem = PL.restoreNetSystem(this.netID);
+		  	netSystem.loadNaturalMarking();
+			//IOUtils.invokeDOT("./pics", eNetID+"-0-Original.png", netSystem.toDOT());
+			
+		  	AlignmentAPI<F,N,P,T,M> api = new AlignmentAPI<F,N,P,T,M>(netSystem);
+			
+		  	//check enabled transitions for empty trace
+		  	if(trace.getTrace().isEmpty())
+		  	{if(!api.netStartsWithSilentTransitions()) return ThreeValuedLogicValue.FALSE;}
+		  	
+		  	//check if net contains all trace labels 		
+		   	Set<String> netLabels = api.getAllLabels();
+		   	if(!api.netHasAllTraceLabels(trace, netLabels)) return ThreeValuedLogicValue.FALSE;
+			
 			AbstractTraceExecutionWithWildcardCharactersTesterTransformation<F,N,P,T,M> wct = new AbstractTraceExecutionWithWildcardCharactersTesterTransformation<F,N,P,T,M>(netSystem); 
-			AlignmentAPI<F,N,P,T,M> api = new AlignmentAPI<F,N,P,T,M>(this.mysqlURL, this.mysqlUser, this.mysqlPassword, netSystem);
 			AbstractReplayer replayer = new Replayer<F,N,P,T,M>(api);
 	  		
 	  		//add Start and End transitions if trace has *
@@ -285,13 +261,10 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		    		transitionMap.put(task.getLabel(), lut.getUnifiedTransition());
 		 	}
 	  		
-	  		//System.out.println("transitionMap: "+transitionMap);
-	   		//IOUtils.invokeDOT("./pics", eid+"-2-AfterLU.png", netSystem.toDOT());
-	   			
-			
+	  		//IOUtils.invokeDOT("./pics", eid+"-2-AfterLU.png", netSystem.toDOT());
+	 		
 				if(!trace.hasAsterisk())
 				{
-									
 					// convert Net System to PetrinetGraph
 					net = api.constructPetrinetGraph(net);
 					
@@ -304,6 +277,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 								
 					if(alignmentCost == 0)
 					{result = ThreeValuedLogicValue.TRUE;}else{result = ThreeValuedLogicValue.FALSE;}
+					
 				}else
 				{
 					
