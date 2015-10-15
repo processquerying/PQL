@@ -29,7 +29,6 @@ public class PQLTestAPQL extends TestCase {
 				iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
 				iniFile.getLoLA2Path(),
 				iniFile.getLabelSimilaritySeacrhConfiguration(),
-				iniFile.getThreeValuedLogicType(),  
 				iniFile.getIndexType(),
 				iniFile.getLabelManagerType(),
 				iniFile.getDefaultLabelSimilarityThreshold(),
@@ -120,7 +119,7 @@ public class PQLTestAPQL extends TestCase {
 	}
 	
 	public void test005() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE CanConflict(\"B\",\"C\");");
+		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE CanConflict(\"B\",\"C\") AND {\"B\",\"C\"} IS SUBSET OF *;");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(3,res.size());
@@ -144,7 +143,7 @@ public class PQLTestAPQL extends TestCase {
 	}
 	
 	public void test007() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE CanConflict(\"B\",\"C\") OR CanConflict(\"B\",\"C\") IS UNKNOWN;");
+		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE CanConflict(\"B\",\"C\");");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(5,res.size());
@@ -205,7 +204,7 @@ public class PQLTestAPQL extends TestCase {
 	}
 	
 	public void test012() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalCausal(\"A\",\"E\");");
+		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalCausal(\"A\",\"E\") AND CanCooccur(\"A\",\"E\");");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(3,res.size());
@@ -216,7 +215,7 @@ public class PQLTestAPQL extends TestCase {
 	}
 	
 	public void test013() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalCausal({\"A\",\"B\",\"C\"},{\"K\"},ALL);");
+		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalCausal({\"A\",\"B\",\"C\"},{\"K\"},ALL) AND CanCooccur({\"A\",\"B\",\"C\"},{\"K\"},ALL);");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(2,res.size());
@@ -249,7 +248,7 @@ public class PQLTestAPQL extends TestCase {
 	}
 	
 	public void test016() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalConcurrent(\"B\",\"D\");");
+		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalConcurrent(\"B\",\"D\") AND CanCooccur(\"B\",\"D\");");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(1,res.size());
@@ -258,15 +257,13 @@ public class PQLTestAPQL extends TestCase {
 	}
 	
 	public void test017() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalConcurrent(\"B\",\"C\");");
+		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalConcurrent(\"B\",\"C\") AND CanCooccur(\"B\",\"C\");");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
-		assertEquals(5,res.size());
+		assertEquals(3,res.size());
 		
 		assertEquals(true, res.contains("3.pnml"));
-		assertEquals(true, res.contains("4.pnml"));
 		assertEquals(true, res.contains("5.pnml"));
-		assertEquals(true, res.contains("8.pnml"));
 		assertEquals(true, res.contains("9.pnml"));
 	}
 	
@@ -282,7 +279,7 @@ public class PQLTestAPQL extends TestCase {
 	}
 	
 	public void test019() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalCausal(\"A\",\"C\") AND TotalConcurrent({\"C\"},{\"K\",\"D\"},ALL);");
+		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalCausal(\"A\",\"C\") AND TotalConcurrent({\"C\"},{\"K\",\"D\"},ALL) AND CanCooccur(\"A\",\"C\") AND CanCooccur({\"C\"},{\"K\",\"D\"},ALL);");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(1,res.size());
@@ -291,7 +288,7 @@ public class PQLTestAPQL extends TestCase {
 	}
 	
 	public void test020() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalCausal(\"A\",\"C\") OR TotalConcurrent({\"C\"},{\"K\",\"D\"},ALL);");
+		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE (TotalCausal(\"A\",\"C\") AND CanCooccur(\"A\",\"C\")) OR (TotalConcurrent({\"C\"},{\"K\",\"D\"},ALL) AND CanCooccur({\"C\"},{\"K\",\"D\"},ALL));");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(4,res.size());
@@ -303,32 +300,20 @@ public class PQLTestAPQL extends TestCase {
 	}
 	
 	public void test021() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalCausal(\"A\",\"C\") OR TotalConcurrent({\"C\"},{\"K\",\"D\"},ANY);");
+		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalCausal(\"A\",\"C\") OR (TotalConcurrent({\"C\"},{\"K\",\"D\"},ANY) AND CanCooccur({\"C\"},{\"K\",\"D\"},ALL));");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(6,res.size());
 		
+		assertEquals(true, res.contains("1.pnml"));
+		assertEquals(true, res.contains("2.pnml"));
 		assertEquals(true, res.contains("3.pnml"));
 		assertEquals(true, res.contains("4.pnml"));
 		assertEquals(true, res.contains("7.pnml"));
-		assertEquals(true, res.contains("8.pnml"));
 		assertEquals(true, res.contains("9.pnml"));
-		assertEquals(true, res.contains("10.pnml"));
 	}
 	
 	public void test022() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TotalCausal(\"A\",\"C\") OR (TotalConcurrent({\"C\"},{\"K\",\"D\"},ANY) AND CanCooccur({\"C\"},{\"K\",\"D\"},ALL));");
-		assertEquals(0,queryResult.getNumberOfParseErrors());
-		Set<String> res = queryResult.getSearchResults();
-		assertEquals(4,res.size());
-		
-		assertEquals(true, res.contains("3.pnml"));
-		assertEquals(true, res.contains("4.pnml"));
-		assertEquals(true, res.contains("7.pnml"));
-		assertEquals(true, res.contains("9.pnml"));
-	}
-	
-	public void test023() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE {\"A\",\"C\"} IS SUBSET OF GetTasksAlwaysOccurs(*);");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
@@ -341,7 +326,7 @@ public class PQLTestAPQL extends TestCase {
 		assertEquals(true, res.contains("9.pnml"));
 	}
 	
-	public void test024() throws ClassNotFoundException, SQLException {
+	public void test023() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("x = GetTasksAlwaysOccurs(*); SELECT * FROM * WHERE {\"A\",\"C\"} IS SUBSET OF x;");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
@@ -354,7 +339,7 @@ public class PQLTestAPQL extends TestCase {
 		assertEquals(true, res.contains("9.pnml"));
 	}
 	
-	public void test025() throws ClassNotFoundException, SQLException {
+	public void test024() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("x = GetTasksAlwaysOccurs(*); SELECT * FROM * WHERE ({\"A\",\"C\"} IS SUBSET OF x) IS NOT TRUE;");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
@@ -367,7 +352,7 @@ public class PQLTestAPQL extends TestCase {
 		assertEquals(true, res.contains("10.pnml"));
 	}
 
-	public void test026() throws ClassNotFoundException, SQLException {
+	public void test025() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTestAPQL.pqlAPI.query("SELECT * FROM * WHERE TRUE;");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();

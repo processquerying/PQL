@@ -12,7 +12,6 @@ import java.util.StringTokenizer;
 import org.ini4j.Ini;
 import org.pql.index.IndexType;
 import org.pql.label.LabelManagerType;
-import org.pql.logic.ThreeValuedLogicType;
 
 /**
  * PQL ini file manager.
@@ -152,7 +151,7 @@ public class PQLIniFile implements IPQLIniFile {
 	}
 
 	@Override
-	public Double getDefaultLabelSimilarityThreshold() {
+	public double getDefaultLabelSimilarityThreshold() {
 		return this.defaultLabelSimilarityThreshold;
 	}
 
@@ -197,18 +196,13 @@ public class PQLIniFile implements IPQLIniFile {
 	}
 
 	@Override
-	public Integer getDefaultBotSleepTime() {
+	public int getDefaultBotSleepTime() {
 		return this.defaultBotSleepTime;
 	}
 
 	@Override
-	public Integer getDefaultBotMaxIndexTime() {
+	public int getDefaultBotMaxIndexTime() {
 		return this.defaultBotMaxIndexTime;
-	}
-
-	@Override
-	public ThreeValuedLogicType getThreeValuedLogicType() {
-		return ThreeValuedLogicType.KLEENE;
 	}
 
 	@Override
@@ -217,7 +211,7 @@ public class PQLIniFile implements IPQLIniFile {
 	}
 
 	@Override
-	public Integer getNumberOfQueryThreads() {
+	public int getNumberOfQueryThreads() {
 		return this.numberOfQueryThreads;
 	}
 

@@ -21,8 +21,6 @@ import org.pql.label.ILabelManager;
 import org.pql.label.LabelManagerLevenshtein;
 import org.pql.label.LabelManagerLuceneVSM;
 import org.pql.label.LabelManagerThemisVSM;
-import org.pql.logic.IThreeValuedLogic;
-import org.pql.logic.KleeneLogic;
 import org.pql.mc.LoLA2ModelChecker;
 
 /**
@@ -113,14 +111,6 @@ public class PQLBotCLI {
 	    
 	    // TODO: develop a factory to generate objects from iniFile (use here and for API)
 	    
-	    IThreeValuedLogic		logic = null;
-	    
-	    switch (iniFile.getThreeValuedLogicType()) {
-	    	case KLEENE:
-		    default:
-		    	logic = new KleeneLogic();
-	    }
-	    
 	    ILabelManager labelMngr = null;
 	    
 	    switch (iniFile.getLabelManagerType()) {
@@ -140,11 +130,11 @@ public class PQLBotCLI {
 	    }
 	    
 	    LoLA2ModelChecker		mc	= new LoLA2ModelChecker(iniFile.getLoLA2Path());
-		PQLBasicPredicatesMC    bp	= new PQLBasicPredicatesMC(mc,logic);
-		PQLIndexMySQL			index = new PQLIndexMySQL(connection,bp,
-				labelMngr,mc,logic,iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarityThresholds(),
+
+		PQLBasicPredicatesMC    bp	= new PQLBasicPredicatesMC(mc);
+		PQLIndexMySQL			index = new PQLIndexMySQL(connection,bp,labelMngr,mc,
+				iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarityThresholds(),
 				iniFile.getIndexType(), iniFile.getDefaultBotMaxIndexTime(), iniFile.getDefaultBotSleepTime());
-		
 	    
 	    PQLBot bot = new PQLBot(connection, 
 	    						botName, index, mc, IndexType.PREDICATES, indexTime, sleepTime, true);

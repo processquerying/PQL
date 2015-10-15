@@ -2,7 +2,9 @@ package org.pql.alignment;
 
 import java.util.List;
 import java.util.Map;
+
 import nl.tue.astar.AStarException;
+
 import org.deckfour.xes.classification.XEventClass;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.info.impl.XLogInfoImpl;
@@ -12,7 +14,6 @@ import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INode;
 import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
-import org.pql.alignment.AlignmentAPI;
 import org.processmining.contexts.uitopia.DummyGlobalContext;
 import org.processmining.contexts.uitopia.DummyUIPluginContext;
 import org.processmining.models.graphbased.directed.petrinet.PetrinetGraph;
@@ -85,6 +86,8 @@ public PQLAlignment getAlignment(PetrinetGraph net,  XLog log)
 	   case L:
 		   alignment.addMove(new PQLMove("SKIP_STEP", nodes.get(i).toString()));
 		   break;
+	default:
+		break;
 	   }
 		   
    }
@@ -151,6 +154,8 @@ for(int i=0; i<steps.size(); i++)
    case L:
 	   alignment.addMove(new PQLMove("SKIP_STEP", nodes.get(i).toString()));
 	   break;
+	default:
+		break;
    }
 	   
 }

@@ -20,7 +20,7 @@ public class LabelManagerLevenshtein extends AbstractLabelManagerMySQL {
 	}
 	
 	@Override
-	public Set<LabelScore> search(String searchString, int n) {
+	public Set<LabelScore> getSimilarLabels(String searchString, int n) {
 		Set<LabelScore> result = new HashSet<LabelScore>();
 		
 		try {
@@ -48,7 +48,7 @@ public class LabelManagerLevenshtein extends AbstractLabelManagerMySQL {
 	}
 
 	@Override
-	public Set<LabelScore> search(String searchString, double sim) {
+	public Set<LabelScore> getSimilarLabels(String searchString, double sim) {
 		Set<LabelScore> result = new HashSet<LabelScore>();
 		
 		try {
@@ -71,17 +71,9 @@ public class LabelManagerLevenshtein extends AbstractLabelManagerMySQL {
 		return result;
 	}
 	
-	
 	@Override
-	public int indexLabel(String label) {		
-		try {
-			int labelID = this.createLabel(label);
-			return labelID;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		return 0;
+	public int indexLabel(String label) throws SQLException {		
+		return this.createLabel(label);
 	}
 
 }

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.antlr.v4.runtime.misc.TestRig;
 import org.jbpt.persist.MySQLConnection;
 import org.jbpt.petri.IFlow;
@@ -26,9 +27,6 @@ import org.pql.label.LabelManagerLevenshtein;
 import org.pql.label.LabelManagerLuceneVSM;
 import org.pql.label.LabelManagerThemisVSM;
 import org.pql.label.LabelManagerType;
-import org.pql.logic.IThreeValuedLogic;
-import org.pql.logic.KleeneLogic;
-import org.pql.logic.ThreeValuedLogicType;
 import org.pql.mc.AbstractLoLA2ModelChecker;
 import org.pql.mc.IModelChecker;
 import org.pql.query.PQLQueryResult;
@@ -40,7 +38,6 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		extends MySQLConnection
 		implements IPQLAPI<F,N,P,T,M> {
 	
-	private IThreeValuedLogic					 logic					= null;
 	private IPetriNetPersistenceLayer<F,N,P,T,M> netPersistenceLayer	= null;
 	private ILabelManager						 labelMngr				= null;
 	private IModelChecker<F,N,P,T,M>			 modelChecker			= null;
@@ -65,8 +62,7 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	public AbstractPQLAPI(String mySQLURL, String mySQLUser, String mySQLPassword,
 					String postgreSQLHost, String postgreSQLName, String postgreSQLUser, String postgreSQLPassword, 
 					String lolaPath,
-					String labelSimilarityConfig,
-					ThreeValuedLogicType threeValuedLogicType, 
+					String labelSimilarityConfig, 
 					IndexType indexType,
 					LabelManagerType labelManagerType, 
 					Double defaultLabelSimilarity,
@@ -80,11 +76,6 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		this.numberOfQueryThreads = numberOfQueryThreads;
 		this.indexTime = indexTime;
 		this.sleepTime = sleepTime;
-		
-		switch (threeValuedLogicType) {
-			default: 
-				this.logic = new KleeneLogic();
-		}
 		
 		switch (labelManagerType) {
 			case THEMIS_VSM:
@@ -100,8 +91,8 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		
 		this.netPersistenceLayer	= new AbstractPetriNetPersistenceLayerMySQL(this.connection);
 		this.modelChecker			= new AbstractLoLA2ModelChecker(lolaPath);
-		this.basicPredicates		= new AbstractPQLBasicPredicatesMC(this.modelChecker,this.logic);
-		this.pqlIndex				= new AbstractPQLIndexMySQL(this.connection,basicPredicates,this.labelMngr,this.modelChecker,this.logic,defaultLabelSimilarity,indexedLabelSimilarities,this.indexType, this.indexTime, this.sleepTime);
+		this.basicPredicates		= new AbstractPQLBasicPredicatesMC(this.modelChecker);
+		this.pqlIndex				= new AbstractPQLIndexMySQL(this.connection,basicPredicates,this.labelMngr,this.modelChecker,defaultLabelSimilarity,indexedLabelSimilarities,this.indexType, this.indexTime, this.sleepTime);
 	
 	//A.P. TODO think of a better way to create thread label managers
 		  this.postgreSQLHost = postgreSQLHost;
@@ -113,7 +104,6 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		  this.indexedLabelSimilarities.addAll(indexedLabelSimilarities);
 		  this.labelSimilarityConfig = labelSimilarityConfig;
 		  this.labelManagerType = labelManagerType;
-	
 	}
 
 	@Override
@@ -183,21 +173,26 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	
 	@Override
 	public PQLQueryResult query(String pqlQuery) throws ClassNotFoundException, SQLException {		
+
 		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, 
-				this.mysqlUser, this.mysqlPassword, pqlQuery, logic, labelMngr, this.postgreSQLHost, 
+				this.mysqlUser, this.mysqlPassword, pqlQuery, labelMngr, this.postgreSQLHost, 
 				this.postgreSQLName, this.postgreSQLUser, this.postgreSQLPassword, this.labelSimilarityConfig, 
 				this.defaultLabelSimilarity, this.indexedLabelSimilarities, this.labelManagerType);//A.P.
 		result.disconnect();//A.P.
+
+
 		return result;
 	}
 
 	@Override
 	public PQLQueryResult query(String pqlQuery, Set<String> externalIDs) throws ClassNotFoundException, SQLException {
+
 		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, 
-				this.mysqlUser, this.mysqlPassword, pqlQuery, logic, labelMngr, this.postgreSQLHost, 
+				this.mysqlUser, this.mysqlPassword, pqlQuery, labelMngr, this.postgreSQLHost, 
 				this.postgreSQLName, this.postgreSQLUser, this.postgreSQLPassword, this.labelSimilarityConfig, 
 				this.defaultLabelSimilarity, this.indexedLabelSimilarities, this.labelManagerType, externalIDs);//A.P.
 		result.disconnect();//A.P.
+
 		return result;
 	}
 
@@ -214,5 +209,6 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	@Override
 	public boolean deleteModel(int internalID) throws SQLException {
 		return this.netPersistenceLayer.deleteNetSystem(internalID) > 0;
-	}	
+	}
+
 }

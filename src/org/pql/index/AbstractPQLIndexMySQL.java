@@ -18,8 +18,6 @@ import org.pql.bot.AbstractPQLBot;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
 import org.pql.core.PQLTask;
 import org.pql.label.ILabelManager;
-import org.pql.logic.IThreeValuedLogic;
-import org.pql.logic.ThreeValuedLogicValue;
 import org.pql.mc.IModelChecker;
 
 /**
@@ -36,12 +34,12 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 	protected String 	PQL_INDEX_DELETE			= "{? = CALL pql.pql_index_delete(?)}";
 	protected String 	PQL_INDEX_CLEANUP			= "{CALL pql.pql_index_cleanup()}";
 	
-	protected String	PQL_CAN_OCCUR_CREATE		= "{CALL pql.pql_can_occur_create(?,?,?)}";
-	protected String	PQL_ALWAYS_OCCURS_CREATE	= "{CALL pql.pql_always_occurs_create(?,?,?)}";
-	protected String	PQL_CAN_CONFLICT_CREATE		= "{CALL pql.pql_can_conflict_create(?,?,?,?)}";
-	protected String	PQL_CAN_COOCCUR_CREATE		= "{CALL pql.pql_can_cooccur_create(?,?,?,?)}";	
-	protected String	PQL_TOTAL_CAUSAL_CREATE		= "{CALL pql.pql_total_causal_create(?,?,?,?)}";
-	protected String	PQL_TOTAL_CONCUR_CREATE		= "{CALL pql.pql_total_concur_create(?,?,?,?)}";
+	protected String	PQL_CAN_OCCUR_CREATE		= "{CALL pql.pql_can_occur_create(?,?)}";
+	protected String	PQL_ALWAYS_OCCURS_CREATE	= "{CALL pql.pql_always_occurs_create(?,?)}";
+	protected String	PQL_CAN_CONFLICT_CREATE		= "{CALL pql.pql_can_conflict_create(?,?,?)}";
+	protected String	PQL_CAN_COOCCUR_CREATE		= "{CALL pql.pql_can_cooccur_create(?,?,?)}";	
+	protected String	PQL_TOTAL_CAUSAL_CREATE		= "{CALL pql.pql_total_causal_create(?,?,?)}";
+	protected String	PQL_TOTAL_CONCUR_CREATE		= "{CALL pql.pql_total_concur_create(?,?,?)}";
 	
 	protected String	PQL_INDEX_GET_NEXT_JOB		= "{? = CALL pql.pql_index_get_next_job()}";
 	protected String	PQL_INDEX_CLAIM_JOB			= "{CALL pql.pql_index_claim_job(?,?)}";
@@ -62,7 +60,7 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 	
 	public AbstractPQLIndexMySQL(Connection con, IPQLBasicPredicatesOnTasks basicPredicates, ILabelManager labelManager, 
 			IModelChecker<F,N,P,T,M> mc,
-			IThreeValuedLogic logic, double defaultSim, Set<Double> indexedSims, 
+			double defaultSim, Set<Double> indexedSims, 
 			IndexType indexType, long indexTime, long sleepTime) throws ClassNotFoundException, SQLException {
 		//super(mysqlURL,mysqlUser,mysqlPassword);
 		this.connection = con;
@@ -129,9 +127,9 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 				
 				Set<PQLTask> tasks = new HashSet<PQLTask>();
 				for (String label : labels) {
-					for (Double sim : this.labelMngr.getIndexedSimilarities()) {
+					for (Double sim : this.labelMngr.getIndexedLabelSimilarityThresholds()) {
 						PQLTask task = new PQLTask(label,sim);
-						labelMngr.loadTask(task, this.labelMngr.getIndexedSimilarities());
+						labelMngr.loadTask(task, this.labelMngr.getIndexedLabelSimilarityThresholds());
 						tasks.add(task);
 					}
 				}
@@ -139,18 +137,18 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 				this.basicPredicates.configure(sys);
 				
 				// index unary relations
-				Map<Set<String>,ThreeValuedLogicValue> canOccurMap		= new HashMap<Set<String>,ThreeValuedLogicValue>();
-				Map<Set<String>,ThreeValuedLogicValue> alwaysOccursMap	= new HashMap<Set<String>,ThreeValuedLogicValue>();
-				ThreeValuedLogicValue canOccurValue		= null;
-				ThreeValuedLogicValue alwaysOccursValue = null;
+				Map<Set<String>,Boolean> canOccurMap		= new HashMap<Set<String>,Boolean>();
+				Map<Set<String>,Boolean> alwaysOccursMap	= new HashMap<Set<String>,Boolean>();
+				Boolean canOccurValue	  = null;
+				Boolean alwaysOccursValue = null;
 				for (PQLTask task : tasks) {
 					// canOccur
 					canOccurValue = canOccurMap.get(task.getSimilarLabels());
 					if (canOccurValue==null) { 
 						canOccurValue = this.basicPredicates.canOccur(task);
-						canOccurMap.put(task.getSimilarLabels(), canOccurValue);
+						canOccurMap.put(task.getSimilarLabels(),canOccurValue);
 					}
-					this.indexUnaryPredicate(this.PQL_CAN_OCCUR_CREATE, internalID, task, canOccurValue);
+					if (canOccurValue) this.indexUnaryPredicate(this.PQL_CAN_OCCUR_CREATE, internalID, task);
 					
 					//alwaysOccurs
 					alwaysOccursValue = alwaysOccursMap.get(task.getSimilarLabels());
@@ -158,17 +156,17 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 						alwaysOccursValue = this.basicPredicates.alwaysOccurs(task);
 						alwaysOccursMap.put(task.getSimilarLabels(), alwaysOccursValue);
 					}
-					this.indexUnaryPredicate(this.PQL_ALWAYS_OCCURS_CREATE, internalID, task, alwaysOccursValue);
+					if (alwaysOccursValue) this.indexUnaryPredicate(this.PQL_ALWAYS_OCCURS_CREATE, internalID, task);
 				}
 				canOccurMap.clear();
 				alwaysOccursMap.clear();
 				
 				// index symmetric binary relations
-				Map<Set<String>,Map<Set<String>,ThreeValuedLogicValue>> totalConcurMap	= new HashMap<Set<String>,Map<Set<String>,ThreeValuedLogicValue>>();
-				Map<Set<String>,Map<Set<String>,ThreeValuedLogicValue>> canCooccurMap	= new HashMap<Set<String>,Map<Set<String>,ThreeValuedLogicValue>>();
+				Map<Set<String>,Map<Set<String>,Boolean>> totalConcurMap	= new HashMap<Set<String>,Map<Set<String>,Boolean>>();
+				Map<Set<String>,Map<Set<String>,Boolean>> canCooccurMap		= new HashMap<Set<String>,Map<Set<String>,Boolean>>();
 				
-				ThreeValuedLogicValue totalConcurValue	= null;
-				ThreeValuedLogicValue canCooccurValue	= null;
+				Boolean totalConcurValue	= null;
+				Boolean canCooccurValue	= null;
 				
 				for (PQLTask taskA : tasks) {
 					for (PQLTask taskB : tasks) {
@@ -178,14 +176,14 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 							canCooccurValue = this.basicPredicates.canCooccur(taskA,taskB);
 							this.storeSymmetricRelation(canCooccurMap,taskA.getSimilarLabels(),taskB.getSimilarLabels(),canCooccurValue);
 						}
-						this.indexBinaryPredicate(this.PQL_CAN_COOCCUR_CREATE,internalID,taskA,taskB,canCooccurValue);
+						if (canCooccurValue) this.indexBinaryPredicate(this.PQL_CAN_COOCCUR_CREATE,internalID,taskA,taskB);
 						
 						totalConcurValue = this.checkSymmetricRelation(totalConcurMap,taskA.getSimilarLabels(),taskB.getSimilarLabels());
 						if (totalConcurValue==null) {
 							totalConcurValue = this.basicPredicates.totalConcur(taskA,taskB);
 							this.storeSymmetricRelation(totalConcurMap,taskA.getSimilarLabels(),taskB.getSimilarLabels(),totalConcurValue);
 						}
-						this.indexBinaryPredicate(this.PQL_TOTAL_CONCUR_CREATE,internalID,taskA,taskB,totalConcurValue);
+						if (totalConcurValue) this.indexBinaryPredicate(this.PQL_TOTAL_CONCUR_CREATE,internalID,taskA,taskB);
 					}
 				}
 				canCooccurMap.clear();
@@ -194,8 +192,8 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 				// index asymmetric binary relations
 				for (PQLTask taskA : tasks) {
 					for (PQLTask taskB : tasks) {
-						this.indexBinaryPredicate(this.PQL_CAN_CONFLICT_CREATE,internalID,taskA,taskB,this.basicPredicates.canConflict(taskA,taskB));
-						this.indexBinaryPredicate(this.PQL_TOTAL_CAUSAL_CREATE,internalID,taskA,taskB,this.basicPredicates.totalCausal(taskA,taskB));
+						if (this.basicPredicates.canConflict(taskA,taskB)) this.indexBinaryPredicate(this.PQL_CAN_CONFLICT_CREATE,internalID,taskA,taskB);
+						if (this.basicPredicates.totalCausal(taskA,taskB)) this.indexBinaryPredicate(this.PQL_TOTAL_CAUSAL_CREATE,internalID,taskA,taskB);
 					}
 				}
 				
@@ -258,11 +256,11 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 		return cs.getBoolean(1);
 	}
 
-	private void storeSymmetricRelation(Map<Set<String>, Map<Set<String>, ThreeValuedLogicValue>> map,
-			Set<String> labels1, Set<String> labels2, ThreeValuedLogicValue value) {
-		Map<Set<String>,ThreeValuedLogicValue> ls2v = map.get(labels1);
+	private void storeSymmetricRelation(Map<Set<String>, Map<Set<String>, Boolean>> map,
+			Set<String> labels1, Set<String> labels2, boolean value) {
+		Map<Set<String>,Boolean> ls2v = map.get(labels1);
 		if (ls2v==null) {
-			 Map<Set<String>,ThreeValuedLogicValue> newls2v = new HashMap<Set<String>,ThreeValuedLogicValue>();
+			 Map<Set<String>,Boolean> newls2v = new HashMap<Set<String>,Boolean>();
 			 newls2v.put(labels2, value);
 			 map.put(labels1, newls2v);
 		}
@@ -272,7 +270,7 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 		
 		ls2v = map.get(labels2);
 		if (ls2v==null) {
-			 Map<Set<String>,ThreeValuedLogicValue> newls2v = new HashMap<Set<String>,ThreeValuedLogicValue>();
+			 Map<Set<String>,Boolean> newls2v = new HashMap<Set<String>,Boolean>();
 			 newls2v.put(labels1, value);
 			 map.put(labels2, newls2v);
 		}
@@ -281,39 +279,33 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 		}
 	}
 
-	private ThreeValuedLogicValue checkSymmetricRelation(Map<Set<String>, Map<Set<String>, ThreeValuedLogicValue>> map,
+	private Boolean checkSymmetricRelation(Map<Set<String>, Map<Set<String>, Boolean>> map,
 			Set<String> labels1, Set<String> labels2) {
-		Map<Set<String>,ThreeValuedLogicValue> ls2v = map.get(labels1);
+		Map<Set<String>,Boolean> ls2v = map.get(labels1);
 		if (ls2v==null) return null;
 
 		return ls2v.get(labels2);
 	}
 
-	private void indexUnaryPredicate(String call, int netID, PQLTask task, ThreeValuedLogicValue value) throws SQLException {
+	private void indexUnaryPredicate(String call, int netID, PQLTask task) throws SQLException {
 		if (task.getID()<1) return;
-		if (value==ThreeValuedLogicValue.UNKNOWN) return;
 		
 		CallableStatement cs = connection.prepareCall(call);
 		
-		cs.setInt(1, netID);
-		cs.setInt(2, task.getID());
-		cs.setBoolean(3,value==ThreeValuedLogicValue.TRUE ? true : false);
+		cs.setInt(1,netID);
+		cs.setInt(2,task.getID());
 		
 		cs.execute();
 		
 		cs.close();
 	}
 	
-	private void indexBinaryPredicate(String call, int netID, PQLTask taskA, PQLTask taskB, ThreeValuedLogicValue value) throws SQLException {
-		if (value==ThreeValuedLogicValue.UNKNOWN) return;
-		
+	private void indexBinaryPredicate(String call, int netID, PQLTask taskA, PQLTask taskB) throws SQLException {		
 		CallableStatement cs = connection.prepareCall(call);
 		
 		cs.setInt(1, netID);
 		cs.setInt(2,taskA.getID());
 		cs.setInt(3,taskB.getID());
-		boolean v = value==ThreeValuedLogicValue.TRUE ? true : false;
-		cs.setBoolean(4,v);
 		
 		cs.execute();
 		

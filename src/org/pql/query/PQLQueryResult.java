@@ -19,7 +19,6 @@ import org.pql.label.LabelManagerLevenshtein;
 import org.pql.label.LabelManagerLuceneVSM;
 import org.pql.label.LabelManagerThemisVSM;
 import org.pql.label.LabelManagerType;
-import org.pql.logic.IThreeValuedLogic;
 import org.pql.util.ConcurrentHashSet;
 
 import java.sql.Connection;
@@ -28,7 +27,6 @@ public class PQLQueryResult extends MySQLConnection {
 	private Set<String>	queryResult = null;
 	private IPQLQuery	query = null;
 	private String pqlQuery = null;
-	private IThreeValuedLogic logic = null;
 	private ILabelManager labelMngr = null;
 	private int numberOfQueryThreads = 1;
 	
@@ -46,7 +44,7 @@ public class PQLQueryResult extends MySQLConnection {
 
 	
 	public PQLQueryResult(int numberOfQueryThreads, String mySQLURL, String mySQLUser, String mySQLPassword, 
-		String pqlQuery, IThreeValuedLogic logic, ILabelManager labelMngr, String postgreSQLHost, 
+		String pqlQuery, ILabelManager labelMngr, String postgreSQLHost, 
 		String postgreSQLName, String postgreSQLUser, String postgreSQLPassword, String labelSimilarityConfig, 
 		Double defaultLabelSimilarity, Set<Double> indexedLabelSimilarities, LabelManagerType labelManagerType) 
 				throws ClassNotFoundException, SQLException {
@@ -54,8 +52,7 @@ public class PQLQueryResult extends MySQLConnection {
 		this.numberOfQueryThreads = numberOfQueryThreads > 0 ? numberOfQueryThreads : 1;
 		this.pqlQuery = pqlQuery;
 		this.labelMngr = labelMngr;
-		this.logic = logic;
-		this.query = new PQLQueryMySQL(this.getConnection(), this.pqlQuery, this.logic, this.labelMngr);//A.P.
+		this.query = new PQLQueryMySQL(this.getConnection(), this.pqlQuery, this.labelMngr);//A.P.
 		this.queryResult = new ConcurrentHashSet<String>();
 		
 		//A.P.
@@ -73,11 +70,13 @@ public class PQLQueryResult extends MySQLConnection {
 	
 		if (this.getNumberOfParseErrors()>0) return;
 		
+			
 		this.query();
 	}
 	
 	public PQLQueryResult(int numberOfQueryThreads, String mySQLURL, String mySQLUser, String mySQLPassword, 
-			String pqlQuery, IThreeValuedLogic logic, ILabelManager labelMngr, String postgreSQLHost, 
+
+			String pqlQuery, ILabelManager labelMngr, String postgreSQLHost, 
 			String postgreSQLName, String postgreSQLUser, String postgreSQLPassword, String labelSimilarityConfig, 
 			Double defaultLabelSimilarity, Set<Double> indexedLabelSimilarities, LabelManagerType labelManagerType, 
 			Set<String> externalIDs) 
@@ -86,8 +85,7 @@ public class PQLQueryResult extends MySQLConnection {
 		this.numberOfQueryThreads = numberOfQueryThreads > 0 ? numberOfQueryThreads : 1;
 		this.pqlQuery = pqlQuery;
 		this.labelMngr = labelMngr;
-		this.logic = logic;
-		this.query = new PQLQueryMySQL(this.getConnection(), this.pqlQuery, this.logic, this.labelMngr);//A.P.
+		this.query = new PQLQueryMySQL(this.getConnection(), this.pqlQuery,this.labelMngr);//A.P.
 		this.queryResult = new ConcurrentHashSet<String>();
 		
 		//A.P.
@@ -139,7 +137,7 @@ public class PQLQueryResult extends MySQLConnection {
 				}
 			} catch (IOException e) {e.printStackTrace();}
 	
-			IPQLQuery threadQuery = new PQLQueryMySQL(con, this.pqlQuery, this.logic, threadLabelMngr);
+			IPQLQuery threadQuery = new PQLQueryMySQL(con, this.pqlQuery, threadLabelMngr);
 			queries.add((PQLQueryMySQL) threadQuery);
 			PQLQueryThread newThread = new PQLQueryThread("PQL"+(q++), threadQuery, queue, this.queryResult, this.netIDsLoaded);
 			
@@ -204,10 +202,10 @@ public class PQLQueryResult extends MySQLConnection {
 				}
 			} catch (IOException e) {e.printStackTrace();}
 	
-			IPQLQuery threadQuery = new PQLQueryMySQL(con, this.pqlQuery, this.logic, threadLabelMngr);
+			IPQLQuery threadQuery = new PQLQueryMySQL(con, this.pqlQuery, threadLabelMngr);
 			queries.add((PQLQueryMySQL) threadQuery);
 			PQLQueryThread newThread = new PQLQueryThread("PQL"+(q++), threadQuery, queue, this.queryResult, this.netIDsLoaded);
-			
+
 			newThread.setPriority(Thread.MAX_PRIORITY);
 			newThread.start();
 			threads.add(newThread);

@@ -32,7 +32,6 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 					iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
 					iniFile.getLoLA2Path(),
 					iniFile.getLabelSimilaritySeacrhConfiguration(),
-					iniFile.getThreeValuedLogicType(),  
 					iniFile.getIndexType(),
 					iniFile.getLabelManagerType(),
 					iniFile.getDefaultLabelSimilarityThreshold(),

@@ -11,7 +11,6 @@ import org.jbpt.petri.Place;
 import org.jbpt.petri.Transition;
 import org.pql.index.IndexType;
 import org.pql.label.LabelManagerType;
-import org.pql.logic.ThreeValuedLogicType;
 
 /**
  * Artem Polyvyanyy
@@ -21,7 +20,7 @@ public class PQLAPI extends AbstractPQLAPI<Flow,Node,Place,Transition,Marking> {
 	public PQLAPI(String mySQLURL, String mySQLUser, String mySQLPassword,
 			String postgreSQLHost, String postgreSQLName, String postgreSQLUser, String postgreSQLPassword, 
 			String lolaPath, String labelSimilarityConfig,
-			ThreeValuedLogicType threeValuedLogicType, IndexType indexType,
+			IndexType indexType,
 			LabelManagerType labelManagerType, Double defaultLabelSimilarity,
 			Set<Double> indexedLabelSimilarities,
 			int numberOfQueryThreads,
@@ -29,7 +28,7 @@ public class PQLAPI extends AbstractPQLAPI<Flow,Node,Place,Transition,Marking> {
 			long sleepTime)
 			throws ClassNotFoundException, SQLException, IOException {
 		super(mySQLURL, mySQLUser, mySQLPassword, postgreSQLHost, postgreSQLName,
-				postgreSQLUser, postgreSQLPassword, lolaPath, labelSimilarityConfig, threeValuedLogicType,
+				postgreSQLUser, postgreSQLPassword, lolaPath, labelSimilarityConfig, 
 				indexType, labelManagerType, defaultLabelSimilarity,
 				indexedLabelSimilarities, numberOfQueryThreads,indexTime,sleepTime);
 	}

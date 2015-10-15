@@ -166,4 +166,5 @@ public interface IPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, 
 	 * @throws SQLException
 	 */
 	public IndexStatus getIndexStatus(int internalID) throws SQLException;
+	
 }

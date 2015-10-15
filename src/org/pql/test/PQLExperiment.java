@@ -16,8 +16,8 @@ import org.pql.ini.PQLIniFile;
 import org.pql.query.PQLQueryResult;
 
 public class PQLExperiment extends TestCase {
-	private static PQLAPI	pqlAPI	= null;
-	private static int numberOfExperiments = 2;
+	private static PQLAPI		pqlAPI	= null;
+	private static int			numberOfExperiments = 100;
 	private static List<String> labels = null;
 	
 	private static Random rand = new Random(System.currentTimeMillis());
@@ -32,8 +32,7 @@ public class PQLExperiment extends TestCase {
 		PQLExperiment.pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
 				iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
 				iniFile.getLoLA2Path(),
-				iniFile.getLabelSimilaritySeacrhConfiguration(),
-				iniFile.getThreeValuedLogicType(),  
+				iniFile.getLabelSimilaritySeacrhConfiguration(),  
 				iniFile.getIndexType(),
 				iniFile.getLabelManagerType(),
 				iniFile.getDefaultLabelSimilarityThreshold(),

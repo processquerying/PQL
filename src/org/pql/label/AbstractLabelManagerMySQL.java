@@ -61,7 +61,7 @@ public abstract class AbstractLabelManagerMySQL
 	}
 	
 	@Override
-	public Set<Double> getIndexedSimilarities() {
+	public Set<Double> getIndexedLabelSimilarityThresholds() {
 		return this.indexedSims;
 	}
 
@@ -71,7 +71,7 @@ public abstract class AbstractLabelManagerMySQL
 			this.createTask(label,d);
 		}
 		
-		Set<LabelScore> searchResults = this.search(label, 10);
+		Set<LabelScore> searchResults = this.getSimilarLabels(label, 10);
 		
 		for (LabelScore ls : searchResults) {
 			for (Double d : indexedSims) {
@@ -128,7 +128,7 @@ public abstract class AbstractLabelManagerMySQL
 		if (s>1.0) s=1.0;
 		
 		// label
-		Set<LabelScore> search = this.search(label,1);
+		Set<LabelScore> search = this.getSimilarLabels(label,1);
 		String newLabel = label;
 		boolean flag = false;
 		if (search!=null && !search.isEmpty()) {

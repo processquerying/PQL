@@ -140,17 +140,6 @@ public interface PQLListener extends ParseTreeListener {
 	void exitApproximate(@NotNull PQLParser.ApproximateContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link PQLParser#isUnknown}.
-	 * @param ctx the parse tree
-	 */
-	void enterIsUnknown(@NotNull PQLParser.IsUnknownContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PQLParser#isUnknown}.
-	 * @param ctx the parse tree
-	 */
-	void exitIsUnknown(@NotNull PQLParser.IsUnknownContext ctx);
-
-	/**
 	 * Enter a parse tree produced by {@link PQLParser#attributeModel}.
 	 * @param ctx the parse tree
 	 */
@@ -688,17 +677,6 @@ public interface PQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAttributeID(@NotNull PQLParser.AttributeIDContext ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link PQLParser#isNotUnknown}.
-	 * @param ctx the parse tree
-	 */
-	void enterIsNotUnknown(@NotNull PQLParser.IsNotUnknownContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PQLParser#isNotUnknown}.
-	 * @param ctx the parse tree
-	 */
-	void exitIsNotUnknown(@NotNull PQLParser.IsNotUnknownContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link PQLParser#attributeName}.
