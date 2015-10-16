@@ -36,7 +36,7 @@ public final class PQLToolCLI {
 	
 	private static PQLAPI pqlAPI = null;
 		
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, InterruptedException {
 		// check ini file
 		// read parameters from the ini file
 		PQLIniFile iniFile = new PQLIniFile();

@@ -3,7 +3,6 @@ package org.pql.core;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
-
 import org.deckfour.xes.factory.XFactoryNaiveImpl;
 import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
@@ -26,6 +25,20 @@ public class PQLTrace {
 	public PQLTrace(Vector<PQLTask> tasks) {
 		this.trace.addAll(tasks);
 		
+	}
+	
+	public boolean isAsterisk()
+	{
+		
+		if(trace.size() == 0) return false;
+		if(!hasAsterisk) return false;
+		
+		for(int i=1; i<trace.size()-1; i++)
+		{
+			if(!trace.elementAt(i).isAsterisk()) return false;
+		}
+		
+		return true;
 	}
 	
 	public void print(){
@@ -208,16 +221,5 @@ public class PQLTrace {
 				
 	};
 
-/*	public Set<String> getAllSimilarLabels()
-	{
-		Set<String> tasks = new HashSet<String>();
-		
-		for(int i=0; i<this.trace.size(); i++)
-		{
-			tasks.addAll(trace.elementAt(i).getSimilarLabels());
-		}
-		
-		return tasks;
-	}
-*/	
+
 }

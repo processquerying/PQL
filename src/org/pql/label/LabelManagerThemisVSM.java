@@ -1,5 +1,6 @@
 package org.pql.label;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
@@ -18,10 +19,10 @@ public class LabelManagerThemisVSM extends AbstractLabelManagerMySQL {
 	
 	private VSM	vsm = null;
 	
-	public LabelManagerThemisVSM(String mysqlURL, String mysqlUser, String mysqlPassword,
+	public LabelManagerThemisVSM(Connection con,
 			String pgHost, String pgName, String pgUser, String pgPassword, 
 			double defaultSim, Set<Double> indexedSims) throws ClassNotFoundException, SQLException {
-		super(mysqlURL,mysqlUser,mysqlPassword,defaultSim,indexedSims);
+		super(con,defaultSim,indexedSims);
 		
 		this.vsm = new VSM(pgHost,pgName,pgUser,pgPassword);
 		this.vsm.setParameter(PREPROCESS.LETTERCASE.toString(), LETTERCASE.UPPER.toString());

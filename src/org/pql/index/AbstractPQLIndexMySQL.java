@@ -1,13 +1,12 @@
 package org.pql.index;
 
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.jbpt.persist.MySQLConnectionStatic;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INetSystem;
@@ -27,9 +26,9 @@ import org.pql.mc.IModelChecker;
  * @author Artem Polyvyanyy
  */
 public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
-				extends MySQLConnectionStatic
 				implements IPQLIndex<F,N,P,T,M> {
 	
+	protected Connection connection = null;
 	protected String 	PQL_INDEX_GET_TYPE			= "{? = CALL pql.pql_index_get_type(?)}";
 	protected String 	PQL_INDEX_GET_STATUS		= "{? = CALL pql.pql_index_get_status(?)}";
 	protected String 	PQL_INDEX_DELETE			= "{? = CALL pql.pql_index_delete(?)}";
@@ -48,6 +47,8 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 	protected String	PQL_INDEX_FINISH_JOB		= "{CALL pql.pql_index_finish_job(?,?)}";
 	protected String	PQL_INDEX_CANNOT			= "{CALL pql.pql_index_cannot(?)}";
 	
+	//TODO create CallableStatement for each DB query and check if it is null
+	
 	ILabelManager					labelMngr		= null;
 	IPQLBasicPredicatesOnTasks		basicPredicates = null;
 	IModelChecker<F,N,P,T,M>		MC 				= null;
@@ -57,25 +58,25 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 	long indexTime = 86400;
 	long sleepTime = 300;
 	
-	public AbstractPQLIndexMySQL(String mysqlURL, String mysqlUser, String mysqlPassword, IPQLBasicPredicatesOnTasks basicPredicates, ILabelManager labelManager, 
+	public AbstractPQLIndexMySQL(Connection con, IPQLBasicPredicatesOnTasks basicPredicates, ILabelManager labelManager, 
 			IModelChecker<F,N,P,T,M> mc,
 			double defaultSim, Set<Double> indexedSims, 
 			IndexType indexType, long indexTime, long sleepTime) throws ClassNotFoundException, SQLException {
-		super(mysqlURL,mysqlUser,mysqlPassword);
-	
+		//super(mysqlURL,mysqlUser,mysqlPassword);
+		this.connection = con;
 		this.labelMngr		 = labelManager;
 		this.basicPredicates = basicPredicates;
 		
 		this.MC 			 = mc;
 		
-		this.PNPersist		 = new PetriNetPersistenceLayerMySQL(mysqlURL,mysqlUser,mysqlPassword);
+		this.PNPersist		 = new PetriNetPersistenceLayerMySQL(connection);
 	}
 	
 	@Override
 	public boolean index(int internalID, IndexType type) throws SQLException {		
 		AbstractPQLBot<F,N,P,T,M> bot = null;
 		try {
-			bot = new AbstractPQLBot<F,N,P,T,M>(this.mysqlURL, this.mysqlUser, this.mysqlPassword,
+			bot = new AbstractPQLBot<F,N,P,T,M>(this.connection,
 					null, this, this.MC, this.indexType, this.indexTime, this.sleepTime, false);
 		
 			boolean result = bot.index(internalID);

@@ -11,6 +11,7 @@ import org.pql.ini.IPQLIniFile;
  * 
  * @author Artem Polyvyanyy
  */
+
 public interface ILabelManager {
 	/**
 	 * Get default label similarity threshold value.
@@ -24,6 +25,7 @@ public interface ILabelManager {
 	 * 
 	 * @return Default label similarity threshold value used with this PQL instance.  
 	 */
+
 	public double getDefaultLabelSimilarityThreshold();
 	
 	/**
@@ -91,4 +93,5 @@ public interface ILabelManager {
 	 * @returns The set of all labels that are similar to the given label with the similarity score which is equal or greater than the given similarity threshold value.
 	 */
 	public Set<LabelScore> getSimilarLabels(String label, double sim);
+
 }

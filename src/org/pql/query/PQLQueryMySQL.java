@@ -1,9 +1,9 @@
 package org.pql.query;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.antlr.v4.runtime.Token;
 import org.pql.antlr.PQLLexer;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
@@ -20,6 +20,7 @@ import org.pql.label.ILabelManager;
 public class PQLQueryMySQL extends AbstractPQLQuery {
 	
 	private String identifier = "";
+	private Connection connection = null;
 	
 	IPQLBasicPredicatesOnTasks basicPredicates = null;
 	
@@ -32,11 +33,13 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	 * @throws SQLException 
 	 * @throws ClassNotFoundException 
 	 */
-	@SuppressWarnings("rawtypes")
-	public PQLQueryMySQL(String mysqlURL, String mysqlUser, String mysqlPassword, String query, ILabelManager labelMngr) throws ClassNotFoundException, SQLException {
+
+	
+	//A.P.
+	public PQLQueryMySQL(Connection con, String query, ILabelManager labelMngr) throws ClassNotFoundException, SQLException {
 		super(query,labelMngr);
-		
-		this.basicPredicates = new org.pql.core.PQLBasicPredicatesMySQL(mysqlURL, mysqlUser, mysqlPassword);
+		this.connection = con;
+		this.basicPredicates = new org.pql.core.PQLBasicPredicatesMySQL(con);
 	}
 
 	@Override
@@ -48,6 +51,14 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	public void configure(Object obj) throws PQLException {
 		this.identifier = obj.toString();
 		this.basicPredicates.configure(this.identifier);
+	}
+	
+	public void disconnect() {
+		try {
+			this.connection.close();
+			} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -76,7 +87,10 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	
 	//A.P. 
 	@Override
-	protected boolean interpretUnaryTracePredicate(Token op, PQLTrace trace) {
+protected boolean interpretUnaryTracePredicate(Token op, PQLTrace trace) {
+	
+		if(trace.isAsterisk()) return true;
+		
 		PQLTrace dbTrace = new PQLTrace();
 		
 		for(int i=0; i<trace.getTrace().size(); i++) {

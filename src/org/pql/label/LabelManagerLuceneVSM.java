@@ -2,6 +2,7 @@ package org.pql.label;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,9 +41,9 @@ public class LabelManagerLuceneVSM extends AbstractLabelManagerMySQL {
 	private StandardAnalyzer analyzer = null;	 
 	private Similarity similarity = new LabelManagerLuceneVSM.VSMSimilarity();
 	
-	public LabelManagerLuceneVSM(String mysqlURL, String mysqlUser, String mysqlPassword, 
+	public LabelManagerLuceneVSM(Connection con, 
 			double defaultSim, Set<Double> indexedSims, String labelSimilarityConfig) throws ClassNotFoundException, SQLException, IOException {
-		super(mysqlURL,mysqlUser,mysqlPassword,defaultSim,indexedSims);
+		super(con,defaultSim,indexedSims);
 		
 		this.labelSimilarityConfig = labelSimilarityConfig;
 		
@@ -168,4 +169,6 @@ public class LabelManagerLuceneVSM extends AbstractLabelManagerMySQL {
 		}
 
 	}
+	
+
 }

@@ -10,7 +10,7 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 
-import org.jbpt.persist.MySQLConnectionStatic;
+import org.jbpt.persist.MySQLConnection;
 import org.pql.api.PQLAPI;
 import org.pql.ini.PQLIniFile;
 import org.pql.query.PQLQueryResult;
@@ -22,7 +22,7 @@ public class PQLExperiment extends TestCase {
 	
 	private static Random rand = new Random(System.currentTimeMillis());
 	
-	public PQLExperiment() throws ClassNotFoundException, SQLException, IOException {
+	public PQLExperiment() throws ClassNotFoundException, SQLException, IOException, InterruptedException {
 		PQLIniFile iniFile = new PQLIniFile();
 		if (!iniFile.load()) {
 			System.out.println("ERROR: Cannot load PQL ini file.");
@@ -46,7 +46,7 @@ public class PQLExperiment extends TestCase {
 		PQLExperiment.labels = ll.getLabels();
 	}
 
-	public void test001() throws ClassNotFoundException, SQLException {
+	public void test001() throws ClassNotFoundException, SQLException, InterruptedException {
 		String pqlQueryTpl = "SELECT * FROM * WHERE CanConflict(\"%s\",\"%s\");";
 		
 		long time = 0L;
@@ -79,7 +79,8 @@ public class PQLExperiment extends TestCase {
 	    return randomNum;
 	}
 	
-	public class LabelLoader extends MySQLConnectionStatic {
+	public class LabelLoader extends MySQLConnection//Static 
+	{
 
 		protected LabelLoader(String url, String user, String password) throws ClassNotFoundException, SQLException {
 			super(url, user, password);

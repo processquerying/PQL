@@ -3,10 +3,11 @@ package org.pql.api;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.antlr.v4.runtime.misc.TestRig;
-import org.jbpt.persist.MySQLConnectionStatic;
+import org.jbpt.persist.MySQLConnection;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INetSystem;
@@ -30,12 +31,11 @@ import org.pql.mc.AbstractLoLA2ModelChecker;
 import org.pql.mc.IModelChecker;
 import org.pql.query.PQLQueryResult;
 
-
 /**
  * Artem Polyvyanyy
  */
 public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>>
-		extends MySQLConnectionStatic
+		extends MySQLConnection
 		implements IPQLAPI<F,N,P,T,M> {
 	
 	private IPetriNetPersistenceLayer<F,N,P,T,M> netPersistenceLayer	= null;
@@ -47,9 +47,18 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	private int									 numberOfQueryThreads	= 1;
 	private long								 indexTime				= 86400;
 	private long								 sleepTime				= 300;
-
-	
+	//A.P.
+	private String 								 postgreSQLHost = null;
+	private String 								 postgreSQLName = null;
+	private String 								 postgreSQLUser = null;
+	private String 								 postgreSQLPassword = null;
+	private Double 								 defaultLabelSimilarity = 1.0;
+	private Set<Double> 						 indexedLabelSimilarities = null;
+	private String 								 labelSimilarityConfig = null;
+	private LabelManagerType 					 labelManagerType = null;
+			
 	@SuppressWarnings({ "rawtypes", "unchecked" })
+	
 	public AbstractPQLAPI(String mySQLURL, String mySQLUser, String mySQLPassword,
 					String postgreSQLHost, String postgreSQLName, String postgreSQLUser, String postgreSQLPassword, 
 					String lolaPath,
@@ -62,29 +71,39 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 					long indexTime,
 					long sleepTime) throws ClassNotFoundException, SQLException, IOException {
 		super(mySQLURL,mySQLUser,mySQLPassword);
-		
+				
 		this.indexType = indexType;
 		this.numberOfQueryThreads = numberOfQueryThreads;
-		
 		this.indexTime = indexTime;
 		this.sleepTime = sleepTime;
 		
 		switch (labelManagerType) {
 			case THEMIS_VSM:
-				this.labelMngr = new LabelManagerThemisVSM(mySQLURL,mySQLUser,mySQLPassword,postgreSQLHost,postgreSQLName,postgreSQLUser,postgreSQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);
+				this.labelMngr = new LabelManagerThemisVSM(this.connection,postgreSQLHost,postgreSQLName,postgreSQLUser,postgreSQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);
 				break;
 			case LUCENE:
-				this.labelMngr = new LabelManagerLuceneVSM(mySQLURL, mySQLUser, mySQLPassword, defaultLabelSimilarity, indexedLabelSimilarities, labelSimilarityConfig);
+				this.labelMngr = new LabelManagerLuceneVSM(this.connection, defaultLabelSimilarity, indexedLabelSimilarities, labelSimilarityConfig);
 				break;
 			default:
-				this.labelMngr = new LabelManagerLevenshtein(mySQLURL,mySQLUser,mySQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);
+				this.labelMngr = new LabelManagerLevenshtein(this.connection,defaultLabelSimilarity,indexedLabelSimilarities);
 				break;
 		}
 		
-		this.netPersistenceLayer	= new AbstractPetriNetPersistenceLayerMySQL(mySQLURL,mySQLUser,mySQLPassword);
+		this.netPersistenceLayer	= new AbstractPetriNetPersistenceLayerMySQL(this.connection);
 		this.modelChecker			= new AbstractLoLA2ModelChecker(lolaPath);
 		this.basicPredicates		= new AbstractPQLBasicPredicatesMC(this.modelChecker);
-		this.pqlIndex				= new AbstractPQLIndexMySQL(mySQLURL,mySQLUser,mySQLPassword,basicPredicates,this.labelMngr,this.modelChecker,defaultLabelSimilarity,indexedLabelSimilarities,this.indexType, this.indexTime, this.sleepTime);
+		this.pqlIndex				= new AbstractPQLIndexMySQL(this.connection,basicPredicates,this.labelMngr,this.modelChecker,defaultLabelSimilarity,indexedLabelSimilarities,this.indexType, this.indexTime, this.sleepTime);
+	
+	//A.P. TODO think of a better way to create thread label managers
+		  this.postgreSQLHost = postgreSQLHost;
+		  this.postgreSQLName = postgreSQLName;
+		  this.postgreSQLUser = postgreSQLUser;
+		  this.postgreSQLPassword = postgreSQLPassword;
+		  this.defaultLabelSimilarity = defaultLabelSimilarity;
+		  this.indexedLabelSimilarities = new HashSet<Double>();
+		  this.indexedLabelSimilarities.addAll(indexedLabelSimilarities);
+		  this.labelSimilarityConfig = labelSimilarityConfig;
+		  this.labelManagerType = labelManagerType;
 	}
 
 	@Override
@@ -154,15 +173,26 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	
 	@Override
 	public PQLQueryResult query(String pqlQuery) throws ClassNotFoundException, SQLException {		
-		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, labelMngr);
-		
+
+		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, 
+				this.mysqlUser, this.mysqlPassword, pqlQuery, labelMngr, this.postgreSQLHost, 
+				this.postgreSQLName, this.postgreSQLUser, this.postgreSQLPassword, this.labelSimilarityConfig, 
+				this.defaultLabelSimilarity, this.indexedLabelSimilarities, this.labelManagerType);//A.P.
+		result.disconnect();//A.P.
+
+
 		return result;
 	}
 
 	@Override
 	public PQLQueryResult query(String pqlQuery, Set<String> externalIDs) throws ClassNotFoundException, SQLException {
-		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, this.mysqlUser, this.mysqlPassword, pqlQuery, labelMngr, externalIDs);
-		
+
+		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, 
+				this.mysqlUser, this.mysqlPassword, pqlQuery, labelMngr, this.postgreSQLHost, 
+				this.postgreSQLName, this.postgreSQLUser, this.postgreSQLPassword, this.labelSimilarityConfig, 
+				this.defaultLabelSimilarity, this.indexedLabelSimilarities, this.labelManagerType, externalIDs);//A.P.
+		result.disconnect();//A.P.
+
 		return result;
 	}
 
@@ -179,5 +209,6 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	@Override
 	public boolean deleteModel(int internalID) throws SQLException {
 		return this.netPersistenceLayer.deleteNetSystem(internalID) > 0;
-	}	
+	}
+
 }

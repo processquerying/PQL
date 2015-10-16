@@ -1,6 +1,7 @@
 package org.pql.bot;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.UUID;
 
@@ -11,6 +12,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.jbpt.persist.MySQLConnection;
 import org.pql.core.PQLBasicPredicatesMC;
 import org.pql.index.IndexType;
 import org.pql.index.PQLIndexMySQL;
@@ -36,6 +38,7 @@ public class PQLBotCLI {
 		
 		String botName = null;
 		
+		
 		// read parameters from the ini file
 		PQLIniFile iniFile = new PQLIniFile();
 		if (!iniFile.load()) { 
@@ -46,6 +49,8 @@ public class PQLBotCLI {
 				return;
 			}
 		}
+		
+		Connection connection = (new MySQLConnection(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword())).getConnection();
 		
 		int sleepTime = iniFile.getDefaultBotSleepTime();
 		int indexTime = iniFile.getDefaultBotMaxIndexTime();
@@ -110,28 +115,28 @@ public class PQLBotCLI {
 	    
 	    switch (iniFile.getLabelManagerType()) {
 			case THEMIS_VSM:
-				labelMngr = new LabelManagerThemisVSM(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),
+				labelMngr = new LabelManagerThemisVSM(connection,
 						iniFile.getPostgreSQLHost(),iniFile.getPostgreSQLName(),iniFile.getPostgreSQLUser(),iniFile.getPostgreSQLPassword(),
 						iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarityThresholds());
 				break;
 			case LUCENE:
-				labelMngr = new LabelManagerLuceneVSM(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),
+				labelMngr = new LabelManagerLuceneVSM(connection,
 						iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarityThresholds(),iniFile.getLabelSimilaritySeacrhConfiguration());
 				break;
 			default:
-				labelMngr = new LabelManagerLevenshtein(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),
+				labelMngr = new LabelManagerLevenshtein(connection,
 						iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarityThresholds());
 				break;
 	    }
 	    
 	    LoLA2ModelChecker		mc	= new LoLA2ModelChecker(iniFile.getLoLA2Path());
+
 		PQLBasicPredicatesMC    bp	= new PQLBasicPredicatesMC(mc);
-		PQLIndexMySQL			index = new PQLIndexMySQL(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword(),bp,
-				labelMngr,mc,iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarityThresholds(),
+		PQLIndexMySQL			index = new PQLIndexMySQL(connection,bp,labelMngr,mc,
+				iniFile.getDefaultLabelSimilarityThreshold(),iniFile.getIndexedLabelSimilarityThresholds(),
 				iniFile.getIndexType(), iniFile.getDefaultBotMaxIndexTime(), iniFile.getDefaultBotSleepTime());
-		
 	    
-	    PQLBot bot = new PQLBot(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(), 
+	    PQLBot bot = new PQLBot(connection, 
 	    						botName, index, mc, IndexType.PREDICATES, indexTime, sleepTime, true);
 	    bot.run();
 	    
