@@ -120,7 +120,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		this.identifier = (String) obj;
 		
 		try {
-			if(PETRI_NET_IDENTIFIER_TO_ID_CS == null)
+			if (PETRI_NET_IDENTIFIER_TO_ID_CS == null)
 			PETRI_NET_IDENTIFIER_TO_ID_CS = connection.prepareCall(this.PETRI_NET_IDENTIFIER_TO_ID);
 			
 			PETRI_NET_IDENTIFIER_TO_ID_CS.registerOutParameter(1, java.sql.Types.INTEGER);

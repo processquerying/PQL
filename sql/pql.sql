@@ -143,8 +143,10 @@ CREATE TABLE `jbpt_petri_nodes` (
   `label_id` int(10) unsigned DEFAULT NULL,
   `is_transition` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `net_id` (`net_id`),
   KEY `label_id` (`label_id`),
+  KEY `net_id` (`net_id`),
+  KEY `is_transition` (`is_transition`),
+  KEY `triple_index` (`net_id`,`is_transition`,`label_id`),
   CONSTRAINT `jbpt_nodes_fk` FOREIGN KEY (`net_id`) REFERENCES `jbpt_petri_nets` (`id`),
   CONSTRAINT `jbpt_petri_nodes_fk` FOREIGN KEY (`label_id`) REFERENCES `jbpt_labels` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=282 DEFAULT CHARSET=utf8;
@@ -365,7 +367,7 @@ CREATE TABLE `pql_tasks` (
   UNIQUE KEY `label_id_and_sim` (`label_id`,`similarity`),
   KEY `label_id` (`label_id`),
   CONSTRAINT `pql_tasks_fk` FOREIGN KEY (`label_id`) REFERENCES `jbpt_labels` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1236,6 +1238,58 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `jbpt_get_net_labels_ext_id` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `jbpt_get_net_labels_ext_id`(IN identifier TEXT)
+    DETERMINISTIC
+BEGIN
+  DECLARE nid INTEGER;
+  
+  SELECT id INTO nid FROM jbpt_petri_nets WHERE jbpt_petri_nets.`external_id`=identifier;
+  
+  SELECT `jbpt_labels`.`label`
+  FROM `jbpt_labels`, `jbpt_petri_nodes`
+  WHERE `jbpt_petri_nodes`.`net_id`=nid AND
+        `jbpt_petri_nodes`.`label_id` IS NOT NULL AND
+        `jbpt_labels`.`id` = `jbpt_petri_nodes`.`label_id`;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `jbpt_get_net_labels_int_id` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `jbpt_get_net_labels_int_id`(IN id INTEGER(11))
+    DETERMINISTIC
+BEGIN
+  SELECT `jbpt_labels`.`label`
+  FROM `jbpt_labels`, `jbpt_petri_nodes`
+  WHERE `jbpt_petri_nodes`.`net_id`=id AND
+        `jbpt_petri_nodes`.`is_transition`=1 AND
+        `jbpt_labels`.`id` = `jbpt_petri_nodes`.`label_id`;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `jbpt_petri_nets_get_internal_ids` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1752,4 +1806,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-10-09 12:07:26
+-- Dump completed on 2015-10-20  9:36:11

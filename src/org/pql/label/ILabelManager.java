@@ -75,6 +75,8 @@ public interface ILabelManager {
 	public Set<String> getLabels(int taskID) throws SQLException;
 	
 	public Set<String> getAllLabels(String netIdentifier) throws SQLException;
+	
+	public Set<String> getAllLabels(int id) throws SQLException;
 
 	/**
 	 * Get similar labels.
