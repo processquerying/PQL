@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.deckfour.xes.model.XLog;
 import org.jbpt.petri.IFlow;
@@ -36,6 +37,7 @@ import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactor
 public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> //A.P. <...>added 
 				implements IPQLBasicPredicatesOnTasks
 				{
+	public AtomicInteger filteredModels = new AtomicInteger(); //A.P. used for experiments;
 	
 	protected String PETRI_NET_IDENTIFIER_TO_ID = "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
 	protected String PQL_CAN_OCCUR				= "{? = CALL pql.pql_can_occur(?,?)}";
@@ -63,10 +65,10 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	private IPetriNetPersistenceLayer<F,N,P,T,M> 				PL = null;
 	private AbstractNetSystemTransformationManager<F,N,P,T,M> 	TM = null;//A.P.
 		
-	public PQLBasicPredicatesMySQL(Connection con) throws ClassNotFoundException, SQLException {
+	public PQLBasicPredicatesMySQL(Connection con, AtomicInteger filteredModels) throws ClassNotFoundException, SQLException {
 		this.connection = con;
 		this.PL = new AbstractPetriNetPersistenceLayerMySQL<F,N,P,T,M>(this.connection);//A.P.
-		
+		this.filteredModels = filteredModels;
 	}
 	
 	private boolean checkUnaryPredicate(String call, PQLTask t) {
@@ -203,8 +205,12 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		  	
 		  	//check if net contains all trace labels 		
 		   	Set<String> netLabels = api.getAllLabels();
-		   	if(!api.netHasAllTraceLabels(trace, netLabels)) return false;
-			
+		   	if(!api.netHasAllTraceLabels(trace, netLabels)) 
+		   	{
+		   		this.filteredModels.incrementAndGet(); 
+		   		return false;
+		   	}
+		 		
 			AbstractTraceExecutionWithWildcardCharactersTesterTransformation<F,N,P,T,M> wct = new AbstractTraceExecutionWithWildcardCharactersTesterTransformation<F,N,P,T,M>(netSystem); 
 			AbstractReplayer replayer = new Replayer<F,N,P,T,M>(api);
 	  		
@@ -294,5 +300,11 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		}
 
 		return result;
+	}
+	
+	//A.P. used for experiments
+	public IPetriNetPersistenceLayer<F,N,P,T,M> getPL()
+	{
+		return this.PL;
 	}
 }

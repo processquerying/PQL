@@ -351,4 +351,64 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		PETRI_NET_RESET_CS = connection.prepareCall(this.PETRI_NET_RESET);
 		PETRI_NET_RESET_CS.executeQuery();		
 	}
+	
+	//A.P. used for Experiment #2
+	public int getNumberOfPlaces(String externalID)
+	{
+		int result = 0;
+		int internalID = 0;
+		INetSystem<F,N,P,T,M> sys = null;
+		
+		try {
+		
+			internalID = this.getInternalID(externalID);
+			sys = this.restoreNetSystem(internalID);
+		
+			} catch (SQLException e) {e.printStackTrace();}
+		
+		result =  sys.getPlaces().size();
+		
+		return result;
+	}
+	
+	//A.P. used for Experiment #2
+	public int getNumberOfTransitions(String externalID)
+	{
+		int result = 0;
+		
+		int internalID = 0;
+		INetSystem<F,N,P,T,M> sys = null;
+		
+		try {
+		
+			internalID = this.getInternalID(externalID);
+			sys = this.restoreNetSystem(internalID);
+		
+			} catch (SQLException e) {e.printStackTrace();}
+		
+		result =  sys.getTransitions().size();
+		
+		return result;
+	}
+		
+	//A.P. used for Experiment #2
+	public int getNumberOfFlowArcs(String externalID)
+	{
+		int result = 0;
+		
+		int internalID = 0;
+		INetSystem<F,N,P,T,M> sys = null;
+		
+		try {
+		
+			internalID = this.getInternalID(externalID);
+			sys = this.restoreNetSystem(internalID);
+		
+			} catch (SQLException e) {e.printStackTrace();}
+		
+		result =  sys.getFlow().size();
+		
+		return result;
+	}
+
 }

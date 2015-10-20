@@ -59,21 +59,23 @@ public class AlignmentAPI <F extends IFlow<N>, N extends INode, P extends IPlace
 		
 		public boolean netHasAllTraceLabels(PQLTrace trace, Set<String> netLabels)
 		{
-			boolean hasAllLabels = true;
-			
+			//System.out.println(netLabels);
 			if(trace.hasAsterisk())
 		  	{
 			  	for(int i=1; i<trace.getTrace().size()-1; i++)
 			  	{
 			  		
 			  		PQLTask task = trace.getTrace().elementAt(i);
+			  		//System.out.println(task.getLabel() +" "+ task.getSimilarLabels());
 			  		
 			  		if(!task.isAsterisk())
 			  		{
+				  		//if (netLabels.contains(task.getLabel())) continue;
+				  		
 				  		boolean netHasLabel = false;
 				  		for(String t: task.getSimilarLabels())
 				  		{
-				  			if (netLabels.contains(t)) netHasLabel = true;
+				  			if (netLabels.contains(t)) netHasLabel = true; break;
 				  		}
 				  		if (!netHasLabel) 
 				  		return false;
@@ -85,11 +87,12 @@ public class AlignmentAPI <F extends IFlow<N>, N extends INode, P extends IPlace
 		  		for(int i=0; i<trace.getTrace().size(); i++)
 			  	{
 			  			PQLTask task = trace.getTrace().elementAt(i);
+			  			//if (netLabels.contains(task.getLabel())) continue;
 			  			
 				  		boolean netHasLabel = false;
 				  		for(String t: task.getSimilarLabels())
 				  		{
-				  			if (netLabels.contains(t)) netHasLabel = true;
+				  			if (netLabels.contains(t)) netHasLabel = true; break;
 				  		}
 				  		if (!netHasLabel) 
 				  		return false;
@@ -98,7 +101,7 @@ public class AlignmentAPI <F extends IFlow<N>, N extends INode, P extends IPlace
 		  		
 		  	}	
 			
-			return hasAllLabels;
+			return true;
 			
 		}
 		

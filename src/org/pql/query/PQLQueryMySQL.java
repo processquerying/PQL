@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.antlr.v4.runtime.Token;
 import org.pql.antlr.PQLLexer;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
@@ -21,7 +23,6 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 	
 	private String identifier = "";
 	private Connection connection = null;
-	
 	IPQLBasicPredicatesOnTasks basicPredicates = null;
 	
 	/**
@@ -36,10 +37,10 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 
 	
 	//A.P.
-	public PQLQueryMySQL(Connection con, String query, ILabelManager labelMngr) throws ClassNotFoundException, SQLException {
+	public PQLQueryMySQL(AtomicInteger filteredModels, Connection con, String query, ILabelManager labelMngr) throws ClassNotFoundException, SQLException {
 		super(query,labelMngr);
 		this.connection = con;
-		this.basicPredicates = new org.pql.core.PQLBasicPredicatesMySQL(con);
+		this.basicPredicates = new org.pql.core.PQLBasicPredicatesMySQL(con,filteredModels);
 	}
 
 	@Override
@@ -201,5 +202,11 @@ protected boolean interpretUnaryTracePredicate(Token op, PQLTrace trace) {
 		}
 		
 		return result;
+	}
+	
+	//A.P. used for experiments
+	public IPQLBasicPredicatesOnTasks getBP()
+	{
+		return this.basicPredicates;
 	}
 }

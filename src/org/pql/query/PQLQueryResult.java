@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jbpt.persist.MySQLConnection;
 import org.pql.core.PQLAttribute;
 import org.pql.core.PQLLocation;
@@ -29,6 +31,7 @@ public class PQLQueryResult extends MySQLConnection {
 	private String pqlQuery = null;
 	private ILabelManager labelMngr = null;
 	private int numberOfQueryThreads = 1;
+	public AtomicInteger filteredModels = new AtomicInteger(0); //A.P. for experiment 1;
 	
 	//A.P.
 	private PriorityBlockingQueue<String> 		 queue 	= null; 
@@ -52,7 +55,7 @@ public class PQLQueryResult extends MySQLConnection {
 		this.numberOfQueryThreads = numberOfQueryThreads > 0 ? numberOfQueryThreads : 1;
 		this.pqlQuery = pqlQuery;
 		this.labelMngr = labelMngr;
-		this.query = new PQLQueryMySQL(this.getConnection(), this.pqlQuery, this.labelMngr);//A.P.
+		this.query = new PQLQueryMySQL(this.filteredModels, this.getConnection(), this.pqlQuery, this.labelMngr);//A.P.
 		this.queryResult = new ConcurrentHashSet<String>();
 		
 		//A.P.
@@ -85,7 +88,7 @@ public class PQLQueryResult extends MySQLConnection {
 		this.numberOfQueryThreads = numberOfQueryThreads > 0 ? numberOfQueryThreads : 1;
 		this.pqlQuery = pqlQuery;
 		this.labelMngr = labelMngr;
-		this.query = new PQLQueryMySQL(this.getConnection(), this.pqlQuery,this.labelMngr);//A.P.
+		this.query = new PQLQueryMySQL(this.filteredModels, this.getConnection(), this.pqlQuery,this.labelMngr);//A.P.
 		this.queryResult = new ConcurrentHashSet<String>();
 		
 		//A.P.
@@ -137,7 +140,7 @@ public class PQLQueryResult extends MySQLConnection {
 				}
 			} catch (IOException e) {e.printStackTrace();}
 	
-			IPQLQuery threadQuery = new PQLQueryMySQL(con, this.pqlQuery, threadLabelMngr);
+			IPQLQuery threadQuery = new PQLQueryMySQL(this.filteredModels, con, this.pqlQuery, threadLabelMngr);
 			queries.add((PQLQueryMySQL) threadQuery);
 			PQLQueryThread newThread = new PQLQueryThread("PQL"+(q++), threadQuery, queue, this.queryResult, this.netIDsLoaded);
 			
@@ -202,7 +205,7 @@ public class PQLQueryResult extends MySQLConnection {
 				}
 			} catch (IOException e) {e.printStackTrace();}
 	
-			IPQLQuery threadQuery = new PQLQueryMySQL(con, this.pqlQuery, threadLabelMngr);
+			IPQLQuery threadQuery = new PQLQueryMySQL(this.filteredModels, con, this.pqlQuery, threadLabelMngr);
 			queries.add((PQLQueryMySQL) threadQuery);
 			PQLQueryThread newThread = new PQLQueryThread("PQL"+(q++), threadQuery, queue, this.queryResult, this.netIDsLoaded);
 

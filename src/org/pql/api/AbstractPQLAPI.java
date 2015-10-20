@@ -210,5 +210,21 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	public boolean deleteModel(int internalID) throws SQLException {
 		return this.netPersistenceLayer.deleteNetSystem(internalID) > 0;
 	}
+	
+	//A.P. used for Experiment 3
+	public Set<String> getExternalIDs()
+	{
+		Set<String> externalIDs = new HashSet<String>();
+		try {
+			
+			Set<Integer> internalIDs = this.netPersistenceLayer.getAllInternalIDs();
+			for(Integer id: internalIDs)
+			externalIDs.add(this.getExternalID(id));
+			
+		} catch (SQLException e) {e.printStackTrace();
+		}
+		
+		return externalIDs;
+	}
 
 }

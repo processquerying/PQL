@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.pql.api.PQLAPI;
 import org.pql.ini.PQLIniFile;
 import org.pql.query.PQLQueryResult;
@@ -16,18 +18,17 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 	
 	  int numberOfExperiments = 10; 
 	  int numberOfThreads = 3; 
-	  String comment = "labelChecking";
 	
 		PQLIniFile iniFile = new PQLIniFile();
 		if (!iniFile.load()) {
 			System.out.println("ERROR: Cannot load PQL ini file.");
 			return;
 		}
-
+	
 	Vector<String> results = new Vector<String>();
-	String titleLine = "numberOfExperiments;numberOfThreads;totalTime;timePerQuery;answersPerQuery;trace;comment\r\n";
+	String titleLine = "numberOfExperiments;numberOfThreads;totalTime;timePerQuery;answersPerQuery;trace\r\n";
 	results.add(titleLine);
-		
+	
 			pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
 					iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
 					iniFile.getLoLA2Path(),
@@ -40,7 +41,7 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 					iniFile.getDefaultBotMaxIndexTime(),
 					iniFile.getDefaultBotSleepTime());
 			
-					String trace = "~\"A\",*,\"B\",*";
+					String trace = "*,\"W\",*";
 					//String trace = "";
 						
 					System.out.println("Trace: <"+trace+">");
@@ -48,6 +49,7 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 						
 					long time = 0L;
 					int answersCount = 0;
+					AtomicInteger filteredModels = new AtomicInteger(0);
 						
 					for (int i=0; i< numberOfExperiments; i++) 
 					{
@@ -56,17 +58,18 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 						PQLQueryResult queryResult = pqlAPI.query(pqlQuery);
 						long stop = System.currentTimeMillis();
 						
-							time += (stop-start);
-							answersCount += queryResult.getSearchResults().size();
+						time += (stop-start);
+						answersCount += queryResult.getSearchResults().size();
+						filteredModels.addAndGet(queryResult.filteredModels.get());
 					}
 					
-					
+					System.out.println("filtered Models per query: \t"+(double)filteredModels.get()/numberOfExperiments);
 					System.out.println("Total time: \t"+time);
 					System.out.println("Number of threads: \t"+numberOfThreads);
-					System.out.println("Time per query: \t"+(double)time/(numberOfExperiments-0));
-					System.out.println("Answers per query: \t"+(double)answersCount/(numberOfExperiments-0));
+					System.out.println("Time per query: \t"+(double)time/numberOfExperiments);
+					System.out.println("Answers per query: \t"+(double)answersCount/numberOfExperiments);
 					
-					String outcomeLine = numberOfExperiments + ";"+numberOfThreads+";"+time+";"+(double)time/(numberOfExperiments-1)+";"+(double)answersCount/(numberOfExperiments-1)+";<"+trace+">;"+comment+"\r\n";
+					String outcomeLine = numberOfExperiments + ";"+numberOfThreads+";"+time+";"+(double)time/numberOfExperiments+";"+(double)answersCount/numberOfExperiments+";<"+trace+">\r\n";
 					
 					results.add(outcomeLine);
 					
