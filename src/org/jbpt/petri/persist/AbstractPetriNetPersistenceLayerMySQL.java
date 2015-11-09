@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,6 +24,8 @@ import org.jbpt.petri.ITransition;
 import org.jbpt.petri.NetSystem;
 import org.jbpt.petri.io.PNMLSerializer;
 import org.jbpt.throwable.SerializationException;
+import org.pql.core.PQLTask;
+import org.pql.core.PQLTrace;
 
 
 /**
@@ -153,8 +156,9 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 			p.setName("p"+pi++);
 		}
 		
+		
 		for (T t : sys.getTransitions()) {
-			t.setName("t"+ti++);
+		t.setName("t"+ti++);
 		}
 		
 		// create net record
@@ -200,6 +204,7 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 			PETRI_NODE_CREATE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
 			PETRI_NODE_CREATE_CS.setInt(2, result);
 			PETRI_NODE_CREATE_CS.setString(3, t.getId());
+			//PETRI_NODE_CREATE_CS.setString(4, t.getLabel());
 			PETRI_NODE_CREATE_CS.setString(4, t.getName());
 			PETRI_NODE_CREATE_CS.setString(5, t.getDescription());
 			PETRI_NODE_CREATE_CS.setString(6, t.isObservable() ? t.getLabel() : "");
@@ -409,6 +414,67 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		result =  sys.getFlow().size();
 		
 		return result;
+	}
+	
+	//A.P.
+	public boolean netHasAllTraceLabels(PQLTrace trace, Set<String> netLabels)
+	{
+		Set<String> lowerCaseLabels = new HashSet<String>();
+		for(String s : netLabels)
+		lowerCaseLabels.add(s.toLowerCase());
+		
+		if(trace.hasAsterisk())
+	  	{
+		  	for(int i=1; i<trace.getTrace().size()-1; i++)
+		  	{
+		  		
+		  		PQLTask task = trace.getTrace().elementAt(i);
+		  		
+		  		if(!task.isAsterisk())
+		  		{
+			  		boolean netHasLabel = false;
+			  		for(String t: task.getSimilarLabels())
+			  		{
+			  			if (lowerCaseLabels.contains(t.toLowerCase())) {netHasLabel = true; break;}
+			  		}
+			  		if (!netHasLabel) 
+			  		return false;
+			  	}
+		  	}
+	  	}
+	  	else
+	  	{
+	  		for(int i=0; i<trace.getTrace().size(); i++)
+		  	{
+		  			PQLTask task = trace.getTrace().elementAt(i);
+		  			
+			  		boolean netHasLabel = false;
+			  		for(String t: task.getSimilarLabels())
+			  		{
+			  			if (lowerCaseLabels.contains(t.toLowerCase())) {netHasLabel = true; break;}
+			  		}
+			  		if (!netHasLabel) 
+			  		return false;
+			  	
+		  	}
+	  		
+	  	}	
+		
+		return true;
+		
+	}
+
+	//A.P. for insert testing
+	@Override
+	public void changeNetIndexStatus(int netID) {
+		
+		try {
+		Statement dbStatement = this.connection.createStatement();
+		dbStatement.executeUpdate("INSERT INTO pql.pql_index_status VALUES("+netID+",'somebot',1,0,0,0,0)");
+				
+		} catch (SQLException e) {e.printStackTrace();}
+		
+		
 	}
 
 }

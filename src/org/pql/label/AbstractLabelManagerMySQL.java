@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.pql.core.PQLTask;
 
 /**
@@ -21,20 +22,21 @@ public abstract class AbstractLabelManagerMySQL
 	protected double		minSim		= 1.0;
 	
 	// MySQL matters
-	protected String JBPT_LABELS_CREATE 		= "{? = CALL pql.jbpt_labels_create(?)}";	
-	protected String PQL_TASKS_CREATE			= "{? = CALL pql.pql_tasks_create(?,?)}";
-	protected String PQL_TASKS_SIM_CREATE		= "{? = CALL pql.pql_tasks_sim_create(?,?,?)}";
-	protected String PQL_TASKS_GET_SIM			= "{CALL pql.pql_tasks_get_sim(?)}";
-	protected String PETRI_NET_GET_NET_LABELS	= "{CALL pql.jbpt_get_net_labels(?)}";
+	protected String JBPT_LABELS_CREATE 			= "{? = CALL pql.jbpt_labels_create(?)}";	
+	protected String PQL_TASKS_CREATE				= "{? = CALL pql.pql_tasks_create(?,?)}";
+	protected String PQL_TASKS_SIM_CREATE			= "{? = CALL pql.pql_tasks_sim_create(?,?,?)}";
+	protected String PQL_TASKS_GET_SIM				= "{CALL pql.pql_tasks_get_sim(?)}";
+	protected String PETRI_NET_GET_NET_LABELS_INT	= "{CALL pql.jbpt_get_net_labels_ext_id(?)}";
+	protected String PETRI_NET_GET_NET_LABELS_EXT	= "{CALL pql.jbpt_get_net_labels_int_id(?)}";
 	
 	//A.P.
 	protected CallableStatement JBPT_LABELS_CREATE_CS = null;
 	protected CallableStatement PQL_TASKS_CREATE_CS = null;
 	protected CallableStatement PQL_TASKS_SIM_CREATE_CS = null;
 	protected CallableStatement PQL_TASKS_GET_SIM_CS = null;
-	protected CallableStatement PETRI_NET_GET_NET_LABELS_CS = null;
-
-
+	protected CallableStatement PETRI_NET_GET_NET_LABELS_INT_CS = null;
+	protected CallableStatement PETRI_NET_GET_NET_LABELS_EXT_CS = null;
+	
 	protected AbstractLabelManagerMySQL(Connection con,double defaultSim, Set<Double> indexedSims)
 			throws ClassNotFoundException, SQLException {
 		this.connection = con;		
@@ -187,12 +189,30 @@ public abstract class AbstractLabelManagerMySQL
 	public Set<String> getAllLabels(String externalID) throws SQLException {
 		Set<String> result = new HashSet<String>();
 		
-		if(PETRI_NET_GET_NET_LABELS_CS == null)
-		PETRI_NET_GET_NET_LABELS_CS = connection.prepareCall(this.PETRI_NET_GET_NET_LABELS);
+		if(PETRI_NET_GET_NET_LABELS_EXT_CS == null)
+		PETRI_NET_GET_NET_LABELS_EXT_CS = connection.prepareCall(this.PETRI_NET_GET_NET_LABELS_INT);
 		
-		PETRI_NET_GET_NET_LABELS_CS.setString(1, externalID);
+		PETRI_NET_GET_NET_LABELS_EXT_CS.setString(1, externalID);
 		
-		ResultSet res = PETRI_NET_GET_NET_LABELS_CS.executeQuery();
+		ResultSet res = PETRI_NET_GET_NET_LABELS_EXT_CS.executeQuery();
+		
+		while (res.next()) {
+			result.add(res.getString(1));
+		}
+		
+		return result;
+	}
+	
+	@Override
+	public Set<String> getAllLabels(int id) throws SQLException {
+		Set<String> result = new HashSet<String>();
+		
+		if(PETRI_NET_GET_NET_LABELS_INT_CS == null)
+		PETRI_NET_GET_NET_LABELS_INT_CS = connection.prepareCall(this.PETRI_NET_GET_NET_LABELS_EXT);
+		
+		PETRI_NET_GET_NET_LABELS_INT_CS.setInt(1, id);
+		
+		ResultSet res = PETRI_NET_GET_NET_LABELS_INT_CS.executeQuery();
 		
 		while (res.next()) {
 			result.add(res.getString(1));

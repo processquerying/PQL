@@ -183,6 +183,20 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 
 		return result;
 	}
+	
+	//A.P. used for Experiment 2
+	public PQLQueryResult query(String pqlQuery, String setup) throws ClassNotFoundException, SQLException {		
+
+		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, 
+				this.mysqlUser, this.mysqlPassword, pqlQuery, labelMngr, this.postgreSQLHost, 
+				this.postgreSQLName, this.postgreSQLUser, this.postgreSQLPassword, this.labelSimilarityConfig, 
+				this.defaultLabelSimilarity, this.indexedLabelSimilarities, this.labelManagerType, setup);//A.P.
+		result.disconnect();//A.P.
+
+
+		return result;
+	}
+
 
 	@Override
 	public PQLQueryResult query(String pqlQuery, Set<String> externalIDs) throws ClassNotFoundException, SQLException {

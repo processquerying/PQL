@@ -1,8 +1,9 @@
 package org.pql.petri;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INetSystem;
@@ -20,10 +21,14 @@ public class AbstractLabelUnificationTransformation<F extends IFlow<N>, N extend
 	private Set<String> labels = null;
 	
 	private T unifiedTransition = null;
+	
+	private Map<T,Set<T>> UT2T = null; //A.P.
+
+
 		
 	public AbstractLabelUnificationTransformation(INetSystem<F,N,P,T,M> sys, Set<String> labels) {
 		super(sys);
-		
+		this.UT2T = new HashMap<T,Set<T>>(); //A.P.
 		this.labels = labels;
 	}
 	
@@ -79,6 +84,17 @@ public class AbstractLabelUnificationTransformation<F extends IFlow<N>, N extend
 				tt2.setName("t"+Math.abs(tt2.hashCode()));
 				this.freshTs.add(tt1);
 				this.freshTs.add(tt2);
+				
+				//A.P.
+				if(UT2T.containsKey(this.unifiedTransition))
+				{
+					UT2T.get(this.unifiedTransition).add(tt);
+				}
+				else
+				{
+					UT2T.put(this.unifiedTransition, new HashSet<T>());
+					UT2T.get(this.unifiedTransition).add(tt);
+				}
 				
 				for (P pp : this.sys.getPreset(tt))
 					this.sys.addFlow(pp, tt1);
@@ -165,4 +181,14 @@ public class AbstractLabelUnificationTransformation<F extends IFlow<N>, N extend
 	public Set<String> getLabels() {
 		return this.labels;
 	}
+	
+	//A.P.
+	@Override
+	public Map<T,Set<T>> getUT2T() {
+		if (this.isApplied()) return this.UT2T;
+			
+		return null;
+	}
+
+
 }

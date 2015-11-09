@@ -170,11 +170,11 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 		System.out.println("---------");
 			
 }	
-		File allresults = writeCSV(results,".\\results.csv");
-		File avgTimeresults = writeCSV(avgTimeResults,".\\avgTimeResults.csv");
-		File avgAnswersresults = writeCSV(avgAnswersResults,".\\avgAnswersResults.csv");
-		File minresults = writeCSV(minResults,".\\minResults.csv");
-		File maxresults = writeCSV(maxResults,".\\maxResults.csv");
+		File allresults = writeCSV(results,".\\Ex1results.csv");
+		File avgTimeresults = writeCSV(avgTimeResults,".\\Ex1avgTimeResults.csv");
+		File avgAnswersresults = writeCSV(avgAnswersResults,".\\Ex1avgAnswersResults.csv");
+		File minresults = writeCSV(minResults,".\\Ex1minResults.csv");
+		File maxresults = writeCSV(maxResults,".\\Ex1maxResults.csv");
 
 
 	}

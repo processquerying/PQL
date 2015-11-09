@@ -37,10 +37,11 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 
 	
 	//A.P.
+	@SuppressWarnings("rawtypes")
 	public PQLQueryMySQL(AtomicInteger filteredModels, Connection con, String query, ILabelManager labelMngr) throws ClassNotFoundException, SQLException {
 		super(query,labelMngr);
 		this.connection = con;
-		this.basicPredicates = new org.pql.core.PQLBasicPredicatesMySQL(con,filteredModels);
+		this.basicPredicates = new org.pql.core.PQLBasicPredicatesMySQL(con,labelMngr,filteredModels);
 	}
 
 	@Override
@@ -146,6 +147,50 @@ protected boolean interpretUnaryTracePredicate(Token op, PQLTrace trace) {
 
 		return false;	
 	}
+	
+	//A.P. 
+	@Override
+protected PQLTrace interpretInsertTrace(PQLTrace trace) {
+	
+		PQLTrace dbTrace = new PQLTrace();
+		
+		for(int i=0; i<trace.getTrace().size(); i++) {
+			PQLTask task = trace.getTrace().elementAt(i);
+			PQLTask dbTask = null;
+			
+			if(task.getSimilarity() == 1.0) {
+				dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+				Set<String> similarLabels = new HashSet<String>();
+				similarLabels.add(task.getLabel());
+				dbTask.setLabels(similarLabels);
+			}
+			else {
+				dbTask = this.task2task.get(task); 
+			
+				if (dbTask==null) {
+					dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+					
+					try {
+						labelMngr.loadTask(dbTask, this.labelMngr.getIndexedLabelSimilarityThresholds());
+					} 
+					catch (SQLException e) {
+						e.printStackTrace();
+					}
+					
+					this.task2task.put(task,dbTask);
+				}
+			}
+			dbTask.setAsterisk(task.isAsterisk());
+			dbTrace.addTask(dbTask);
+		}
+		
+		dbTrace.setHasAsterisk(trace.hasAsterisk());
+		
+		//create XLog
+		dbTrace.createInsertTraceLog();
+
+		return dbTrace;	
+	}
 
 	
 	@Override
@@ -204,7 +249,8 @@ protected boolean interpretUnaryTracePredicate(Token op, PQLTrace trace) {
 		return result;
 	}
 	
-	//A.P. used for experiments
+	//A.P.
+	@Override
 	public IPQLBasicPredicatesOnTasks getBP()
 	{
 		return this.basicPredicates;

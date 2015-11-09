@@ -8,6 +8,7 @@ import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
 import org.deckfour.xes.model.impl.XAttributeLiteralImpl;
+import org.deckfour.xes.model.impl.XAttributeTimestampImpl;
 
 /**
  * A.P.
@@ -55,7 +56,7 @@ public class PQLTrace {
 			}
 		}
 		System.out.println("Log: "+logTrace);
-		
+	 		
 	};
 	
 	public Vector<PQLTask> getTrace(){
@@ -89,6 +90,31 @@ public class PQLTrace {
 	};
 
 	
+	public void createInsertTraceLog(){
+		
+		XFactoryNaiveImpl factory = new XFactoryNaiveImpl(); 
+		
+		XLog log = factory.createLog();
+		
+		XTrace logTrace = factory.createTrace();
+		log.add(logTrace);
+		
+		for(int i=0; i<trace.size(); i++)
+		{
+			if(!trace.elementAt(i).isAsterisk())
+			{
+			String taskLabel = trace.elementAt(i).getLabel();
+			XEvent event = factory.createEvent();
+			event.getAttributes().put("concept:name",new XAttributeLiteralImpl("concept:name",taskLabel));
+			event.getAttributes().put("time:timestamp",new XAttributeTimestampImpl("time:timestamp",i));
+			logTrace.add(event);
+			}
+		}	
+		
+		this.traceLog = log;		
+		
+	};
+
 	
 	public void createTraceLog(){
 		

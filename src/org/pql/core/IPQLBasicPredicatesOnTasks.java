@@ -119,4 +119,8 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	public boolean totalConcur(PQLTask t1, PQLTask t2);
 	
 	public boolean executes(PQLTrace trace); //A.P.
+	
+	public boolean repairNet(PQLTrace trace); //A.P.
+
+	public String getRepairedID(); //A.P.
 }

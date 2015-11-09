@@ -12,14 +12,13 @@ import org.pql.core.PQLTrace;
 import org.pql.ini.PQLIniFile;
 import org.pql.query.PQLQueryResult;
 
-public class PQLExecutesExperiment2 {
+public class PQLExecutesExperiment2v2 {
 	
 //for this experiment function checkQueryExperiment2 in class PQLQueryThread was used
 	
 public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, InterruptedException {
 	
-	  int maxTraceLength = Integer.parseInt(args[0]); //10
-	  int numberOfExperiments = Integer.parseInt(args[1]); //100
+	  int numberOfExperiments = Integer.parseInt(args[0]); //1000
 	
 	  PQLIniFile iniFile = new PQLIniFile();
 		if (!iniFile.load()) {
@@ -29,15 +28,11 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 		
 	LabelLoader ll = new LabelLoader(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword());
 	
-	String sepLine = "sep=;\r\n";
-	Vector<String> resultsTitle = new Vector<String>();
-	resultsTitle.add(sepLine);
-	resultsTitle.add("Experiment#;traceLength;numberOfAsterisks;numberOfTildas;trace;ID;modelSize;numberOfPlaces;numberOfTransitions;numberOfArcs;answer;modelFiltered;time1;time2;time\r\n");  
-	File rt = writeCSV(resultsTitle,".\\Ex2results.csv");
-	
-	for(int traceLength=4; traceLength <= maxTraceLength; traceLength++)
-	{
-		
+	Vector<String> results = new Vector<String>();
+	results.add("sep=;\r\n");
+	results.add("Experiment#;traceLength;numberOfAsterisks;numberOfTildas;trace;ID;modelSize;numberOfPlaces;numberOfTransitions;numberOfArcs;answer;modelFiltered;time1;time2;time\r\n");  
+	File Results = writeCSV(results,".\\Ex2results.csv");
+			
 		PQLAPI	pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
 				iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
 				iniFile.getLoLA2Path(),
@@ -52,6 +47,8 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 		
 		for(int experiment=1; experiment <= numberOfExperiments; experiment++)
 		{
+			int traceLength = ll.randInt(4, 10);
+			
 			PQLTrace trace = ll.getTrace(traceLength);
 			
 			int numberOfAsterisks = ll.randInt(0, 2);
@@ -70,11 +67,10 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 			
 			PQLQueryResult queryResult = pqlAPI.query(pqlQuery,setup);
 					
-			System.out.println(" TL: " + traceLength + " experiment: " + experiment);
-			}
+			System.out.println("Experiment: " + experiment);
+		}
 		
 		pqlAPI.disconnect();
-		}
 	
 	}
 	

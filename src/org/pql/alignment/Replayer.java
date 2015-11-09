@@ -37,6 +37,65 @@ public class Replayer<F extends IFlow<N>, N extends INode, P extends IPlace, T e
 	public Replayer(AlignmentAPI<F,N,P,T,M> api) {
 		this.api = api;
 	}
+
+	
+public PQLAlignment getInsertAlignment(PetrinetGraph net,  XLog log)
+{
+		
+	DummyUIPluginContext 		context				= new DummyUIPluginContext(new DummyGlobalContext(), "label");
+	XEventClass 				dummyEvClass 		= new XEventClass("DUMMY",99999);
+	XEventClassifier 			eventClassifier 	= XLogInfoImpl.NAME_CLASSIFIER;
+	Marking						initMarking			= api.getInitialMarking(net);
+	TransEvClassMapping			mapping				= api.constructMapping(net, log, dummyEvClass, eventClassifier);
+	Map<XEventClass, Integer> 	events2costs 		= api.constructMOTCostFunction(net, log, eventClassifier, dummyEvClass); 
+	Map<Transition, Integer> 	transitions2costs 	= api.constructMOSCostFunctionForAsterisk(net);
+	PetrinetReplayerWithoutILP 	replayEngine 		= new PetrinetReplayerWithoutILP();
+	IPNReplayParameter parameters = new CostBasedCompleteParam(events2costs,transitions2costs);
+	parameters.setInitialMarking(initMarking);
+	parameters.setGUIMode(false);
+    parameters.setCreateConn(false);
+    
+    PNRepResult 				replayResult 		= null;	
+    PQLAlignment 				alignment 			= new PQLAlignment();
+            
+    try {
+    	 replayResult = replayEngine.replayLog( context, net, log, mapping, parameters);
+            
+     } catch (AStarException e) {
+            e.printStackTrace();
+     	}
+		
+   List<Object> nodes = replayResult.first().getNodeInstance();
+   List<StepTypes> steps = replayResult.first().getStepTypes();
+  
+   for(int i=0; i<steps.size(); i++)
+   {
+	   
+	   switch(steps.get(i))
+	   {
+	   case LMGOOD: 
+		   alignment.addMove(new PQLMove(nodes.get(i).toString(),nodes.get(i).toString(),(Transition)nodes.get(i)));
+		   break;
+	   case MREAL:
+		   alignment.addMove(new PQLMove(nodes.get(i).toString(),"SKIP_STEP",(Transition)nodes.get(i)));
+		   break;
+	   case MINVI:
+		   alignment.addMove(new PQLMove("INV_TRANS","SKIP_STEP",(Transition)nodes.get(i)));
+		   break;
+	   case L:
+		   alignment.addMove(new PQLMove("SKIP_STEP", nodes.get(i).toString()));
+		   break;
+	default:
+		break;
+	   }
+		   
+   }
+	
+   
+   return alignment;
+	}
+
+
 	
 public PQLAlignment getAlignment(PetrinetGraph net,  XLog log)
 {
@@ -64,9 +123,6 @@ public PQLAlignment getAlignment(PetrinetGraph net,  XLog log)
             e.printStackTrace();
      	}
 		
-   //Double traceFitness = (Double) replayResult.getInfo().get("Trace Fitness");
-   //System.out.println(traceFitness);
-  
    List<Object> nodes = replayResult.first().getNodeInstance();
    List<StepTypes> steps = replayResult.first().getStepTypes();
    
@@ -122,21 +178,9 @@ try {
  } catch (AStarException e) {
         e.printStackTrace();
  	}
-	
-//Double traceFitness = (Double) replayResult.getInfo().get("Trace Fitness");
-//System.out.println("traceFitness: "+traceFitness);
 
 List<Object> nodes = replayResult.first().getNodeInstance();
 List<StepTypes> steps = replayResult.first().getStepTypes();
-
-/*System.out.println("initMarking: "+initMarking);
-System.out.println("places: "+net.getPlaces());
-System.out.println("mapping: "+mapping);
-System.out.println("events2costs: "+events2costs);
-System.out.println("transitions2costs: "+transitions2costs);
-System.out.println("nodes: "+nodes);
-System.out.println("steps: "+steps);
-*/
 
 for(int i=0; i<steps.size(); i++)
 {

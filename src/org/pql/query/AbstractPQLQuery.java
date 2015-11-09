@@ -41,6 +41,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	protected HashMap<String,Set<PQLTask>>	variables	= new HashMap<String,Set<PQLTask>>();
 	protected HashSet<PQLAttribute>			attributes	= new HashSet<PQLAttribute>();
 	protected Set<PQLLocation>				locations	= new HashSet<PQLLocation>();
+	protected PQLTrace						insertTrace	= null;//A.P.
 	
 	protected ParserRuleContext				parseTree		 = null;
 	protected ILabelManager					labelMngr		 = null;
@@ -53,6 +54,8 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	
 	protected abstract boolean interpretUnaryTracePredicate(Token op, PQLTrace a); //A.P.
 	
+	protected abstract PQLTrace interpretInsertTrace(PQLTrace a); //A.P.
+		
 	protected abstract boolean interpretBinaryPredicate(Token op, PQLTask a, PQLTask b);
 	
 	protected abstract Set<PQLTask> getAllTasks();
@@ -135,6 +138,9 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	                	break;
 	                case PQLParser.RULE_predicate:
 	                	predicate = child;
+	                	break;
+	                case PQLParser.RULE_trace: //A.P. for INSERT
+	                	this.insertTrace = this.interpretInsertTrace(this.interpretInsertTrace(child));
 	                	break;
                 }
             }
@@ -510,6 +516,30 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return trace;
 
 	}
+	
+	// A.P.
+		protected PQLTrace interpretInsertTrace(ParseTree tree) {
+			PQLTrace trace = new PQLTrace();
+			
+			for (int i = 0; i < tree.getChildCount(); i++) {
+				ParseTree child = tree.getChild(i).getChild(0); //getting a task or '*'
+				
+				if(child instanceof RuleNode) {
+					int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
+					
+					if (ruleIndex == PQLParser.RULE_task) { //is task 
+						trace.addTask(this.interpretTask(child));
+					}
+					else { // is '*'
+						trace.addTask(this.interpretTraceUniverse());
+						trace.setHasAsterisk(true);
+					} 
+				}
+			}
+			
+			return trace;
+
+		}
 
 	// A.P.
 	protected PQLTask interpretTraceUniverse() {
@@ -1037,4 +1067,11 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	public List<String> getParseErrorMessages() {
 		return listener.getErrorMessages();
 	}
+	
+	//A.P.
+	@Override
+	public PQLTrace getInsertTrace() {
+		return this.insertTrace;
+	}
+	
 }

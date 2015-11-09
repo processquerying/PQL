@@ -32,14 +32,22 @@ public class LabelLoader<F extends IFlow<N>, N extends INode, P extends IPlace, 
 extends MySQLConnection
 {
 	private static Random 							rand = new Random(System.currentTimeMillis());
-	private IPetriNetPersistenceLayer<F,N,P,T,M> 	PL = new AbstractPetriNetPersistenceLayerMySQL<F,N,P,T,M>(connection);//A.P.
+	private IPetriNetPersistenceLayer<F,N,P,T,M> 	PL = new AbstractPetriNetPersistenceLayerMySQL<F,N,P,T,M>(connection); 
 	private Set<Integer> 							netIDs = PL.getAllInternalIDs();
 	private Set<String> 							externalIDs = new HashSet<String>();
 	
 
+	protected LabelLoader(String url, String user, String password, int start, int end) throws SQLException, ClassNotFoundException {
+		super(url, user, password);
+		
+		netIDs = new HashSet<Integer>();
+		for(int i=start; i<end+1; i++)
+		netIDs.add(i);
+		} 
+
 	protected LabelLoader(String url, String user, String password) throws SQLException, ClassNotFoundException {
 		super(url, user, password);
-		} 
+			} 
 
 	
 	protected LabelLoader(String url, String user, String password, Set<String> externalIDs) throws SQLException, ClassNotFoundException {

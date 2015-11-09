@@ -14,16 +14,15 @@ import org.pql.core.PQLTrace;
 import org.pql.ini.PQLIniFile;
 import org.pql.query.PQLQueryResult;
 
-public class PQLExecutesExperiment3 {
+public class PQLExecutesExperiment3v2 {
 	
 		
 public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, InterruptedException {
 	
 	  int numberOfRepetitions = Integer.parseInt(args[0]); //4
 	  int maxNumberOfThreads = Integer.parseInt(args[1]); //8
-	  int numberOfExperiments = Integer.parseInt(args[2]); //100
-	  int traceLength = Integer.parseInt(args[3]); //10
-	  int indexIncrement = Integer.parseInt(args[4]); //50
+	  int numberOfExperiments = Integer.parseInt(args[2]); //1000
+	  int indexIncrement = Integer.parseInt(args[3]); //50
 	  
 	
 	PQLIniFile iniFile = new PQLIniFile();
@@ -46,11 +45,35 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 				iniFile.getDefaultBotSleepTime());
 
 	Set<String> externalIDs = new HashSet<String>();
-	Set<String> indexedIDs = new HashSet<String>();
-	
 	externalIDs = api.getExternalIDs();
-	api.reset();
 	
+	//generate 1000 traces with random length (4-10), number of asterisks (0-2) and tildas (0-2)
+	LabelLoader ll = new LabelLoader(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(), externalIDs);
+	Vector<String> traces = new Vector<String>();
+	Vector<Integer> traceLengthVector = new Vector<Integer>();
+	Vector<Integer> numberOfAsterisksVector = new Vector<Integer>();
+	Vector<Integer> numberOfTildasVector = new Vector<Integer>();
+	
+	for(int i=0; i<numberOfExperiments; i++)
+	{
+		int traceLength = ll.randInt(4, 10);
+		PQLTrace trace = ll.getTrace(traceLength);
+		traceLengthVector.add(traceLength);
+		
+		int numberOfAsterisks = ll.randInt(0, 2);
+		trace = ll.addAsterisks(trace, numberOfAsterisks);
+		numberOfAsterisksVector.add(numberOfAsterisks);
+		
+		int numberOfTildas = ll.randInt(0, 2);
+		trace = ll.addTildas(trace, numberOfTildas);
+		numberOfTildasVector.add(numberOfTildas);
+				
+		String queryTrace = ll.getQueryTrace(trace);
+		traces.add(queryTrace);
+	
+	}
+	
+	api.reset();
 		
 	//results - details	
 	Vector<String> results = new Vector<String>();
@@ -92,14 +115,12 @@ while(!externalIDs.isEmpty())
 			api.storeModel(new File("./pnml/sap/"+nextID),nextID);
 			api.index(api.getInternalID(nextID));
 			externalIDs.remove(nextID);
-			indexedIDs.add(nextID);
 			indexedModels ++;
 			System.out.println("Indexed net\t\t"+nextID);
 		}
 	}
 	
 	
-	LabelLoader ll = new LabelLoader(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(), indexedIDs);
 	
 	Vector<Double> totalTimePerQuery = new Vector<Double>();
 	Vector<Double> min = new Vector<Double>();
@@ -112,20 +133,10 @@ while(!externalIDs.isEmpty())
 		min.add(1000000000000000000000000000.0);
 	}
 		
-		for(int experiment=1; experiment <= numberOfExperiments; experiment++)
+		for(int experiment=0; experiment < numberOfExperiments; experiment++)
 		{
 	
-			PQLTrace trace = ll.getTrace(traceLength);
-			
-			int numberOfAsterisks = ll.randInt(0, 2);
-					
-			trace = ll.addAsterisks(trace, numberOfAsterisks);
-			
-			int numberOfTildas = ll.randInt(0, 2);
-							
-			trace = ll.addTildas(trace, numberOfTildas);
-					
-			String queryTrace = ll.getQueryTrace(trace);
+			String queryTrace = traces.elementAt(experiment);
 			String pqlQuery = "SELECT * FROM * WHERE Executes(<"+queryTrace+">);";
 							
 				for(int numberOfThreads=1; numberOfThreads <= maxNumberOfThreads; numberOfThreads++)	
@@ -145,7 +156,7 @@ while(!externalIDs.isEmpty())
 							
 							long time = 0L;
 							int answersCount = 0;
-							AtomicInteger filteredModels = new AtomicInteger(0);
+							int filteredModels = 0;
 									
 							for (int i=0; i < numberOfRepetitions; i++) 
 							{
@@ -157,7 +168,7 @@ while(!externalIDs.isEmpty())
 								{
 									time += (stop-start);
 									answersCount += queryResult.getSearchResults().size();
-									filteredModels.addAndGet(queryResult.filteredModels.get());
+									filteredModels += queryResult.filteredModels.get();
 								}
 							}
 							
@@ -165,7 +176,7 @@ while(!externalIDs.isEmpty())
 							min.set(numberOfThreads-1, Math.min(min.elementAt(numberOfThreads-1),(double)time/(numberOfRepetitions-1)));				
 				 			max.set(numberOfThreads-1, Math.max(max.elementAt(numberOfThreads-1),(double)time/(numberOfRepetitions-1)));				
 							
-							String outcomeLine = indexedModels +";"+ experiment + ";"+numberOfRepetitions + ";"+traceLength+";"+numberOfThreads+";"+numberOfAsterisks+";"+numberOfTildas+";"+time+";"+(double)time/(numberOfRepetitions-1)+";"+(double)answersCount/(numberOfRepetitions-1)+";<"+queryTrace+">;"+(double)filteredModels.get()/(numberOfRepetitions-1)+"\r\n";
+							String outcomeLine = indexedModels +";"+ (experiment+1) + ";"+numberOfRepetitions + ";"+traceLengthVector.elementAt(experiment)+";"+numberOfThreads+";"+numberOfAsterisksVector.elementAt(experiment)+";"+numberOfTildasVector.elementAt(experiment)+";"+time+";"+(double)time/(numberOfRepetitions-1)+";"+(double)answersCount/(numberOfRepetitions-1)+";<"+queryTrace+">;"+(double)filteredModels/(numberOfRepetitions-1)+"\r\n";
 							results.add(outcomeLine);
 						
 							pqlAPI.disconnect();
@@ -195,10 +206,10 @@ while(!externalIDs.isEmpty())
 	System.out.println("AVG TIME\t\t"+avgTimeLine);
 	System.out.println("MIN TIME\t\t"+minLine);
 	System.out.println("MAX TIME\t\t"+maxLine);
-	
-ll.disconnect();	
 
 }
+
+ll.disconnect();
 
 File allresults = writeCSV(results,".\\Ex3results.csv");
 File avgTimeresults = writeCSV(avgTimeResults,".\\Ex3avgTimeResults.csv");
