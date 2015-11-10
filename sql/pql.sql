@@ -28,14 +28,14 @@ CREATE TABLE `jbpt_labels` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
   KEY `label` (`label`(5))
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
@@ -43,7 +43,7 @@ DELIMITER ;;
   FOR EACH ROW
 BEGIN
   DELETE FROM pql_tasks_sim WHERE pql_tasks_sim.label_id = OLD.id;
-  DELETE FROM pql_tasks WHERE pql_tasks.label_id=OLD.id;
+  DELETE FROM pql_tasks WHERE pql_tasks.label_id = OLD.id;
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -103,23 +103,43 @@ CREATE TABLE `jbpt_petri_nets` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid` (`uuid`(20)),
   UNIQUE KEY `external_id` (`external_id`(20))
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `jbpt_petri_nets_before_del_tr` BEFORE DELETE ON `jbpt_petri_nets`
   FOR EACH ROW
 BEGIN
-  DELETE FROM pql_index_status WHERE pql_index_status.net_id=OLD.id;
+  INSERT IGNORE INTO `pql_index_status`
+  VALUES (OLD.id,"DELETE",2,0,NULL,NULL,NULL);
+  
+  UPDATE `pql_index_status` SET `pql_index_status`.`status`=2
+  WHERE `pql_index_status`.`net_id` = OLD.id;
 
-  DELETE FROM jbpt_petri_nodes WHERE jbpt_petri_nodes.net_id=OLD.id;
+  DELETE FROM jbpt_petri_nodes  WHERE jbpt_petri_nodes.net_id=OLD.id;
+  
+  DELETE FROM pql_can_occur     WHERE pql_can_occur.net_id=OLD.id;
+  DELETE FROM pql_always_occurs WHERE pql_always_occurs.net_id=OLD.id;
+  DELETE FROM pql_can_conflict  WHERE pql_can_conflict.net_id=OLD.id;
+  DELETE FROM pql_can_cooccur   WHERE pql_can_cooccur.net_id=OLD.id;
+  DELETE FROM pql_total_causal  WHERE pql_total_causal.net_id=OLD.id;
+  DELETE FROM pql_total_concur  WHERE pql_total_concur.net_id=OLD.id;
+  
+  
+  
+
+
+  
+
+  
+  DELETE FROM pql_index_status WHERE pql_index_status.net_id=OLD.id;
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -149,7 +169,7 @@ CREATE TABLE `jbpt_petri_nodes` (
   KEY `triple_index` (`net_id`,`is_transition`,`label_id`),
   CONSTRAINT `jbpt_nodes_fk` FOREIGN KEY (`net_id`) REFERENCES `jbpt_petri_nets` (`id`),
   CONSTRAINT `jbpt_petri_nodes_fk` FOREIGN KEY (`label_id`) REFERENCES `jbpt_labels` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=282 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -171,19 +191,6 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-
---
--- Temporary table structure for view `jbpt_unused_labels`
---
-
-DROP TABLE IF EXISTS `jbpt_unused_labels`;
-/*!50001 DROP VIEW IF EXISTS `jbpt_unused_labels`*/;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
-/*!50001 CREATE TABLE `jbpt_unused_labels` (
-  `label_id` tinyint NOT NULL
-) ENGINE=MyISAM */;
-SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `pql_always_occurs`
@@ -312,30 +319,6 @@ CREATE TABLE `pql_index_status` (
   CONSTRAINT `pql_index_status_fk` FOREIGN KEY (`net_id`) REFERENCES `jbpt_petri_nets` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `pql_index_status_before_del_tr` BEFORE DELETE ON `pql_index_status`
-  FOR EACH ROW
-BEGIN
-  DELETE FROM pql_can_occur WHERE pql_can_occur.net_id=OLD.net_id;
-  DELETE FROM pql_always_occurs WHERE pql_always_occurs.net_id=OLD.net_id;
-  DELETE FROM pql_can_conflict WHERE pql_can_conflict.net_id=OLD.net_id;
-  DELETE FROM pql_can_cooccur WHERE pql_can_cooccur.net_id=OLD.net_id;
-  DELETE FROM pql_total_causal WHERE pql_total_causal.net_id=OLD.net_id;
-  DELETE FROM pql_total_concur WHERE pql_total_concur.net_id=OLD.net_id;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Temporary table structure for view `pql_indexed_ids`
@@ -367,21 +350,21 @@ CREATE TABLE `pql_tasks` (
   UNIQUE KEY `label_id_and_sim` (`label_id`,`similarity`),
   KEY `label_id` (`label_id`),
   CONSTRAINT `pql_tasks_fk` FOREIGN KEY (`label_id`) REFERENCES `jbpt_labels` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `pql_tasks_before_del_tr` BEFORE DELETE ON `pql_tasks`
   FOR EACH ROW
 BEGIN
-  DELETE FROM pql_tasks_sim WHERE pql_tasks_sim.task_id=OLD.id;
+  DELETE FROM pql_tasks_sim WHERE pql_tasks_sim.task_id = OLD.id;
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -569,9 +552,9 @@ DELIMITER ;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
@@ -580,22 +563,13 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `jbpt_petri_nets_delete`(internal_id 
 BEGIN
   DECLARE delID INTEGER;
   
-  SELECT id INTO delID FROM jbpt_petri_nets WHERE `jbpt_petri_nets`.`id` = internal_id;
+  SELECT id INTO delID FROM `jbpt_petri_nets` WHERE `jbpt_petri_nets`.`id` = internal_id;
   
   IF delID IS NULL THEN
     RETURN 0;
   END IF;
-  
-  DELETE FROM jbpt_petri_nets WHERE `jbpt_petri_nets`.`id` = delID;
-  
-  DELETE FROM jbpt_labels WHERE
-    (NOT(`jbpt_labels`.`id` IN (
-  SELECT
-    DISTINCT `jbpt_petri_nodes`.`label_id`
-  FROM
-    `jbpt_petri_nodes`
-  WHERE
-    (`jbpt_petri_nodes`.`label_id` is not null))));
+
+  DELETE FROM `jbpt_petri_nets` WHERE `jbpt_petri_nets`.`id` = delID;
 
   RETURN delID;
 END ;;
@@ -1709,9 +1683,9 @@ DELIMITER ;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
@@ -1727,10 +1701,10 @@ BEGIN
   DELETE FROM jbpt_labels WHERE `jbpt_labels`.`id` NOT IN
   (SELECT `jbpt_petri_nodes`.`label_id` FROM `jbpt_petri_nodes`);
   
-  ALTER TABLE jbpt_petri_nets AUTO_INCREMENT = 1;
+  ALTER TABLE jbpt_petri_nets  AUTO_INCREMENT = 1;
   ALTER TABLE jbpt_petri_nodes AUTO_INCREMENT = 1;
-  ALTER TABLE jbpt_labels AUTO_INCREMENT = 1;
-  ALTER TABLE pql_tasks AUTO_INCREMENT = 1;
+  ALTER TABLE jbpt_labels      AUTO_INCREMENT = 1;
+  ALTER TABLE pql_tasks        AUTO_INCREMENT = 1;
   
   DELETE FROM `pql_index_bots`;
 END ;;
@@ -1739,25 +1713,6 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-
---
--- Final view structure for view `jbpt_unused_labels`
---
-
-/*!50001 DROP TABLE IF EXISTS `jbpt_unused_labels`*/;
-/*!50001 DROP VIEW IF EXISTS `jbpt_unused_labels`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8 */;
-/*!50001 SET character_set_results     = utf8 */;
-/*!50001 SET collation_connection      = utf8_general_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `jbpt_unused_labels` AS select `jbpt_labels`.`id` AS `label_id` from `jbpt_labels` where (not(`jbpt_labels`.`id` in (select distinct `jbpt_petri_nodes`.`label_id` from `jbpt_petri_nodes` where (`jbpt_petri_nodes`.`label_id` is not null)))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
 -- Final view structure for view `pql_index_queue`
@@ -1806,4 +1761,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-10-20  9:36:11
+-- Dump completed on 2015-10-22  9:39:11
