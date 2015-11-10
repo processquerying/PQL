@@ -29,7 +29,7 @@ import org.pql.mc.LoLA2ModelChecker;
  * @author Artem Polyvyanyy
  */
 public class PQLBotCLI {
-	final private static String	version	= "1.0";
+	final private static String	version	= "1.1";
 	
 	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, SQLException, IOException {
 		System.out.println("===============================================================");

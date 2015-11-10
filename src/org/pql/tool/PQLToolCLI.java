@@ -32,7 +32,7 @@ import org.pql.query.PQLQueryResult;
  * @author Artem Polyvyanyy 
  */ 
 public final class PQLToolCLI {
-	final private static String	version	= "1.0";
+	final private static String	version	= "1.1";
 	
 	private static PQLAPI pqlAPI = null;
 		

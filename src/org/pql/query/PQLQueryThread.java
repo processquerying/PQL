@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jbpt.petri.persist.AbstractPetriNetPersistenceLayerMySQL;
 import org.pql.core.PQLBasicPredicatesMySQL;
 import org.pql.core.PQLException;
@@ -21,7 +22,6 @@ public class PQLQueryThread extends Thread {
 	private Set<String> queryResult = null;
 	private PriorityBlockingQueue<String> queue = null;
 	private AtomicBoolean netIDsLoaded = null;
-	private String name = null;
 	private String setup = null;
 	
 	
@@ -31,7 +31,6 @@ public class PQLQueryThread extends Thread {
 		this.queue = queue;
 		this.queryResult = queryResult;
 		this.netIDsLoaded = netIDsLoaded;
-		this.name = name;
 		this.setup = setup;
 		}
 

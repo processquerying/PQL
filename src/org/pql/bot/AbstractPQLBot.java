@@ -7,6 +7,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
+
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INode;
@@ -23,7 +24,9 @@ import org.pql.mc.IModelChecker;
  * @author Artem Polyvyanyy
  */
 public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
-	implements Runnable, IPQLBotHeartBeat {
+	extends Thread
+	implements IPQLBotHeartBeat {
+	
 	protected Connection connection = null;
 	protected IPQLIndex<F,N,P,T,M>		index	= null;
 	protected IModelChecker<F,N,P,T,M>	MC		= null;
@@ -37,6 +40,7 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 	protected boolean	isActive	= false;
 	
 	protected PQLBotRegularServiceThread regularService = null;
+	protected PQLBotIndexThread	indexThread = null;
 
 	private DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	
@@ -78,7 +82,7 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 			
 			boolean start = this.index.startIndexing(modelID, this.botName);
 			if (start) {
-				PQLBotIndexThread indexThread = new PQLBotIndexThread(modelID,this.botName,this.MC,this.index,this.indexType,this.verbose);
+				indexThread = new PQLBotIndexThread(modelID,this.botName,this.MC,this.index,this.indexType,this.verbose);
         		indexThread.start();
 				
 				long startTime = System.currentTimeMillis();
@@ -288,5 +292,10 @@ public class AbstractPQLBot<F extends IFlow<N>, N extends INode, P extends IPlac
 	public void terminate() {
 		if (this.regularService!=null)
 			this.regularService.interrupt();
+		
+		if (this.indexThread!=null)
+			this.indexThread.interrupt();
+		
+		this.interrupt();
 	}
 }

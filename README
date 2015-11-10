@@ -1,1 +1,22 @@
-Will be populated soon ...
+                ________   ________   ___          
+               |\   __  \ |\   __  \ |\  \         
+               \ \  \|\  \\ \  \|\  \\ \  \        
+                \ \   ____\\ \  \\\  \\ \  \       
+                 \ \  \___| \ \  \\\  \\ \  \____  
+                  \ \__\     \ \_____  \\ \_______\
+                   \|__|      \|___| \__\\|_______|
+                                    \|__|
+                                    
+                    www.processquerying.com
+                                    
+
+Process Query Language (PQL) is a special-purpose programming language for managing process models based on information about process instances that these models describe. PQL is based upon temporal logic and adopts the concrete syntax of SQL.
+
+-------------------------
+INSTALLATION INSTRUCTIONS
+-------------------------
+
+1. Download latest PQL release from https://github.com/processquerying/PQL/tree/master/release.
+2. Install supplied PQL.MySQL-*.sql schema file.
+3. Update MySQL URL, user, and password parameters in PQL.ini.
+4. Start using PQL by following the supplied examples!
