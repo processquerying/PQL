@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.pql.core.IPQLBasicPredicatesOnTasks;
 import org.pql.core.PQLAttribute;
 import org.pql.core.PQLException;
 import org.pql.core.PQLLocation;
 import org.pql.core.PQLTask;
+import org.pql.core.PQLTrace;
 
 /**
  * Interface to a PQL query.
@@ -72,4 +74,10 @@ public interface IPQLQuery {
 	 * @return The {@link List} of all parse error messages for this PQL query.
 	 */
 	public List<String> getParseErrorMessages();
+	
+	//A.P.
+	public PQLTrace getInsertTrace();
+	
+	//A.P.
+	public IPQLBasicPredicatesOnTasks getBP();
 }

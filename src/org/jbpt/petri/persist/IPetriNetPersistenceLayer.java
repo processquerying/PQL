@@ -10,6 +10,8 @@ import org.jbpt.petri.INetSystem;
 import org.jbpt.petri.INode;
 import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
+import org.pql.core.PQLTrace;
+
 
 /**
  * An interface to a storage of Petri nets.
@@ -125,4 +127,10 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	 * @throws SQLException
 	 */
 	public void reset() throws SQLException;
+
+	public boolean netHasAllTraceLabels(PQLTrace trace, Set<String> netLabels); //A.P.
+	
+	public void changeNetIndexStatus(int netID); //A.P.
+
+	
 }

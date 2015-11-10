@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.deckfour.xes.model.XLog;
 import org.jbpt.petri.IFlow;
@@ -20,14 +22,18 @@ import org.jbpt.petri.persist.AbstractPetriNetPersistenceLayerMySQL;
 import org.jbpt.petri.persist.IPetriNetPersistenceLayer;
 import org.pql.alignment.AbstractReplayer;
 import org.pql.alignment.AlignmentAPI;
+import org.pql.alignment.InsertMove;
 import org.pql.alignment.PQLAlignment;
 import org.pql.alignment.Replayer;
+import org.pql.alignment.SkipMove;
+import org.pql.label.ILabelManager;
 import org.pql.petri.AbstractLabelUnificationTransformation;
 import org.pql.petri.AbstractNetSystemTransformationManager;
 import org.pql.petri.AbstractTraceExecutionWithWildcardCharactersTesterTransformation;
 import org.pql.petri.ILabelUnificationTransformation;
 import org.pql.petri.TransformationLog;
 import org.processmining.models.graphbased.directed.petrinet.PetrinetGraph;
+import org.processmining.models.graphbased.directed.petrinet.elements.Transition;
 import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactory;
 
 /**
@@ -36,6 +42,8 @@ import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactor
 public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> //A.P. <...>added 
 				implements IPQLBasicPredicatesOnTasks
 				{
+	public AtomicInteger filteredModels = new AtomicInteger(); //A.P. (used for experiments)
+	private String repairedID = null;
 	
 	protected String PETRI_NET_IDENTIFIER_TO_ID = "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
 	protected String PQL_CAN_OCCUR				= "{? = CALL pql.pql_can_occur(?,?)}";
@@ -62,11 +70,13 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	private Connection 					connection = null;
 	private IPetriNetPersistenceLayer<F,N,P,T,M> 				PL = null;
 	private AbstractNetSystemTransformationManager<F,N,P,T,M> 	TM = null;//A.P.
+	private ILabelManager 										LM = null;//A.P.
 		
-	public PQLBasicPredicatesMySQL(Connection con) throws ClassNotFoundException, SQLException {
+	public PQLBasicPredicatesMySQL(Connection con, ILabelManager labelMngr, AtomicInteger filteredModels) throws ClassNotFoundException, SQLException {
 		this.connection = con;
 		this.PL = new AbstractPetriNetPersistenceLayerMySQL<F,N,P,T,M>(this.connection);//A.P.
-		
+		this.filteredModels = filteredModels;
+		this.LM = labelMngr;
 	}
 	
 	private boolean checkUnaryPredicate(String call, PQLTask t) {
@@ -191,20 +201,25 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		
 		try {		
 			
-		  	INetSystem<F,N,P,T,M> netSystem = PL.restoreNetSystem(this.netID);
+			//check if net contains all trace labels 
+		  	Set<String> netLabels = LM.getAllLabels(this.netID);
+			 
+		   	if(!PL.netHasAllTraceLabels(trace, netLabels)) 
+		   	{
+		   		this.filteredModels.incrementAndGet(); 
+		   		return false;
+		   	}
+			
+			INetSystem<F,N,P,T,M> netSystem = PL.restoreNetSystem(this.netID);
 		  	netSystem.loadNaturalMarking();
-			//IOUtils.invokeDOT("./pics", eNetID+"-0-Original.png", netSystem.toDOT());
+			//IOUtils.invokeDOT("./pics", this.netID+"-original-from-select.png", netSystem.toDOT());
 			
 		  	AlignmentAPI<F,N,P,T,M> api = new AlignmentAPI<F,N,P,T,M>(netSystem);
 			
 		  	//check enabled transitions for empty trace
 		  	if(trace.getTrace().isEmpty())
 		  	{if(!api.netStartsWithSilentTransitions()) return false;}
-		  	
-		  	//check if net contains all trace labels 		
-		   	Set<String> netLabels = api.getAllLabels();
-		   	if(!api.netHasAllTraceLabels(trace, netLabels)) return false;
-			
+				 		
 			AbstractTraceExecutionWithWildcardCharactersTesterTransformation<F,N,P,T,M> wct = new AbstractTraceExecutionWithWildcardCharactersTesterTransformation<F,N,P,T,M>(netSystem); 
 			AbstractReplayer replayer = new Replayer<F,N,P,T,M>(api);
 	  		
@@ -242,7 +257,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	    		transitionMap.put(task.getLabel(), lut.getUnifiedTransition());
 		 	}
 	  		
-	  		//IOUtils.invokeDOT("./pics", eid+"-2-AfterLU.png", netSystem.toDOT());
+	  		//IOUtils.invokeDOT("./pics", this.netID+"-1-AfterLU.png", netSystem.toDOT());
 	 		
 				if(!trace.hasAsterisk())
 				{
@@ -251,8 +266,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 					
 					// get an optimal alignment
 					PQLAlignment alignment = replayer.getAlignment(net, log);
-					//alignment.print();
-								
+									
 					// get alignment cost
 					int alignmentCost = alignment.getAlignmentCost();
 								
@@ -266,7 +280,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 					
 		    	//transform the system
 				wct.applyWildcardTransformation(trace,transitionMap);
-			 	//IOUtils.invokeDOT("./pics", eNetID+"-3-AfterST.png", netSystem.toDOT());
+			 	//IOUtils.invokeDOT("./pics", this.netID+"-2-AfterWildcardTransformation.png", netSystem.toDOT());
 		    		
 		    	//create PNML - for tests
 		    	//PNMLSerializer PNML = new PNMLSerializer();
@@ -278,7 +292,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 					
 			 	// get an optimal alignment
 				PQLAlignment alignment = replayer.getAlignmentWithAsterisk(net, log);
-
+			
 	  			// get alignment cost
 				int alignmentCost = alignment.getAlignmentCostForAsterisk();
 							
@@ -294,5 +308,133 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		}
 
 		return result;
+	}
+	
+	//A.P.
+	public IPetriNetPersistenceLayer<F,N,P,T,M> getPL()
+	{
+		return this.PL;
+	}
+	
+	//A.P.
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean repairNet(PQLTrace trace)
+	{
+		INetSystem<F,N,P,T,M> netSystem = null;
+		INetSystem<F,N,P,T,M> clonedNetSystem = null;
+		
+		Map<N,N> n2n = new HashMap<N,N>();
+		Map<T,T> clonedT2T = new HashMap<T,T>();
+		Map<Transition,T> transition2unifiedT = new HashMap<Transition,T>();
+		Map<T,Set<T>> UT2T = new HashMap<T,Set<T>>();
+		
+		try {
+			
+			netSystem = PL.restoreNetSystem(this.netID);
+			netSystem.loadNaturalMarking();
+			
+			//IOUtils.invokeDOT("./pics", this.identifier+"-original.png", netSystem.toDOT());
+			
+			clonedNetSystem = netSystem.clone(n2n);
+			for(N n : n2n.keySet())
+			{if(n instanceof ITransition){T clonedT = (T) n2n.get(n); T t = (T) n; clonedT2T.put(clonedT, t);}}
+				
+			//get set of tasks for label unification
+	  		Set<PQLTask> tasks = new HashSet<PQLTask>();
+	  		for(int i=0; i<trace.getTrace().size(); i++) 
+	  		{
+	  			PQLTask task = trace.getTrace().elementAt(i);
+	  			if(!task.isAsterisk() && task.getSimilarity() < 1.0)
+		     	tasks.add(task);
+		    }
+	  	
+	  		//label unification
+	  		if(tasks.size() > 0)
+	  		{
+	  		
+		  		this.TM = new AbstractNetSystemTransformationManager<F,N,P,T,M>(clonedNetSystem);
+		  		TransformationLog<F,N,P,T,M> trlog = new TransformationLog<F,N,P,T,M>();
+			  		
+		  		Iterator<PQLTask> it = tasks.iterator();
+		  		while (it.hasNext()) 
+		  		{
+		    		PQLTask task = it.next();
+		    		ILabelUnificationTransformation<F,N,P,T,M> lut = new AbstractLabelUnificationTransformation<F,N,P,T,M>(clonedNetSystem,task.getSimilarLabels());
+		    		trlog.add(lut);
+		    		this.TM.transform(trlog);
+		    		
+		    		if (lut.getUnifiedTransition() != null)
+		    		{
+		    			lut.getUnifiedTransition().setLabel(task.getLabel());
+		     			UT2T.putAll(lut.getUT2T());
+		    		}
+			 	}
+	  		}
+	   		
+	  		//IOUtils.invokeDOT("./pics",this.identifier+"-1-cloned-afterLU.png", clonedNetSystem.toDOT());
+	 		 
+	  		// get an optimal alignment
+	  		AlignmentAPI<F,N,P,T,M> replayAPI 	= new AlignmentAPI<F,N,P,T,M>(clonedNetSystem);
+	  		AlignmentAPI<F,N,P,T,M> repairAPI 	= new AlignmentAPI<F,N,P,T,M>(netSystem);
+		  	XLog 					log		 	= trace.getTraceLog(); 
+			PetrinetGraph			net		 	= PetrinetFactory.newPetrinet("PNML");
+			net = replayAPI.constructPetrinetGraphForInsert(net,transition2unifiedT);
+	  		AbstractReplayer 		replayer 	= new Replayer<F,N,P,T,M>(replayAPI);
+	  		
+			PQLAlignment alignment = replayer.getInsertAlignment(net, log);
+			alignment = repairAPI.transformAlignment(alignment, transition2unifiedT, UT2T, clonedT2T);
+			int alignmentCost = alignment.getInsertAlignmentCost();
+		
+			P sourcePlace = netSystem.getSourcePlaces().iterator().next();
+			P sinkPlace = netSystem.getSinkPlaces().iterator().next();
+			
+			if(alignmentCost > 0)
+			{
+				//get all insert moves
+				Vector<InsertMove> insertMoves = new Vector<InsertMove>();
+				insertMoves.addAll(repairAPI.getInsertMoves(alignment,trace));
+				
+				//add self-loops to netSystem
+				repairAPI.addInsertMoves(insertMoves,alignment);
+				repairAPI.updateInsertMovesInAlignment(alignment);
+				//IOUtils.invokeDOT("./pics", this.identifier+"-2-TasksAdded.png", netSystem.toDOT());
+			
+			}
+			
+			//skips
+				Vector<SkipMove> skipMoves = new Vector<SkipMove>();
+				skipMoves.addAll(repairAPI.getSkipMoves(alignment,trace,sourcePlace,sinkPlace));
+				
+				if(alignmentCost == 0 && skipMoves.size() == 0)
+				{
+				return false;
+				}else
+				{
+					repairAPI.addSkips(skipMoves); //add skips to net
+					//IOUtils.invokeDOT("./pics", this.identifier+"-repaired.png", netSystem.toDOT());
+				}
+			
+				
+				
+			for(T t : netSystem.getTransitions())
+			if(t.isSilent()){t.setName("");	t.setLabel("");}else{t.setName(t.getLabel());}
+				
+		  	//write transformed net to DB with a new external ID
+			this.repairedID = this.identifier+"_"+netSystem.hashCode();	
+			PL.storeNetSystem(netSystem, this.repairedID);
+			
+			//int intID = PL.getInternalID(this.repairedID); //for PQLTestInsertSelect
+			//PL.changeNetIndexStatus(intID); //for PQLTestInsertSelect
+			
+			} catch (SQLException e) {e.printStackTrace();} catch (ClassNotFoundException e) {e.printStackTrace();}
+			
+		return true;
+	}
+
+	//A.P.
+	@Override
+	public String getRepairedID() {
+	return this.repairedID;
 	}
 }

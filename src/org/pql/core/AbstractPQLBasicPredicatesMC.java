@@ -485,12 +485,26 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		
 		return true;
 	}
-	
 	//A.P.
 	@Override
 	public boolean executes(PQLTrace trace) {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
+	
+	//A.P.
+	@Override
+	public boolean repairNet(PQLTrace trace) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	//A.P.
+	@Override
+	public String getRepairedID() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	
 }
