@@ -118,10 +118,10 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		if (this.getNumberOfParseErrors()>0) return false;
 		ParseTree predicate = null;
 		
-		ParseTree queryType = parseTree.getChild(0); //A.P. getting query type: select, insert, etc.
+		ParseTree queryType = parseTree.getChild(0);
 		
-			for (int i = 0; i < queryType.getChildCount(); i++) { //A.P. parseTree replaced with queryType
-			ParseTree child = queryType.getChild(i); //A.P. parseTree replaced with queryType
+			for (int i = 0; i < queryType.getChildCount(); i++) { 
+			ParseTree child = queryType.getChild(i);
 			
 			if(child instanceof RuleNode) {
                 int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
@@ -175,7 +175,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
                 
                 switch (ruleIndex) {
                 	case PQLParser.RULE_varName:
-                		varName = interpretVarName(child);
+                		varName = interpretName(child);
                 		break;
                 	case PQLParser.RULE_setOfTasks:
                 		varValue = interpretSetOfTasks(child);
@@ -187,7 +187,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		this.variables.put(varName,varValue);
 	}
 	
-	protected String interpretVarName(ParseTree tree) {
+	protected String interpretName(ParseTree tree) {
 		return tree.getChild(0).getText();
 	}
 	
@@ -212,16 +212,10 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
             
             switch (ruleIndex) {
 	            case PQLParser.RULE_universe :
-	            	this.attributes.add(PQLAttribute.UNIVERSE);
-	            	break;
-	            case PQLParser.RULE_attributeID :
-	            	this.attributes.add(PQLAttribute.ID);
+	            	this.attributes.add(new PQLAttribute());
 	            	break;
 	            case PQLParser.RULE_attributeName :
-	            	this.attributes.add(PQLAttribute.NAME);
-	            	break;
-	            case PQLParser.RULE_attributeModel :
-	            	this.attributes.add(PQLAttribute.MODEL);
+	            	this.attributes.add(new PQLAttribute(this.interpretName(child)));
 	            	break;
             }
         }
@@ -845,7 +839,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	}
 	
 	protected Set<PQLTask> interpretVarNameSetOfTasks(ParseTree tree) {
-		String var = interpretVarName(tree);
+		String var = interpretName(tree);
 		
 		if (!this.variables.containsKey(var))
 			throw new RuntimeException("ERROR: Variable '" + var + "' is not defined!");

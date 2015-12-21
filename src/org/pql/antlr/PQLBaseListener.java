@@ -173,19 +173,6 @@ public class PQLBaseListener implements PQLListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
-	@Override public void enterAttributeModel(@NotNull PQLParser.AttributeModelContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitAttributeModel(@NotNull PQLParser.AttributeModelContext ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
 	@Override public void enterBinaryPredicateMacroSetSet(@NotNull PQLParser.BinaryPredicateMacroSetSetContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -791,19 +778,6 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitTasks(@NotNull PQLParser.TasksContext ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void enterAttributeID(@NotNull PQLParser.AttributeIDContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitAttributeID(@NotNull PQLParser.AttributeIDContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

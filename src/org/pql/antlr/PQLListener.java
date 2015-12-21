@@ -141,17 +141,6 @@ public interface PQLListener extends ParseTreeListener {
 	void exitApproximate(@NotNull PQLParser.ApproximateContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link PQLParser#attributeModel}.
-	 * @param ctx the parse tree
-	 */
-	void enterAttributeModel(@NotNull PQLParser.AttributeModelContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PQLParser#attributeModel}.
-	 * @param ctx the parse tree
-	 */
-	void exitAttributeModel(@NotNull PQLParser.AttributeModelContext ctx);
-
-	/**
 	 * Enter a parse tree produced by {@link PQLParser#binaryPredicateMacroSetSet}.
 	 * @param ctx the parse tree
 	 */
@@ -667,17 +656,6 @@ public interface PQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitTasks(@NotNull PQLParser.TasksContext ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link PQLParser#attributeID}.
-	 * @param ctx the parse tree
-	 */
-	void enterAttributeID(@NotNull PQLParser.AttributeIDContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PQLParser#attributeID}.
-	 * @param ctx the parse tree
-	 */
-	void exitAttributeID(@NotNull PQLParser.AttributeIDContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link PQLParser#attributeName}.

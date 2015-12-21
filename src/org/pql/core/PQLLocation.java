@@ -54,7 +54,7 @@ public class PQLLocation {
 	
 	@Override
 	public int hashCode() {
-		int result = address== null ? 0 : address.hashCode(); 
+		int result = address == null ? 0 : address.hashCode(); 
 		if (this.isModel()) result *= -1;
 		
 		return result;

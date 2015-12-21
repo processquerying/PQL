@@ -26,7 +26,7 @@
     THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    */
 
-   // PQL version 1.1.1 grammar for ANTLR v4
+   // PQL version 1.1 grammar for ANTLR v4
 
    grammar PQL;
 
@@ -50,7 +50,9 @@
 
    attributes : attribute (SEP attribute)* ;
    attribute  : universe
-              | attributeName ;
+              | attributeID
+              | attributeName
+              | attributeModel ;
            
    locations  : location (SEP location)* ;
    location   : universe
@@ -58,7 +60,9 @@
               | locationDirectory ;
               
    universe           : UNIVERSE ;
+   attributeID        : ATTRIBUTE_ID ;
    attributeName      : ATTRIBUTE_NAME ;
+   attributeModel     : ATTRIBUTE_MODEL ;
    locationID         : INTEGER ;
    locationDirectory  : STRING ;
 
@@ -106,6 +110,7 @@
    
    unaryTracePredicateName : EXECUTES;
 
+   
    binaryPredicateName: CAN_CONFLICT
               | CAN_COOCCUR 
               | CONFLICT
@@ -120,7 +125,7 @@
 
    proposition: unaryPredicate
               | binaryPredicate
-              | unaryTracePredicate
+			  | unaryTracePredicate
               | unaryPredicateMacro
               | binaryPredicateMacro
               | setPredicate
@@ -228,8 +233,9 @@
            | LP setOfTasksParentheses RP ;
 
    UNIVERSE         : '*' ;
-   ATTRIBUTE_NAME   : ('a'..'z'|'A'..'Z'|'_') 
-            ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
+   ATTRIBUTE_ID     : 'id' ;
+   ATTRIBUTE_NAME   : 'name' ;
+   ATTRIBUTE_MODEL  : 'model' ;
    
    STRING       : DQ ( ESC_SEQ 
                 | ~('\\'|'"') )* DQ ;
@@ -252,6 +258,7 @@
    SEP         : ',' ;
    ASSIGN      : '=' ;
    TILDE       : '~' ;
+   
    
    ESC_SEQ     : '\\' ('\"'|'\\'|'/'|'b'|
                'f'|'n'|'r'|'t') 
