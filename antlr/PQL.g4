@@ -39,7 +39,8 @@
               (WHERE predicate)? EOS ;
 
    insertQuery : variables 
-              INSERT trace INTO locations 
+              INSERT trace 
+              INTO locations 
               (WHERE predicate)? EOS ;              
 
    variables  : variable* ;
@@ -54,13 +55,11 @@
            
    locations  : location (SEP location)* ;
    location   : universe
-              | locationID
-              | locationDirectory ;
+              | locationPath ;
               
    universe           : UNIVERSE ;
    attributeName      : ATTRIBUTE_NAME ;
-   locationID         : INTEGER ;
-   locationDirectory  : STRING ;
+   locationPath       : STRING ;
 
    setOfTasks : tasks
               | union
@@ -233,7 +232,6 @@
    
    STRING       : DQ ( ESC_SEQ 
                 | ~('\\'|'"') )* DQ ;
-   INTEGER      : '0' | '1'..'9' '0'..'9'* ;
    VARIABLE_NAME: ('a'..'z'|'_') 
                   ('a'..'z'|'0'..'9'|'_')*;
    SIMILARITY   : '1' | '0' ('.' '0'..'9'+)? 

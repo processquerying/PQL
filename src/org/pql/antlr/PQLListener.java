@@ -262,17 +262,6 @@ public interface PQLListener extends ParseTreeListener {
 	void exitBinaryPredicateName(@NotNull PQLParser.BinaryPredicateNameContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link PQLParser#difference}.
-	 * @param ctx the parse tree
-	 */
-	void enterDifference(@NotNull PQLParser.DifferenceContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PQLParser#difference}.
-	 * @param ctx the parse tree
-	 */
-	void exitDifference(@NotNull PQLParser.DifferenceContext ctx);
-
-	/**
 	 * Enter a parse tree produced by {@link PQLParser#binaryPredicate}.
 	 * @param ctx the parse tree
 	 */
@@ -282,6 +271,17 @@ public interface PQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link PQLParser#difference}.
+	 * @param ctx the parse tree
+	 */
+	void enterDifference(@NotNull PQLParser.DifferenceContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PQLParser#difference}.
+	 * @param ctx the parse tree
+	 */
+	void exitDifference(@NotNull PQLParser.DifferenceContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link PQLParser#taskInSetOfTasks}.
@@ -359,17 +359,6 @@ public interface PQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitParentheses(@NotNull PQLParser.ParenthesesContext ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link PQLParser#locationDirectory}.
-	 * @param ctx the parse tree
-	 */
-	void enterLocationDirectory(@NotNull PQLParser.LocationDirectoryContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PQLParser#locationDirectory}.
-	 * @param ctx the parse tree
-	 */
-	void exitLocationDirectory(@NotNull PQLParser.LocationDirectoryContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link PQLParser#anyEachAll}.
@@ -636,17 +625,6 @@ public interface PQLListener extends ParseTreeListener {
 	void exitInsertQuery(@NotNull PQLParser.InsertQueryContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link PQLParser#locationID}.
-	 * @param ctx the parse tree
-	 */
-	void enterLocationID(@NotNull PQLParser.LocationIDContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PQLParser#locationID}.
-	 * @param ctx the parse tree
-	 */
-	void exitLocationID(@NotNull PQLParser.LocationIDContext ctx);
-
-	/**
 	 * Enter a parse tree produced by {@link PQLParser#tasks}.
 	 * @param ctx the parse tree
 	 */
@@ -667,6 +645,17 @@ public interface PQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAttributeName(@NotNull PQLParser.AttributeNameContext ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link PQLParser#locationPath}.
+	 * @param ctx the parse tree
+	 */
+	void enterLocationPath(@NotNull PQLParser.LocationPathContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PQLParser#locationPath}.
+	 * @param ctx the parse tree
+	 */
+	void exitLocationPath(@NotNull PQLParser.LocationPathContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link PQLParser#isFalse}.

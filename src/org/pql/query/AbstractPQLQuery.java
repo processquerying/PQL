@@ -244,11 +244,8 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	            case PQLParser.RULE_universe :
 	            	this.locations.add(new PQLLocation());
 	            	break;
-	            case PQLParser.RULE_locationDirectory :
-	            	this.locations.add(new PQLLocation(this.interpretString(child), true));
-	            	break;
-	            case PQLParser.RULE_locationID :
-	            	this.locations.add(new PQLLocation(child.getText(),false));
+	            case PQLParser.RULE_locationPath :
+	            	this.locations.add(new PQLLocation(this.interpretString(child)));
 	            	break;
             }
         }

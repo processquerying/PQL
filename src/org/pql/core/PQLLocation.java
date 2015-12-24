@@ -4,67 +4,56 @@ package org.pql.core;
  * Artem Polyvyanyy
  */
 public class PQLLocation {	
-	private String		address		= null;
-	private boolean		isDirectory	= false;
-	
-	public PQLLocation() {	
-	}
+	private String		locationPath	= null;
 	
 	/**
-	 * Constructor of a Location object.
-	 * 
-	 * @param address A string that signifies a location.
-	 * @param isDirectory A flag that indicates if this location is a directory. 
+	 * Empty constructor is used to construct the universe location.
 	 */
-	public PQLLocation(String address, boolean isDirectory) {
-		this.address		= address;
-		this.isDirectory	= isDirectory;
-	}
+	public PQLLocation() {}
 	
 	/**
-	 * Test if this location is a directory.
+	 * Constructor of the PQLLocation object.
 	 * 
-	 * @return {@code true} if this location is a directory; {@code false} otherwise.
+	 * @param path A string that signifies a path. 
 	 */
-	public boolean isDirectory() {
-		if (this.isUniverse()) return false;
-		
-		return isDirectory;
+	public PQLLocation(String path) {
+		this.locationPath = path;
 	}
 	
 	/**
-	 * Test if this location is a reference to a single model.
+	 * Test if this location is a path.
 	 * 
-	 * @return {@code true} if this location is a reference to a single model; {@code false} otherwise.
+	 * @return {@code true} if this location is a path; {@code false} otherwise.
 	 */
-	public boolean isModel() {
-		if (this.isUniverse()) return false;
-		
-		return !isDirectory;
+	public boolean isLocationPath() {		
+		return this.locationPath!=null;
 	}
 	
 	/**
-	 * Test if this location signifies a universe, i.e., any possible location.
+	 * Test if this location is the universe location.
 	 * 
-	 * @return {@code true} if this location signifies a universe; {@code false} otherwise.
+	 * @return {@code true} if this location is the universe location; {@code false} otherwise.
 	 */
 	public boolean isUniverse() {
-		return address==null;
+		return locationPath==null;
+	}
+	
+	/**
+	 * Get location path.
+	 * 
+	 * @return Path of this location or {@code null} in case of the universe location.
+	 */
+	public String getLocationPath() {
+		return this.locationPath;
 	}
 	
 	@Override
 	public int hashCode() {
-		int result = address == null ? 0 : address.hashCode(); 
-		if (this.isModel()) result *= -1;
-		
-		return result;
+		return this.locationPath == null ? 0 : this.locationPath.hashCode();
 	}
 	
 	@Override
 	public String toString() {
-		if (this.isUniverse()) return "UNIVERSE";
-		if (this.isDirectory()) return String.format("\"%s\"", this.address);
-		
-		return this.address;
+		return this.isUniverse() ? "UNIVERSE" : this.getLocationPath();
 	}
 }

@@ -316,19 +316,6 @@ public class PQLBaseListener implements PQLListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
-	@Override public void enterDifference(@NotNull PQLParser.DifferenceContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitDifference(@NotNull PQLParser.DifferenceContext ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
 	@Override public void enterBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -336,6 +323,19 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterDifference(@NotNull PQLParser.DifferenceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitDifference(@NotNull PQLParser.DifferenceContext ctx) { }
 
 	/**
 	 * {@inheritDoc}
@@ -427,19 +427,6 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitParentheses(@NotNull PQLParser.ParenthesesContext ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void enterLocationDirectory(@NotNull PQLParser.LocationDirectoryContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitLocationDirectory(@NotNull PQLParser.LocationDirectoryContext ctx) { }
 
 	/**
 	 * {@inheritDoc}
@@ -758,19 +745,6 @@ public class PQLBaseListener implements PQLListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
-	@Override public void enterLocationID(@NotNull PQLParser.LocationIDContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitLocationID(@NotNull PQLParser.LocationIDContext ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
 	@Override public void enterTasks(@NotNull PQLParser.TasksContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -791,6 +765,19 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitAttributeName(@NotNull PQLParser.AttributeNameContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterLocationPath(@NotNull PQLParser.LocationPathContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitLocationPath(@NotNull PQLParser.LocationPathContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

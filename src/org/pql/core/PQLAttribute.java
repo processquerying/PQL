@@ -16,9 +16,7 @@ public class PQLAttribute {
 	 * 
 	 * @param name Attribute name. 
 	 */
-	public PQLAttribute(String name) {
-		if (this.attributeName.isEmpty()) return;
-		
+	public PQLAttribute(String name) {		
 		this.attributeName = name;
 	}
 	
@@ -40,7 +38,12 @@ public class PQLAttribute {
 		return this.attributeName!=null;
 	}
 	
-	private String getAttributeName() {
+	/**
+	 * Get name of this attribute.
+	 * 
+	 * @return Name of this attribute or {@code null} in case of the universe attribute.
+	 */
+	public String getAttributeName() {
 		return this.attributeName;
 	}
 	
