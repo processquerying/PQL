@@ -56,4 +56,10 @@ public class PQLLocation {
 	public String toString() {
 		return this.isUniverse() ? "UNIVERSE" : this.getLocationPath();
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (! (o instanceof PQLLocation)) return false;
+		return this.hashCode() == ((PQLLocation) o).hashCode();
+	}
 }

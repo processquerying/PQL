@@ -24,12 +24,12 @@ import org.pql.label.LabelManagerThemisVSM;
 import org.pql.mc.LoLA2ModelChecker;
 
 /**
- * Implementation of the PQL Bot comman line interface.
+ * Implementation of the PQL Bot command line interface.
  * 
  * @author Artem Polyvyanyy
  */
 public class PQLBotCLI {
-	final private static String	version	= "1.1";
+	final private static String	version	= "1.1.1";
 	
 	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, SQLException, IOException {
 		System.out.println("===============================================================");

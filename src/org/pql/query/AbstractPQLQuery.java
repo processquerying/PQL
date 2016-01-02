@@ -37,10 +37,12 @@ import org.pql.label.ILabelManager;
  * @author Artem Polyvyanyy
  */
 public abstract class AbstractPQLQuery implements IPQLQuery {
+	private boolean							interpretedOnce = false;
 	
-	protected HashMap<String,Set<PQLTask>>	variables	= new HashMap<String,Set<PQLTask>>();
-	protected HashSet<PQLAttribute>			attributes	= new HashSet<PQLAttribute>();
+	protected Map<String,Set<PQLTask>>		variables	= new HashMap<String,Set<PQLTask>>();
+	protected Set<PQLAttribute>				attributes	= new HashSet<PQLAttribute>();
 	protected Set<PQLLocation>				locations	= new HashSet<PQLLocation>();
+	
 	protected PQLTrace						insertTrace	= null;//A.P.
 	
 	protected ParserRuleContext				parseTree		 = null;
@@ -97,7 +99,6 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
         parser.addErrorListener(listener);
         
         this.parseTree = parser.query();
-       
 	}
 
 	protected String readFile(String fileName) throws IOException {
@@ -106,7 +107,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		StringBuffer stringBuffer = new StringBuffer();
 		String line = null;
 		
-		while((line =bufferedReader.readLine())!=null)
+		while ((line=bufferedReader.readLine()) != null)
 			stringBuffer.append(line).append("\n");
 		
 		String result = stringBuffer.toString();
@@ -131,22 +132,25 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	                	interpretVariables(child);
 	                	break;
 	                case PQLParser.RULE_attributes:
-	                	interpretAttributes(child);
+	                	if (!this.interpretedOnce) interpretAttributes(child);
 	                	break;
 	                case PQLParser.RULE_locations:
-	                	interpretLocations(child);
+	                	if (!this.interpretedOnce) interpretLocations(child);
 	                	break;
 	                case PQLParser.RULE_predicate:
 	                	predicate = child;
 	                	break;
-	                case PQLParser.RULE_trace: //A.P. for INSERT
+	                case PQLParser.RULE_trace: //A.P. for INSERT TODO check
 	                	this.insertTrace = this.interpretInsertTrace(this.interpretInsertTrace(child));
 	                	break;
                 }
             }
 		} 
 		
-		return interpretPredicate(predicate);
+		boolean result = interpretPredicate(predicate);
+		this.interpretedOnce = true;
+		
+		return result;
 	}
 	
 	protected void interpretVariables(ParseTree tree) {
@@ -215,7 +219,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	            	this.attributes.add(new PQLAttribute());
 	            	break;
 	            case PQLParser.RULE_attributeName :
-	            	this.attributes.add(new PQLAttribute(this.interpretName(child)));
+	            	this.attributes.add(new PQLAttribute(this.interpretString(child)));
 	            	break;
             }
         }
@@ -1030,7 +1034,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
     }
 	
 	@Override
-	public HashMap<String, Set<PQLTask>> getVariables() {
+	public Map<String, Set<PQLTask>> getVariables() {
 		return this.variables;
 	}
 	

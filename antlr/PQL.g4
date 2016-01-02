@@ -1,6 +1,6 @@
    /*
     [The "BSD licence"]
-    Copyright (c) 2014-2015 Artem Polyvyanyy (http://polyvyanyy.com/)
+    Copyright (c) 2014-2016 Artem Polyvyanyy (http://polyvyanyy.com/)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
    grammar PQL;
 
    query      : selectQuery |
-                insertQuery;
+                insertQuery ;
                 
    selectQuery : variables 
               SELECT attributes 
@@ -58,7 +58,7 @@
               | locationPath ;
               
    universe           : UNIVERSE ;
-   attributeName      : ATTRIBUTE_NAME ;
+   attributeName      : STRING ;
    locationPath       : STRING ;
 
    setOfTasks : tasks
@@ -226,9 +226,7 @@
            | LP intersection RP
            | LP setOfTasksParentheses RP ;
 
-   UNIVERSE         : '*' ;
-   ATTRIBUTE_NAME   : ('a'..'z'|'A'..'Z'|'_') 
-            ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
+   UNIVERSE     : '*' ;
    
    STRING       : DQ ( ESC_SEQ 
                 | ~('\\'|'"') )* DQ ;
@@ -300,7 +298,7 @@
 
    CAN_OCCUR       : 'CanOccur' ;
    ALWAYS_OCCURS   : 'AlwaysOccurs' ;
-   EXECUTES		     : 'Executes';
+   EXECUTES		     : 'Executes' ;
    CAN_CONFLICT    : 'CanConflict' ;
    CAN_COOCCUR     : 'CanCooccur' ;
    CONFLICT        : 'Conflict' ;

@@ -56,4 +56,10 @@ public class PQLAttribute {
 	public String toString() {
 		return this.isUniverse() ? "UNIVERSE" : this.getAttributeName(); 
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (! (o instanceof PQLAttribute)) return false;
+		return this.hashCode() == ((PQLAttribute) o).hashCode();
+	}
 }

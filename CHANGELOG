@@ -1,0 +1,6 @@
+PQL ver 1.1.1
+====================
+1)  Introduced support of two PQL query attributes: Universe ('*') and AttributeName (STRING).
+2)  Introduced support of two PQL query locations: Universe ('*') and LocationPath (STRING).
+3)  Introduced org.pql.test.core package with two JUnit tests that every next PQL commit must pass.
+4)  Changed to ensure that for every PQL query, attributes and locations get interpreted only once.

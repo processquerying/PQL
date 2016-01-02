@@ -26,13 +26,13 @@ import org.pql.query.PQLQueryResult;
 /**
  * PQL command line tool
  * 
- * @version 1.0
+ * @version 1.1
  * @since 15-01-2015
  * 
  * @author Artem Polyvyanyy 
  */ 
 public final class PQLToolCLI {
-	final private static String	version	= "1.1";
+	final private static String	version	= "1.1.1";
 	
 	private static PQLAPI pqlAPI = null;
 		
@@ -272,7 +272,7 @@ public final class PQLToolCLI {
 		        		System.out.println("------------------------------------------------------------");
 		        		System.out.println("Attributes:\t"+ queryResult.getAttributes());
 		        		System.out.println("------------------------------------------------------------");
-		        		System.out.println("Locations:\t"+ queryResult.getAttributes());
+		        		System.out.println("Locations:\t"+ queryResult.getLocations());
 		        		if (!queryResult.getTaskMap().isEmpty()) 
 	        				System.out.println("------------------------------------------------------------");
 		        		for (Map.Entry<PQLTask,PQLTask> map: queryResult.getTaskMap().entrySet()) {
