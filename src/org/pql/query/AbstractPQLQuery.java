@@ -634,10 +634,10 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
 			
 			switch (ruleIndex) {
-				case PQLParser.RULE_universe:
-					return this.interpretUniverse(child);
 				case PQLParser.RULE_varName:
 					return this.interpretVarNameSetOfTasks(child);
+				case PQLParser.RULE_setOfAllTasks:
+					return this.interpretSetOfAllTasks(child);
 				case PQLParser.RULE_setOfTasksLiteral:
 					return interpretSetOfTasksLiteral(child);
 				case PQLParser.RULE_setOfTasksConstruction:
@@ -699,7 +699,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return result;
 	}
 
-	protected Set<PQLTask> interpretUniverse(ParseTree child) {
+	protected Set<PQLTask> interpretSetOfAllTasks(ParseTree child) {
 		return this.getAllTasks();
 	}
 
@@ -765,6 +765,8 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 					return interpretSetOfTasksLiteral(child);
 				case PQLParser.RULE_setOfTasksConstruction:
 					return interpretSetOfTasksConstruction(child);
+				case PQLParser.RULE_setOfAllTasks:
+					return interpretSetOfAllTasks(child);
 				case PQLParser.RULE_union:
 					return interpretUnion(child);
 				case PQLParser.RULE_difference:
@@ -781,8 +783,6 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			switch (tokenIndex) {
 				case PQLLexer.VARIABLE_NAME:
 					return this.interpretVarNameSetOfTasks(child);
-				case PQLLexer.UNIVERSE:
-					return this.interpretUniverse(child);
 			}
 		}
 		

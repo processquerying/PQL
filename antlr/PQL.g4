@@ -26,7 +26,7 @@
     THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    */
 
-   // PQL version 1.1.1 grammar for ANTLR v4
+   // PQL version 1.1.2 grammar for ANTLR v4
 
    grammar PQL;
 
@@ -66,10 +66,14 @@
               | intersection
               | difference ;
 
-   tasks      : ( varName | universe )
+   tasks      : varName  
+              | setOfAllTasks
               | setOfTasksLiteral
               | setOfTasksConstruction
               | setOfTasksParentheses ;
+
+   setOfAllTasks      :
+              GET_TASKS LP RP;
               
    setOfTasksLiteral  : 
               LB (task (SEP task)*)? RB ;
@@ -81,6 +85,7 @@
    
    task       : approximate label 
               | label (LSB similarity RSB)? ; 
+   
    approximate: TILDE ;
    label      : STRING ;
    similarity : SIMILARITY ;

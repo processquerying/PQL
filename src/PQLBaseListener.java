@@ -94,6 +94,19 @@ public class PQLBaseListener implements PQLListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
+	@Override public void enterSetOfAllTasks(@NotNull PQLParser.SetOfAllTasksContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitSetOfAllTasks(@NotNull PQLParser.SetOfAllTasksContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
 	@Override public void enterProposition(@NotNull PQLParser.PropositionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -315,19 +328,6 @@ public class PQLBaseListener implements PQLListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
-	@Override public void enterBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
 	@Override public void enterDifference(@NotNull PQLParser.DifferenceContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -335,6 +335,19 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitDifference(@NotNull PQLParser.DifferenceContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

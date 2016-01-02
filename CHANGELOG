@@ -1,3 +1,7 @@
+PQL ver 1.1.2
+====================
+1)  Changed PQL syntax from '*' to 'GetTasks()' to denote the set of all tasks of a model matched to the query.
+
 PQL ver 1.1.1
 ====================
 1)  Introduced support of two PQL query attributes: Universe ('*') and AttributeName (STRING).

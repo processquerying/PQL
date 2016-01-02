@@ -74,6 +74,17 @@ public interface PQLListener extends ParseTreeListener {
 	void exitTruthValue(@NotNull PQLParser.TruthValueContext ctx);
 
 	/**
+	 * Enter a parse tree produced by {@link PQLParser#setOfAllTasks}.
+	 * @param ctx the parse tree
+	 */
+	void enterSetOfAllTasks(@NotNull PQLParser.SetOfAllTasksContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PQLParser#setOfAllTasks}.
+	 * @param ctx the parse tree
+	 */
+	void exitSetOfAllTasks(@NotNull PQLParser.SetOfAllTasksContext ctx);
+
+	/**
 	 * Enter a parse tree produced by {@link PQLParser#proposition}.
 	 * @param ctx the parse tree
 	 */
@@ -261,17 +272,6 @@ public interface PQLListener extends ParseTreeListener {
 	void exitBinaryPredicateName(@NotNull PQLParser.BinaryPredicateNameContext ctx);
 
 	/**
-	 * Enter a parse tree produced by {@link PQLParser#binaryPredicate}.
-	 * @param ctx the parse tree
-	 */
-	void enterBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PQLParser#binaryPredicate}.
-	 * @param ctx the parse tree
-	 */
-	void exitBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx);
-
-	/**
 	 * Enter a parse tree produced by {@link PQLParser#difference}.
 	 * @param ctx the parse tree
 	 */
@@ -281,6 +281,17 @@ public interface PQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitDifference(@NotNull PQLParser.DifferenceContext ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link PQLParser#binaryPredicate}.
+	 * @param ctx the parse tree
+	 */
+	void enterBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PQLParser#binaryPredicate}.
+	 * @param ctx the parse tree
+	 */
+	void exitBinaryPredicate(@NotNull PQLParser.BinaryPredicateContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link PQLParser#taskInSetOfTasks}.

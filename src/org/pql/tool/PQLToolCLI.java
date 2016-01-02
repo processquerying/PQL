@@ -24,15 +24,15 @@ import org.pql.ini.PQLIniFile;
 import org.pql.query.PQLQueryResult;
 
 /**
- * PQL command line tool
+ * Implementation of the PQL Tool command line interface.
  * 
- * @version 1.1
+ * @version 1.1.*
  * @since 15-01-2015
  * 
  * @author Artem Polyvyanyy 
  */ 
 public final class PQLToolCLI {
-	final private static String	version	= "1.1.1";
+	final private static String	version	= "1.1.2";
 	
 	private static PQLAPI pqlAPI = null;
 		
