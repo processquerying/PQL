@@ -18,10 +18,10 @@ public class PQLBot extends AbstractPQLBot<Flow, Node, Place, Transition, Markin
 			String botName,
 			IPQLIndex<Flow, Node, Place, Transition, Marking> index,
 			IModelChecker<Flow, Node, Place, Transition, Marking> mc,
-			IndexType indexType, long indexTime, long sleepTime, boolean verbose)
-			throws ClassNotFoundException, SQLException {
+			IndexType indexType, long indexTime, long sleepTime)
+			throws ClassNotFoundException, NameInUseException, SQLException {
 		super(con, botName, index, mc, indexType,
-				indexTime, sleepTime, verbose);
+				indexTime, sleepTime);
 	}
 
 }
