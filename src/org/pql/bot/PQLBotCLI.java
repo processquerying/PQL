@@ -34,7 +34,7 @@ import org.pql.mc.LoLA2ModelChecker;
 public class PQLBotCLI {
 	final private static String	version	= "1.1.2";
 	
-	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, SQLException, IOException {
+	public static void main(String[] args) throws AbstractPQLBot.NameInUseException, InterruptedException, ClassNotFoundException, SQLException, IOException {
 		System.out.println("===============================================================");
 		System.out.println(String.format(" Process Query Language (PQL) Bot ver. %s by Artem Polyvyanyy", PQLBotCLI.version));
 		System.out.println("===============================================================");
@@ -140,7 +140,7 @@ public class PQLBotCLI {
 				iniFile.getIndexType(), iniFile.getDefaultBotMaxIndexTime(), iniFile.getDefaultBotSleepTime());
 	    
 	    PQLBot bot = new PQLBot(connection, 
-	    						botName, index, mc, IndexType.PREDICATES, indexTime, sleepTime, true);
+							botName, index, mc, IndexType.PREDICATES, indexTime, sleepTime);
 	    bot.run();
 	    
 	}

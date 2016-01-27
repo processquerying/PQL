@@ -77,13 +77,13 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 		AbstractPQLBot<F,N,P,T,M> bot = null;
 		try {
 			bot = new AbstractPQLBot<F,N,P,T,M>(this.connection,
-					null, this, this.MC, this.indexType, this.indexTime, this.sleepTime, false);
+					null, this, this.MC, this.indexType, this.indexTime, this.sleepTime);
 		
 			boolean result = bot.index(internalID);
 			bot.terminate();
 			return result;
 		
-		} catch (ClassNotFoundException | InterruptedException e) {
+		} catch (AbstractPQLBot.NameInUseException | ClassNotFoundException | InterruptedException e) {
 			e.printStackTrace();
 			return false;
 		}
