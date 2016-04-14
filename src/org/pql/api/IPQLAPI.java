@@ -167,5 +167,11 @@ public interface IPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, 
 	 */
 	public IndexStatus getIndexStatus(int internalID) throws SQLException;
 
+	int getIndexTime(int internalID) throws SQLException; //A.P.
+
+	int getIndexStartTime(int internalID) throws SQLException; //A.P.
+
+	int getIndexEndTime(int internalID) throws SQLException; //A.P.
+
 	
 }

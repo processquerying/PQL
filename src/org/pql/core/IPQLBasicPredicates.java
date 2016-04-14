@@ -1,5 +1,7 @@
 package org.pql.core;
 
+import org.json.JSONArray;
+
 /**
  * Interface to computation of basic PQL predicates.
  * 
@@ -14,4 +16,13 @@ public interface IPQLBasicPredicates {
 	 * @throws {@link PQLException} 
 	 */
 	public void configure(Object obj) throws PQLException;
+
+	//A.P.
+	boolean checkUnaryPredicateMacroV1(String op, String q, JSONArray labels, JSONArray sim);
+	//A.P.
+	boolean checkUnaryPredicateMacroV2(String op, String q, JSONArray ids);
+	//A.P.
+	boolean checkBinaryPredicateMacro(String op, String q, JSONArray ids1,
+			JSONArray ids2);
+
 }

@@ -39,6 +39,14 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	private Connection connection = null;
 	private String PETRI_NET_CREATE						= "{? = CALL pql.jbpt_petri_nets_create(?,?,?,?,?)}";
 	private CallableStatement PETRI_NET_CREATE_CS 		= null;
+	
+	private String PQL_GET_INDEX_TIME					= "{? = CALL pql.pql_index_time(?)}";//A.P.
+	private CallableStatement PQL_GET_INDEX_TIME_CS 	= null;//A.P.
+	private String PQL_GET_INDEX_START_TIME					= "{? = CALL pql.pql_index_get_start_time(?)}";//A.P.
+	private CallableStatement PQL_GET_INDEX_START_TIME_CS 	= null;//A.P.
+	private String PQL_GET_INDEX_END_TIME					= "{? = CALL pql.pql_index_get_end_time(?)}";//A.P.
+	private CallableStatement PQL_GET_INDEX_END_TIME_CS 	= null;//A.P.
+
 	private String PETRI_NET_GET_INT_ID					= "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
 	private CallableStatement PETRI_NET_GET_INT_ID_CS 	= null;
 	private String PETRI_NET_GET_EXT_ID					= "{? = CALL pql.jbpt_petri_nets_get_external_id(?)}";
@@ -256,6 +264,50 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		
 		return PETRI_NET_GET_INT_ID_CS.getInt(1);
 	}
+	
+	//A.P.
+	@Override
+	public int getIndexTime(int internalID) throws SQLException {
+		if(PQL_GET_INDEX_TIME_CS == null)
+			PQL_GET_INDEX_TIME_CS = connection.prepareCall(this.PQL_GET_INDEX_TIME);
+		
+		PQL_GET_INDEX_TIME_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+		PQL_GET_INDEX_TIME_CS.setInt(2, internalID);
+		
+		PQL_GET_INDEX_TIME_CS.execute();
+		
+		return PQL_GET_INDEX_TIME_CS.getInt(1);
+	}
+	
+	//A.P.
+		@Override
+		public int getIndexStartTime(int internalID) throws SQLException {
+			if(PQL_GET_INDEX_START_TIME_CS == null)
+				PQL_GET_INDEX_START_TIME_CS = connection.prepareCall(this.PQL_GET_INDEX_START_TIME);
+			
+			PQL_GET_INDEX_START_TIME_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+			PQL_GET_INDEX_START_TIME_CS.setInt(2, internalID);
+			
+			PQL_GET_INDEX_START_TIME_CS.execute();
+			
+			return PQL_GET_INDEX_START_TIME_CS.getInt(1);
+		}
+
+		//A.P.
+		@Override
+		public int getIndexEndTime(int internalID) throws SQLException {
+			if(PQL_GET_INDEX_END_TIME_CS == null)
+				PQL_GET_INDEX_END_TIME_CS = connection.prepareCall(this.PQL_GET_INDEX_END_TIME);
+			
+			PQL_GET_INDEX_END_TIME_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+			PQL_GET_INDEX_END_TIME_CS.setInt(2, internalID);
+			
+			PQL_GET_INDEX_END_TIME_CS.execute();
+			
+			return PQL_GET_INDEX_END_TIME_CS.getInt(1);
+		}
+
+
 	
 	@Override
 	public String getExternalID(int internalID) throws SQLException {

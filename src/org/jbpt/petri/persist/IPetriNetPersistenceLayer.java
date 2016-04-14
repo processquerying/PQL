@@ -132,5 +132,11 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	
 	public void changeNetIndexStatus(int netID); //A.P.
 
+	public int getIndexTime(int internalID) throws SQLException; //A.P.
+
+	public int getIndexStartTime(int internalID) throws SQLException; //A.P.
+
+	public int getIndexEndTime(int internalID) throws SQLException; //A.P.
+
 	
 }

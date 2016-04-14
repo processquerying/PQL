@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.lucene.index.IndexWriter;
+
 /**
  * @author Artem Polyvyanyy
  */
@@ -74,6 +76,13 @@ public class LabelManagerLevenshtein extends AbstractLabelManagerMySQL {
 	@Override
 	public int indexLabel(String label) throws SQLException {		
 		return this.createLabel(label);
+	}
+
+	//A.P. - used for experiments
+	@Override
+	public IndexWriter getIndexWriter() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

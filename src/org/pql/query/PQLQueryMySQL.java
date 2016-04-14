@@ -2,14 +2,21 @@ package org.pql.query;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.v4.runtime.Token;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.pql.antlr.PQLLexer;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
 import org.pql.core.PQLException;
+import org.pql.core.PQLQuantifier;
 import org.pql.core.PQLTask;
 import org.pql.core.PQLTrace;
 import org.pql.label.ILabelManager;
@@ -87,9 +94,240 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 		return false;
 	}
 	
+	//A.P. - v2
+		@Override
+		public boolean interpretBinaryPredicateMacro(Token op, Set<PQLTask> set1, Set<PQLTask> set2, PQLQuantifier Q) {
+			
+			Vector<PQLTask> noDBtasks1 = new Vector<PQLTask>();
+			Vector<PQLTask> DBtasks1 = new Vector<PQLTask>();
+			Set<Integer> taskIDs1 = new HashSet<Integer>();
+			Vector<PQLTask> noDBtasks2 = new Vector<PQLTask>();
+			Vector<PQLTask> DBtasks2 = new Vector<PQLTask>();
+			Set<Integer> taskIDs2 = new HashSet<Integer>();
+		
+			
+			for(PQLTask task : set1)
+			{
+				PQLTask dbTask = this.task2task.get(task); 
+				if(dbTask==null)
+				{
+					dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+					DBtasks1.add(dbTask);
+					noDBtasks1.add(task);
+				}
+				else{taskIDs1.add(dbTask.getID());}
+			}
+			
+			for(PQLTask task : set2)
+			{
+				PQLTask dbTask = this.task2task.get(task); 
+				if(dbTask==null)
+				{
+					dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+					DBtasks2.add(dbTask);
+					noDBtasks2.add(task);
+				}
+				else{taskIDs2.add(dbTask.getID());}
+			}
+	
+			//get task IDs
+			if(DBtasks1.size()>0)
+			{	try {
+				labelMngr.loadTasks(DBtasks1, this.labelMngr.getIndexedLabelSimilarityThresholds());
+				} catch (SQLException e) {e.printStackTrace();}
+			}
+			
+			if(DBtasks2.size()>0)
+			{	try {
+				labelMngr.loadTasks(DBtasks2, this.labelMngr.getIndexedLabelSimilarityThresholds());
+				} catch (SQLException e) {e.printStackTrace();}
+			}
+		
+			//update task2task and taskIDs
+			for (int i=0; i<DBtasks1.size(); i++) {
+				this.task2task.put(noDBtasks1.elementAt(i),DBtasks1.elementAt(i));
+				taskIDs1.add(DBtasks1.elementAt(i).getID());
+			}
+			
+			for (int i=0; i<DBtasks2.size(); i++) {
+				this.task2task.put(noDBtasks2.elementAt(i),DBtasks2.elementAt(i));
+				taskIDs2.add(DBtasks2.elementAt(i).getID());
+			}
+		
+			JSONArray ids1 = new JSONArray();
+			for(Integer taskID : taskIDs1)
+			{
+				ids1.put(taskID);
+			}
+			
+			JSONArray ids2 = new JSONArray();
+			for(Integer taskID : taskIDs2)
+			{
+				ids2.put(taskID);
+			}
+		
+			//System.out.println(ids);
+			//System.out.println(taskIDs);
+			//System.out.println(DBtasks);
+			//System.out.println(noDBtasks);
+			
+			//quantifier
+			String q = "";
+			if (Q==PQLQuantifier.ANY) {q = "any";} else if (Q==PQLQuantifier.ALL) {q = "all";} else {q = "each";}
+						
+			switch (op.getType()) 
+			{
+				case PQLLexer.COOCCUR	: 
+					return basicPredicates.checkCooccurMacro(q, ids1, ids2);//TODO
+				case PQLLexer.CAN_COOCCUR	: 
+					return basicPredicates.checkBinaryPredicateMacro("cancooccur", q, ids1, ids2);
+				case PQLLexer.CONFLICT	: 
+					return basicPredicates.checkConflictMacro(q, ids1, ids2);//TODO
+				case PQLLexer.CAN_CONFLICT	: 
+					return basicPredicates.checkCanConflictMacro(q, ids1, ids2);//TODO
+				case PQLLexer.TOTAL_CAUSAL	: 
+					return basicPredicates.checkTotalCausalMacro(q, ids1, ids2);//TODO
+				case PQLLexer.TOTAL_CONCUR	: 
+					return basicPredicates.checkTotalConcurMacro(q, ids1, ids2);//TODO
+			}
+			
+			return false;
+		}
+	
+	//A.P. - v2 - using pql_check_unary_predicate_macro procedure
+	@Override
+	public boolean interpretUnaryPredicateMacroV2(Token op, Set<PQLTask> tasks, PQLQuantifier Q) {
+		
+		Vector<PQLTask> noDBtasks = new Vector<PQLTask>();
+		Vector<PQLTask> DBtasks = new Vector<PQLTask>();
+		Set<Integer> taskIDs = new HashSet<Integer>();
+		
+		for(PQLTask task : tasks)
+		{
+			PQLTask dbTask = this.task2task.get(task); 
+			if(dbTask==null)
+			{
+				dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+				DBtasks.add(dbTask);
+				noDBtasks.add(task);
+			}
+			else{taskIDs.add(dbTask.getID());}
+		}
+		
+		//get task IDs
+		if(DBtasks.size()>0)
+		{	try {
+			labelMngr.loadTasks(DBtasks, this.labelMngr.getIndexedLabelSimilarityThresholds());
+			} catch (SQLException e) {e.printStackTrace();}
+		}
+		
+		//update task2task and taskIDs
+		for (int i=0; i<DBtasks.size(); i++) {
+			this.task2task.put(noDBtasks.elementAt(i),DBtasks.elementAt(i));
+			taskIDs.add(DBtasks.elementAt(i).getID());
+		}
+		
+		JSONArray ids = new JSONArray();
+		for(Integer id : taskIDs)
+		{
+			ids.put(id);
+		}
+		
+		//System.out.println(ids);
+		//System.out.println(taskIDs);
+		//System.out.println(DBtasks);
+		//System.out.println(noDBtasks);
+		
+		//operation and quantifier
+		String o = "";
+		String q = "";
+		switch (op.getType()) 
+		{
+			case PQLLexer.CAN_OCCUR		: 
+				o = "canoccur";
+				break;
+			case PQLLexer.ALWAYS_OCCURS	: 
+				o = "alwaysoccurs";
+				break;
+		}
+		
+		if (Q==PQLQuantifier.ANY) {q = "any";} else {q = "all";}
+		
+		return basicPredicates.checkUnaryPredicateMacroV2(o, q, ids);
+	}
+	
+	//A.P. - v1 - using pql_check_unary_predicate_macro function
+	@Override
+	public boolean interpretUnaryPredicateMacroV1(Token op, Set<PQLTask> tasks, PQLQuantifier Q) {
+		
+		Vector<PQLTask> noDBtasks = new Vector<PQLTask>();
+		Vector<PQLTask> DBtasks = new Vector<PQLTask>();
+				
+		for(PQLTask task : tasks)
+		{
+			PQLTask dbTask = this.task2task.get(task); 
+			if(dbTask==null)
+			{
+				dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
+				DBtasks.add(dbTask);
+				noDBtasks.add(task);
+			}
+			else
+			{
+				task.setLabel(dbTask.getLabel());
+				task.setLabels(dbTask.getSimilarLabels());
+				task.setSimilarity(dbTask.getSimilarity());
+			}
+		}
+		
+		if(DBtasks.size()>0)
+		{
+			//load task labels and similarities	
+			try {labelMngr.loadTaskLabelsSim(DBtasks, this.labelMngr.getIndexedLabelSimilarityThresholds());} catch (SQLException e) {e.printStackTrace();}
+		
+			//update task2task and taskIDs
+			for (int i=0; i<DBtasks.size(); i++) 
+			{
+			this.task2task.put(noDBtasks.elementAt(i),DBtasks.elementAt(i));
+			}
+		}
+		//----------------------------------------------------
+		String o = "";
+		String q = "";
+		JSONArray labels = new JSONArray();
+		JSONArray sim = new JSONArray();
+				
+		Iterator<PQLTask> it = tasks.iterator();
+		
+		while(it.hasNext())
+		{
+			PQLTask task = it.next();
+			labels.put(task.getLabel());
+			
+			try {
+			sim.put(task.getSimilarity());
+			} catch (JSONException e) {e.printStackTrace();}
+		}
+		
+		switch (op.getType()) 
+		{
+			case PQLLexer.CAN_OCCUR		: 
+				o = "canoccur";
+				break;
+			case PQLLexer.ALWAYS_OCCURS	: 
+				o = "alwaysoccurs";
+				break;
+		}
+		
+		if (Q==PQLQuantifier.ANY) {q = "any";} else {q = "all";}
+		
+		return basicPredicates.checkUnaryPredicateMacroV1(o, q, labels, sim);
+	}
+	
+	
 	//A.P. 
 	@Override
-protected boolean interpretUnaryTracePredicate(Token op, PQLTrace trace) {
+    protected boolean interpretUnaryTracePredicate(Token op, PQLTrace trace) {
 	
 		if(trace.isAsterisk()) return true;
 		
@@ -150,7 +388,7 @@ protected boolean interpretUnaryTracePredicate(Token op, PQLTrace trace) {
 	
 	//A.P. 
 	@Override
-protected PQLTrace interpretInsertTrace(PQLTrace trace) {
+	protected PQLTrace interpretInsertTrace(PQLTrace trace) {
 	
 		PQLTrace dbTrace = new PQLTrace();
 		
@@ -198,11 +436,13 @@ protected PQLTrace interpretInsertTrace(PQLTrace trace) {
 		PQLTask dbTaskA = this.task2task.get(taskA);
 		PQLTask dbTaskB = this.task2task.get(taskB);
 		
+		
 		if (dbTaskA==null) {
 			dbTaskA = new PQLTask(taskA.getLabel(), taskA.getSimilarity());
 			
 			try {
 				labelMngr.loadTask(dbTaskA, this.labelMngr.getIndexedLabelSimilarityThresholds());
+				
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}

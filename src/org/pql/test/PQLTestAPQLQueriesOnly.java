@@ -74,7 +74,7 @@ public class PQLTestAPQLQueriesOnly extends TestCase {
 	}
 	
 	public void test005() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQLQueriesOnly.pqlAPI.query("SELECT * FROM * WHERE CanConflict(\"B\",\"C\") AND {\"B\",\"C\"} IS SUBSET OF *;");
+		PQLQueryResult queryResult = PQLTestAPQLQueriesOnly.pqlAPI.query("SELECT * FROM * WHERE CanConflict(\"B\",\"C\") AND {\"B\",\"C\"} IS SUBSET OF GetTasks();");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(3,res.size());
@@ -85,7 +85,7 @@ public class PQLTestAPQLQueriesOnly extends TestCase {
 	}
 	
 	public void test006() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQLQueriesOnly.pqlAPI.query("SELECT * FROM * WHERE CanConflict(\"B\",\"C\") OR (CanOccur(\"B\") AND NOT \"C\" IN *);");
+		PQLQueryResult queryResult = PQLTestAPQLQueriesOnly.pqlAPI.query("SELECT * FROM * WHERE CanConflict(\"B\",\"C\") OR (CanOccur(\"B\") AND NOT \"C\" IN GetTasks());");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(5,res.size());
@@ -269,7 +269,7 @@ public class PQLTestAPQLQueriesOnly extends TestCase {
 	}
 	
 	public void test022() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQLQueriesOnly.pqlAPI.query("SELECT * FROM * WHERE {\"A\",\"C\"} IS SUBSET OF GetTasksAlwaysOccurs(*);");
+		PQLQueryResult queryResult = PQLTestAPQLQueriesOnly.pqlAPI.query("SELECT * FROM * WHERE {\"A\",\"C\"} IS SUBSET OF GetTasksAlwaysOccurs(GetTasks());");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(5,res.size());
@@ -282,7 +282,7 @@ public class PQLTestAPQLQueriesOnly extends TestCase {
 	}
 	
 	public void test023() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQLQueriesOnly.pqlAPI.query("x = GetTasksAlwaysOccurs(*); SELECT * FROM * WHERE {\"A\",\"C\"} IS SUBSET OF x;");
+		PQLQueryResult queryResult = PQLTestAPQLQueriesOnly.pqlAPI.query("x = GetTasksAlwaysOccurs(GetTasks()); SELECT * FROM * WHERE {\"A\",\"C\"} IS SUBSET OF x;");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(5,res.size());
@@ -295,7 +295,7 @@ public class PQLTestAPQLQueriesOnly extends TestCase {
 	}
 	
 	public void test024() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTestAPQLQueriesOnly.pqlAPI.query("x = GetTasksAlwaysOccurs(*); SELECT * FROM * WHERE ({\"A\",\"C\"} IS SUBSET OF x) IS NOT TRUE;");
+		PQLQueryResult queryResult = PQLTestAPQLQueriesOnly.pqlAPI.query("x = GetTasksAlwaysOccurs(GetTasks()); SELECT * FROM * WHERE ({\"A\",\"C\"} IS SUBSET OF x) IS NOT TRUE;");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(5,res.size());

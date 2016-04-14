@@ -142,6 +142,7 @@ public class PQLBotCLI {
 	    PQLBot bot = new PQLBot(connection, 
 							botName, index, mc, IndexType.PREDICATES, indexTime, sleepTime);
 	    bot.run();
+	   
 	    
 	}
 

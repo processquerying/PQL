@@ -1,6 +1,7 @@
 package org.pql.core;
 
 import org.jbpt.petri.INetSystem;
+import org.json.JSONArray;
 
 /**
  * Interface to PQL basic predicates (on {@link PQLTask}s).
@@ -123,4 +124,21 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	public boolean repairNet(PQLTrace trace); //A.P.
 
 	public String getRepairedID(); //A.P.
+
+	//A.P.
+	public boolean checkUnaryPredicateMacroV1(String op, String q, JSONArray labels, JSONArray sim);
+	//A.P.
+	public boolean checkUnaryPredicateMacroV2(String op, String q, JSONArray ids);
+	//A.P.
+	public boolean checkCooccurMacro(String q, JSONArray ids1, JSONArray ids2);
+	//A.P.
+	public boolean checkConflictMacro(String q, JSONArray ids1, JSONArray ids2);
+	//A.P.
+	public boolean checkCanConflictMacro(String q, JSONArray ids1, JSONArray ids2);
+	//A.P.
+	public boolean checkTotalCausalMacro(String q, JSONArray ids1, JSONArray ids2);
+	//A.P.
+	public boolean checkTotalConcurMacro(String q, JSONArray ids1, JSONArray ids2);
+
+	
 }

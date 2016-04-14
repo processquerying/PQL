@@ -116,9 +116,10 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	}
 
 	protected boolean interpret() {
+		
 		if (this.getNumberOfParseErrors()>0) return false;
 		ParseTree predicate = null;
-		
+				
 		ParseTree queryType = parseTree.getChild(0);
 		
 			for (int i = 0; i < queryType.getChildCount(); i++) { 
@@ -297,11 +298,14 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			case PQLParser.RULE_binaryPredicate:
 				result = interpretBinaryPredicate(child);
 				break;
-			case PQLParser.RULE_unaryPredicateMacro:
-				result = interpretUnaryPredicateMacro(child);
+			case PQLParser.RULE_unaryPredicateMacro: //A.P. TODO optimization
+				//result = interpretUnaryPredicateMacro(child); //original
+				//result = interpretUnaryPredicateMacroV1(child); //TODO - remove
+				result = interpretUnaryPredicateMacroV2(child); //v2 - procedure
 				break;
-			case PQLParser.RULE_binaryPredicateMacro:
-				result = interpretBinaryPredicateMacro(child);
+			case PQLParser.RULE_binaryPredicateMacro: //A.P. TODO optimization
+				//result = interpretBinaryPredicateMacro(child); //original
+				result = interpretBinaryPredicateMacroV2(child); //only works for CanCooccur, for others reroutes to original version; TODO others in PQLBasicPredicatesMySQL
 				break;
 			case PQLParser.RULE_setPredicate:
 				result = interpretSetPredicate(child);
@@ -351,7 +355,10 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	}
 	
 	protected boolean interpretUnaryPredicateMacro(ParseTree tree) {
-		Token op		= ((TerminalNode)tree.getChild(0)).getSymbol();
+			
+		ParseTree nameChild = tree.getChild(0).getChild(0);
+		Token op = ((TerminalNode)nameChild).getSymbol();
+		
 		Set<PQLTask> tasks	= this.interpretSetOfTasks(tree.getChild(2));
 		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(4));
 		
@@ -371,6 +378,31 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		
 		return false;
 	}
+	
+	//A.P. - v1 - using pql_check_unary_predicate_macro f-n
+	protected boolean interpretUnaryPredicateMacroV1(ParseTree tree) {
+		
+		ParseTree nameChild = tree.getChild(0).getChild(0);
+		Token op = ((TerminalNode)nameChild).getSymbol();
+		
+		Set<PQLTask> tasks	= this.interpretSetOfTasks(tree.getChild(2));
+		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(4));
+			
+		return interpretUnaryPredicateMacroV1(op,tasks, Q);
+	}
+	
+	//A.P. - v2 - using pql_check_unary_predicate_macro procedure
+		protected boolean interpretUnaryPredicateMacroV2(ParseTree tree) {
+			
+			ParseTree nameChild = tree.getChild(0).getChild(0);
+			Token op = ((TerminalNode)nameChild).getSymbol();
+			
+			Set<PQLTask> tasks	= this.interpretSetOfTasks(tree.getChild(2));
+			PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(4));
+				
+			return interpretUnaryPredicateMacroV2(op,tasks, Q);
+		}
+
 
 	protected boolean interpretBinaryPredicateMacro(ParseTree tree) {
 		ParseTree child = tree.getChild(0);
@@ -385,6 +417,22 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		
 		return false;
 	}
+	
+	//A.P.
+	protected boolean interpretBinaryPredicateMacroV2(ParseTree tree) {
+		ParseTree child = tree.getChild(0);
+		int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
+	
+		switch (ruleIndex) {
+			case PQLParser.RULE_binaryPredicateMacroTaskSet:
+				return  interpretBinaryPredicateMacroTaskSetV2(child);
+			case PQLParser.RULE_binaryPredicateMacroSetSet:
+				return interpretBinaryPredicateMacroSetSetV2(child);
+		}
+		
+		return false;
+	}
+
 	
 	protected boolean interpretSetPredicate(ParseTree tree) {		
 		ParseTree child = tree.getChild(0);
@@ -413,6 +461,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			case PQLParser.RULE_different:
 				return A.equals(B) ? false : true;
 			case PQLParser.RULE_overlapsWith:
+				//return A.removeAll(B) ? true : false; //A.P. - similar time
 				for (PQLTask task : A) 
 					if (B.contains(task)) return true;
 				
@@ -658,9 +707,9 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			
 			switch (ruleIndex) {
 				case PQLParser.RULE_unaryPredicateConstruction:
-					return interpretUnaryPredicateConstruction(child);
+					return interpretUnaryPredicateConstruction(child);//A.P. TODO optimization
 				case PQLParser.RULE_binaryPredicateConstruction:
-					return interpretBinaryPredicateConstruction(child);
+					return interpretBinaryPredicateConstruction(child);//A.P. TODO optimization
 			}	
 		}
 		
@@ -858,6 +907,21 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return interpretBinaryPredicateMacroSetSet(op,set1,set2,Q);
 	}
 	
+	//A.P.
+	protected boolean interpretBinaryPredicateMacroSetSetV2(ParseTree tree) {
+		ParseTree nameChild = tree.getChild(0).getChild(0);
+		Token op = ((TerminalNode)nameChild).getSymbol();
+		Set<PQLTask> set1	= this.interpretSetOfTasks(tree.getChild(2));
+		Set<PQLTask> set2	= this.interpretSetOfTasks(tree.getChild(4));
+		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(6));
+		
+		if(op.getType()==PQLLexer.CAN_COOCCUR)
+		return interpretBinaryPredicateMacro(op,set1,set2,Q);
+		else
+		return interpretBinaryPredicateMacroSetSet(op,set1,set2,Q);	
+	}
+	
+	
 	protected boolean interpretBinaryPredicateMacroSetSet(Token op, Set<PQLTask> set1, Set<PQLTask> set2, PQLQuantifier Q) {
 		for (PQLTask task1 : set1) {
 			boolean flag = false;
@@ -886,7 +950,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		
 		return false;
 	}
-
+	
 	protected boolean interpretBinaryPredicateMacroTaskSet(ParseTree tree) {
 		ParseTree nameChild = tree.getChild(0).getChild(0);
 		Token op = ((TerminalNode)nameChild).getSymbol();
@@ -895,10 +959,32 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		Set<PQLTask> set1	= new HashSet<PQLTask>(); set1.add(task);
 		Set<PQLTask> set2	= this.interpretSetOfTasks(tree.getChild(4));
 		
+		//System.out.println(set2.iterator().next().getLabel()+" "+set2.iterator().next().getSimilarity()+" "+set2.iterator().next().getID());
+		
 		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(6));
 		
 		return interpretBinaryPredicateMacroSetSet(op,set1,set2,Q);
 	}
+	
+	//A.P.
+	protected boolean interpretBinaryPredicateMacroTaskSetV2(ParseTree tree) {
+		ParseTree nameChild = tree.getChild(0).getChild(0);
+		Token op = ((TerminalNode)nameChild).getSymbol();
+		
+		PQLTask task		= this.interpretTask(tree.getChild(2));
+		Set<PQLTask> set1	= new HashSet<PQLTask>(); set1.add(task);
+		Set<PQLTask> set2	= this.interpretSetOfTasks(tree.getChild(4));
+		
+		//System.out.println(set2.iterator().next().getLabel()+" "+set2.iterator().next().getSimilarity()+" "+set2.iterator().next().getID());
+		
+		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(6));
+		
+		if(op.getType()==PQLLexer.CAN_COOCCUR)
+			return interpretBinaryPredicateMacro(op,set1,set2,Q);
+			else
+			return interpretBinaryPredicateMacroSetSet(op,set1,set2,Q);	
+		}
+
 
 	protected PQLQuantifier interpretAnyEachAll(ParseTree tree) {
 		

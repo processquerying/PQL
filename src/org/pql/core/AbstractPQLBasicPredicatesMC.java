@@ -22,6 +22,7 @@ import org.jbpt.petri.unfolding.Event;
 import org.jbpt.petri.unfolding.IEvent;
 import org.jbpt.petri.unfolding.IOccurrenceNet;
 import org.jbpt.petri.unfolding.order.AdequateOrderType;
+import org.json.JSONArray;
 import org.pql.mc.IModelChecker;
 import org.pql.petri.AbstractControlPlaceTransformation;
 import org.pql.petri.AbstractGuardTransitionTransformation;
@@ -505,6 +506,62 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		// TODO Auto-generated method stub
 		return null;
 	}
+    
+	//A.P.
+	@Override
+	public boolean checkUnaryPredicateMacroV1(String op, String q, JSONArray labels, JSONArray sim) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
+	//A.P.
+	@Override
+	public boolean checkUnaryPredicateMacroV2(String op, String q, JSONArray ids) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	//A.P.
+	@Override
+	public boolean checkBinaryPredicateMacro(String op, String q,
+			JSONArray ids1, JSONArray ids2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	//A.P.
+	@Override
+	public boolean checkCooccurMacro(String q, JSONArray ids1, JSONArray ids2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	//A.P.
+	@Override
+	public boolean checkConflictMacro(String q, JSONArray ids1, JSONArray ids2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	//A.P.
+	@Override
+	public boolean checkCanConflictMacro(String q, JSONArray ids1,
+			JSONArray ids2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	//A.P.
+	@Override
+	public boolean checkTotalCausalMacro(String q, JSONArray ids1,
+			JSONArray ids2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	//A.P.
+	@Override
+	public boolean checkTotalConcurMacro(String q, JSONArray ids1,
+			JSONArray ids2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	
 }

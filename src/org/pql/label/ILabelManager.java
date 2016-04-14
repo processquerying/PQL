@@ -2,7 +2,10 @@ package org.pql.label;
 
 import java.sql.SQLException;
 import java.util.Set;
+import java.util.Vector;
 
+import org.apache.lucene.index.IndexWriter;
+import org.json.JSONArray;
 import org.pql.core.PQLTask;
 import org.pql.ini.IPQLIniFile;
 
@@ -95,5 +98,18 @@ public interface ILabelManager {
 	 * @returns The set of all labels that are similar to the given label with the similarity score which is equal or greater than the given similarity threshold value.
 	 */
 	public Set<LabelScore> getSimilarLabels(String label, double sim);
+
+	//A.P. - used for experiments
+	IndexWriter getIndexWriter();
+	//A.P.
+	public boolean loadTasks(Vector<PQLTask> tasks, Set<Double> similarities)
+			throws SQLException;
+    //A.P.
+	public void getTaskIDs(JSONArray labels, JSONArray similarities, Vector<PQLTask> tasks) throws SQLException;
+	
+	//A.P.
+	boolean loadTaskLabelsSim(Vector<PQLTask> tasks, Set<Double> similarities)
+			throws SQLException;
+
 
 }

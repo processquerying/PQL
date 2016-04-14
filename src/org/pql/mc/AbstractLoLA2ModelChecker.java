@@ -58,7 +58,7 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		sys.addTransition(t);
 		sys.addFlow(o,t);
 		sys.addFlow(t,i);
-		
+			
 		boolean result = true;
 		
 		if (!this.isBounded(sys)) result = false;

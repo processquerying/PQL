@@ -29,8 +29,9 @@ public class MySQLConnection{
 	
 	public void connect() throws SQLException {
 		if (this.connection==null || this.connection.isClosed())
-			this.connection = DriverManager.getConnection(this.mysqlURL,this.mysqlUser,this.mysqlPassword);
-	}	
+			this.connection = DriverManager.getConnection(this.mysqlURL+"?useSSL=false",this.mysqlUser,this.mysqlPassword);
+		
+			}	
 	
 	public void disconnect() throws SQLException {
 		this.connection.close();

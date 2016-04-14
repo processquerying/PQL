@@ -2,6 +2,7 @@ package org.pql.core;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,9 @@ import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
 import org.jbpt.petri.persist.AbstractPetriNetPersistenceLayerMySQL;
 import org.jbpt.petri.persist.IPetriNetPersistenceLayer;
+import org.jbpt.utils.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.pql.alignment.AbstractReplayer;
 import org.pql.alignment.AlignmentAPI;
 import org.pql.alignment.InsertMove;
@@ -36,6 +40,12 @@ import org.processmining.models.graphbased.directed.petrinet.PetrinetGraph;
 import org.processmining.models.graphbased.directed.petrinet.elements.Transition;
 import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.mysql.fabric.xmlrpc.base.Array;
+
 /**
  * @author Artem Polyvyanyy
  */
@@ -45,26 +55,30 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	public AtomicInteger filteredModels = new AtomicInteger(); //A.P. (used for experiments)
 	private String repairedID = null;
 	
-	protected String PETRI_NET_IDENTIFIER_TO_ID = "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
-	protected String PQL_CAN_OCCUR				= "{? = CALL pql.pql_can_occur(?,?)}";
-	protected String PQL_ALWAYS_OCCURS			= "{? = CALL pql.pql_always_occurs(?,?)}";
-	protected String PQL_CAN_CONFLICT			= "{? = CALL pql.pql_can_conflict(?,?,?)}";
-	protected String PQL_CAN_COOCCUR			= "{? = CALL pql.pql_can_cooccur(?,?,?)}";
-	protected String PQL_TOTAL_CAUSAL			= "{? = CALL pql.pql_total_causal(?,?,?)}";
-	protected String PQL_TOTAL_CONCUR			= "{? = CALL pql.pql_total_concur(?,?,?)}";
+	protected String PETRI_NET_IDENTIFIER_TO_ID 			= "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
+	protected final String PQL_CAN_OCCUR					= "{? = CALL pql.pql_can_occur(?,?)}";
+	protected final String PQL_ALWAYS_OCCURS				= "{? = CALL pql.pql_always_occurs(?,?)}";
+	protected final String PQL_CAN_CONFLICT					= "{? = CALL pql.pql_can_conflict(?,?,?)}";
+	protected final String PQL_CAN_COOCCUR					= "{? = CALL pql.pql_can_cooccur(?,?,?)}";
+	protected final String PQL_TOTAL_CAUSAL					= "{? = CALL pql.pql_total_causal(?,?,?)}";
+	protected final String PQL_TOTAL_CONCUR					= "{? = CALL pql.pql_total_concur(?,?,?)}";
 	
 	//A.P.
-	protected CallableStatement PETRI_NET_IDENTIFIER_TO_ID_CS = null;
-	
-	//A.P. TODO check if CallableStatement exists
-	protected CallableStatement PQL_CAN_OCCUR_CS		= null;
-	protected CallableStatement PQL_ALWAYS_OCCURS_CS	= null;
-	protected CallableStatement PQL_CAN_CONFLICT_CS		= null;
-	protected CallableStatement PQL_CAN_COOCCUR_CS		= null;
-	protected CallableStatement PQL_TOTAL_CAUSAL_CS		= null;
-	protected CallableStatement PQL_TOTAL_CONCUR_CS		= null;
+	protected String PQL_CHECK_UNARY_PREDICATE_MACRO_V1		= "{? = CALL pql.pql_check_unary_predicate_macro(?,?,?,?,?)}";
+	protected String PQL_CHECK_UNARY_PREDICATE_MACRO		= "{CALL pql.pql_check_unary_predicate_macro(?,?,?,?)}";
+	protected String PQL_CHECK_BINARY_PREDICATE_MACRO		= "{CALL pql.pql_check_binary_predicate_macro(?,?,?,?,?)}";
 
-		
+	//A.P.
+	protected CallableStatement PETRI_NET_IDENTIFIER_TO_ID_CS 			= null;
+	protected CallableStatement PQL_CAN_OCCUR_CS						= null;
+	protected CallableStatement PQL_ALWAYS_OCCURS_CS					= null;
+	protected CallableStatement PQL_CAN_CONFLICT_CS						= null;
+	protected CallableStatement PQL_CAN_COOCCUR_CS						= null;
+	protected CallableStatement PQL_TOTAL_CAUSAL_CS						= null;
+	protected CallableStatement PQL_TOTAL_CONCUR_CS						= null;
+	protected CallableStatement PQL_CHECK_UNARY_PREDICATE_MACRO_CS		= null;
+	protected CallableStatement PQL_CHECK_BINARY_PREDICATE_MACRO_CS		= null;
+	
 	private String						identifier = null;	
 	private int							netID = 0;
 	private Connection 					connection = null;
@@ -81,8 +95,16 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	
 	private boolean checkUnaryPredicate(String call, PQLTask t) {
 		try {
-			
-			CallableStatement cs = connection.prepareCall(call);
+			//A.P. - fix to deal with 'too many DB connections' exception
+			CallableStatement cs = null;
+			switch(call)
+			{
+			case(PQL_CAN_OCCUR) : 
+				if(PQL_CAN_OCCUR_CS == null){cs = connection.prepareCall(call);}else{cs=PQL_CAN_OCCUR_CS;}
+			case(PQL_ALWAYS_OCCURS) : 
+				if(PQL_ALWAYS_OCCURS_CS == null){cs = connection.prepareCall(call);}else{cs=PQL_ALWAYS_OCCURS_CS;}
+			}
+			//CallableStatement cs = connection.prepareCall(call);
 		
 			cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
 			cs.setInt(2,this.netID);
@@ -102,9 +124,108 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		}
 	}
 	
+	//A.P.
+			@Override
+			public boolean checkBinaryPredicateMacro(String op, String q, JSONArray ids1, JSONArray ids2) {
+				try {
+					CallableStatement cs = null;
+					String call = PQL_CHECK_BINARY_PREDICATE_MACRO;
+					if(PQL_CHECK_BINARY_PREDICATE_MACRO_CS == null){cs = connection.prepareCall(call);}
+					else{cs = PQL_CHECK_BINARY_PREDICATE_MACRO_CS;}
+				
+					cs.setInt(1,this.netID);
+					cs.setString(2, op);
+					cs.setString(3, q);
+					cs.setObject(4, ids1.toString());
+					cs.setObject(5, ids2.toString());
+					cs.execute();
+					ResultSet rs = cs.getResultSet();	
+					rs.next();
+					boolean result = rs.getBoolean(1);
+					return result;
+						
+				}
+				catch (SQLException e) {
+					e.printStackTrace();
+					return false;
+				} 
+			}
+
+	
+	//A.P.
+		@Override
+		public boolean checkUnaryPredicateMacroV2(String op, String q, JSONArray ids) {
+			try {
+				CallableStatement cs = null;
+				String call = PQL_CHECK_UNARY_PREDICATE_MACRO;
+				if(PQL_CHECK_UNARY_PREDICATE_MACRO_CS == null){cs = connection.prepareCall(call);}
+				else{cs = PQL_CHECK_UNARY_PREDICATE_MACRO_CS;}
+		
+				cs.setInt(1,this.netID);
+				cs.setString(2, op);
+				cs.setString(3, q);
+				cs.setObject(4, ids.toString());
+				cs.execute();
+				ResultSet rs = cs.getResultSet();	
+				rs.next();
+				boolean result = rs.getBoolean(1);
+				return result;
+					
+			}
+			catch (SQLException e) {
+				e.printStackTrace();
+				return false;
+			} 
+		}
+	
+	//A.P. - v1 - using pql_check_unary_predicate function
+	@Override
+	public boolean checkUnaryPredicateMacroV1(String op, String q, JSONArray labels, JSONArray sim) {
+		try {
+								
+			String call = PQL_CHECK_UNARY_PREDICATE_MACRO_V1;
+			CallableStatement cs = connection.prepareCall(call);
+		
+			cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
+			cs.setInt(2,this.netID);
+			
+			cs.setString(3, op);
+			cs.setString(4, q);
+			cs.setObject(5, labels.toString());
+			cs.setObject(6, sim.toString());
+						
+			cs.execute();
+			boolean result = cs.getBoolean(1);
+			cs.close();
+			
+			return result;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		} 
+	}
+
+	
 	private boolean checkBinaryPredicate(String call, PQLTask t1, PQLTask t2) {
 		try {
-			CallableStatement cs = connection.prepareCall(call);
+			//A.P. - fix to deal with 'too many DB connections' exception
+			CallableStatement cs = null;
+			switch(call)
+			{
+			case(PQL_CAN_CONFLICT) : 
+				if(PQL_CAN_CONFLICT_CS == null){cs = connection.prepareCall(call);}else{cs=PQL_CAN_CONFLICT_CS;}
+			case(PQL_CAN_COOCCUR) : 
+				if(PQL_CAN_COOCCUR_CS == null){cs = connection.prepareCall(call);}else{cs=PQL_CAN_COOCCUR_CS;}
+			case(PQL_TOTAL_CAUSAL) : 
+				if(PQL_TOTAL_CAUSAL_CS == null){cs = connection.prepareCall(call);}else{cs=PQL_TOTAL_CAUSAL_CS;}
+			case(PQL_TOTAL_CONCUR) : 
+				if(PQL_TOTAL_CONCUR_CS == null){cs = connection.prepareCall(call);}else{cs=PQL_TOTAL_CONCUR_CS;}
+		
+			}
+			
+		
+			//CallableStatement cs = connection.prepareCall(call);
 		
 			cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
 			cs.setInt(2,this.netID);
@@ -203,6 +324,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 			
 			//check if net contains all trace labels 
 		  	Set<String> netLabels = LM.getAllLabels(this.netID);
+		  	System.out.println("map: "+trace.getReplacementMap());
 			 
 		   	if(!PL.netHasAllTraceLabels(trace, netLabels)) 
 		   	{
@@ -212,7 +334,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 			
 			INetSystem<F,N,P,T,M> netSystem = PL.restoreNetSystem(this.netID);
 		  	netSystem.loadNaturalMarking();
-			//IOUtils.invokeDOT("./pics", this.netID+"-original-from-select.png", netSystem.toDOT());
+			IOUtils.invokeDOT("./pics", this.netID+"-original-from-select.png", netSystem.toDOT());
 			
 		  	AlignmentAPI<F,N,P,T,M> api = new AlignmentAPI<F,N,P,T,M>(netSystem);
 			
@@ -422,7 +544,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 				
 		  	//write transformed net to DB with a new external ID
 			this.repairedID = this.identifier+"_"+netSystem.hashCode();	
-			PL.storeNetSystem(netSystem, this.repairedID);
+			//PL.storeNetSystem(netSystem, this.repairedID);
 			
 			//int intID = PL.getInternalID(this.repairedID); //for PQLTestInsertSelect
 			//PL.changeNetIndexStatus(intID); //for PQLTestInsertSelect
@@ -436,5 +558,40 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	@Override
 	public String getRepairedID() {
 	return this.repairedID;
+	}
+	
+	//A.P.
+	@Override
+	public boolean checkCooccurMacro(String q, JSONArray ids1, JSONArray ids2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	//A.P.
+	@Override
+	public boolean checkConflictMacro(String q, JSONArray ids1, JSONArray ids2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	//A.P.
+	@Override
+	public boolean checkCanConflictMacro(String q, JSONArray ids1, JSONArray ids2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	//A.P.
+	@Override
+	public boolean checkTotalCausalMacro(String q, JSONArray ids1, JSONArray ids2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	//A.P.
+	@Override
+	public boolean checkTotalConcurMacro(String q, JSONArray ids1, JSONArray ids2) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

@@ -165,6 +165,24 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	public int getInternalID(String externalID) throws SQLException {
 		return this.netPersistenceLayer.getInternalID(externalID);
 	}
+	
+	//A.P.
+	@Override
+	public int getIndexTime(int internalID) throws SQLException {
+		return this.netPersistenceLayer.getIndexTime(internalID);
+	}
+	
+	//A.P.
+	@Override
+	public int getIndexStartTime(int internalID) throws SQLException {
+		return this.netPersistenceLayer.getIndexStartTime(internalID);
+	}
+
+	//A.P.
+	@Override
+	public int getIndexEndTime(int internalID) throws SQLException {
+		return this.netPersistenceLayer.getIndexEndTime(internalID);
+	}
 
 	@Override
 	public String getExternalID(int internalID) throws SQLException {
@@ -179,8 +197,7 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 				this.postgreSQLName, this.postgreSQLUser, this.postgreSQLPassword, this.labelSimilarityConfig, 
 				this.defaultLabelSimilarity, this.indexedLabelSimilarities, this.labelManagerType);//A.P.
 		result.disconnect();//A.P.
-
-
+		
 		return result;
 	}
 	

@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.antlr.v4.runtime.Token;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
 import org.pql.core.PQLAttribute;
 import org.pql.core.PQLException;
 import org.pql.core.PQLLocation;
+import org.pql.core.PQLQuantifier;
 import org.pql.core.PQLTask;
 import org.pql.core.PQLTrace;
 
@@ -80,4 +82,14 @@ public interface IPQLQuery {
 	
 	//A.P.
 	public IPQLBasicPredicatesOnTasks getBP();
+    
+	//A.P.
+	boolean interpretUnaryPredicateMacroV1(Token op, Set<PQLTask> tasks,
+			PQLQuantifier Q);
+	//A.P.
+	boolean interpretUnaryPredicateMacroV2(Token op, Set<PQLTask> tasks,
+			PQLQuantifier Q);
+    //A.P.
+	boolean interpretBinaryPredicateMacro(Token op, Set<PQLTask> set1,
+			Set<PQLTask> set2, PQLQuantifier Q);
 }
