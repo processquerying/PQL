@@ -44,7 +44,7 @@ public class Experiment3v1 {
 		
 public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, InterruptedException, NameInUseException, org.pql.bot.AbstractPQLBotEx.NameInUseException {
 	
-	//input parameters
+	//input parameters 
 	  String collectionPath = args[0];  //apql 
 	  int numberOfBots = Integer.parseInt(args[1]); //8
 	  int kSplit = Integer.parseInt(args[2]); //4

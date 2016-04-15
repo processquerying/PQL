@@ -43,7 +43,7 @@ public static void main(String[] args) throws JSONException, ClassNotFoundExcept
 	System.out.println(queryResult.getNumberOfParseErrors());
 
 	/*
-	SELECT * FROM * WHERE CanOccur({\"A\",\"B\",\"C\"}, ALL);
+	SELECT * FROM * WHERE CanOccur({\"A\",\"B\",\"C\"}, ALL); 
 	SELECT * FROM * WHERE CanOccur({\"A\",\"B\",\"C\"}, ANY);
 	SELECT * FROM * WHERE AlwaysOccurs({\"A\",\"B\",\"C\"}, ALL);
 	SELECT * FROM * WHERE AlwaysOccurs({\"A\",\"B\",\"C\"}, ANY);

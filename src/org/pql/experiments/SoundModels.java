@@ -46,7 +46,7 @@ public class SoundModels
 public static void main(String[] args) throws JSONException, ClassNotFoundException, SQLException, IOException, ParserConfigurationException, SAXException, SerializationException
 {
 	int counter = 1;
-	long lolaWaitTime = 300000l; //5 mins
+	long lolaWaitTime = 300000l; //5 mins 
 
 	String path = "C:/Temp/epc/synthetic0/";
 	String out = "C:/Temp/pnml/";

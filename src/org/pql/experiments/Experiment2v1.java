@@ -37,7 +37,7 @@ public class Experiment2v1 {
 		
 public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, InterruptedException, NameInUseException, org.pql.bot.AbstractPQLBotEx.NameInUseException {
 	
-	//input parameters
+	//input parameters 
 	  String collectionPath = args[0];  //apql 
 	  int numberOfRuns = Integer.parseInt(args[1]); //3
 	  int numberOfNodes = 20; 

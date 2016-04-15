@@ -36,7 +36,7 @@ public class ExperimentsSummary {
 		
 public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, InterruptedException, NameInUseException, org.pql.bot.AbstractPQLBotEx.NameInUseException 
 {
-	//String filePath = "./experiments/Ex1v2Results.csv";
+	//String filePath = "./experiments/Ex1v2Results.csv"; 
 	String filePath = "./experiments/Ex3v1Results.csv";
 		
 	//loading data		

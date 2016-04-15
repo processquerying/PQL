@@ -9,7 +9,7 @@ public class SyntheticModels {
 public static void main(String[] args) throws JWNLException, CloneNotSupportedException, IOException
 {
 	//seed models
-	// C:\Temp\seed (604 nets)
+	// C:\Temp\seed (604 nets) 
 	
 	//output
 	// C:\Temp\epc

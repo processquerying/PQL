@@ -32,7 +32,7 @@ public static void main(String[] args) throws JSONException, ClassNotFoundExcept
 
 	File filePath = new File(path);
 	
-	//Results title
+	//Results title 
 	Vector<String> results = new Vector<String>();
 	String sepLine = "sep=;\r\n";
 	results.add(sepLine);

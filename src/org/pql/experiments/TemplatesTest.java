@@ -28,7 +28,7 @@ public static void main(String[] args) throws JSONException, ClassNotFoundExcept
 		System.out.println("ERROR: Cannot load PQL ini file.");
 		return;
 	}
-	
+	//
 	Connection 	con = (new MySQLConnection(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword())).getConnection();
 	
 	ILabelManager labelMngrNP = null;
