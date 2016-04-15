@@ -18,8 +18,6 @@ public interface IPQLBasicPredicates {
 	public void configure(Object obj) throws PQLException;
 
 	//A.P.
-	boolean checkUnaryPredicateMacroV1(String op, String q, JSONArray labels, JSONArray sim);
-	//A.P.
 	boolean checkUnaryPredicateMacroV2(String op, String q, JSONArray ids);
 	//A.P.
 	boolean checkBinaryPredicateMacro(String op, String q, JSONArray ids1,

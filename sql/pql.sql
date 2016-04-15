@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.6.13, for Win32 (x86)
+-- MySQL dump 10.13  Distrib 5.7.11, for Win64 (x86_64)
 --
 -- Host: localhost    Database: pql
 -- ------------------------------------------------------
--- Server version	5.6.16-log
+-- Server version	5.7.11-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -30,6 +30,15 @@ CREATE TABLE `jbpt_labels` (
   KEY `label` (`label`(5))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpt_labels`
+--
+
+LOCK TABLES `jbpt_labels` WRITE;
+/*!40000 ALTER TABLE `jbpt_labels` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpt_labels` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -72,6 +81,15 @@ CREATE TABLE `jbpt_petri_flow` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `jbpt_petri_flow`
+--
+
+LOCK TABLES `jbpt_petri_flow` WRITE;
+/*!40000 ALTER TABLE `jbpt_petri_flow` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpt_petri_flow` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `jbpt_petri_markings`
 --
 
@@ -85,6 +103,15 @@ CREATE TABLE `jbpt_petri_markings` (
   CONSTRAINT `jbpt_petri_markings_fk` FOREIGN KEY (`place_id`) REFERENCES `jbpt_petri_nodes` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpt_petri_markings`
+--
+
+LOCK TABLES `jbpt_petri_markings` WRITE;
+/*!40000 ALTER TABLE `jbpt_petri_markings` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpt_petri_markings` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `jbpt_petri_nets`
@@ -105,6 +132,15 @@ CREATE TABLE `jbpt_petri_nets` (
   UNIQUE KEY `external_id` (`external_id`(20))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpt_petri_nets`
+--
+
+LOCK TABLES `jbpt_petri_nets` WRITE;
+/*!40000 ALTER TABLE `jbpt_petri_nets` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpt_petri_nets` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -171,6 +207,15 @@ CREATE TABLE `jbpt_petri_nodes` (
   CONSTRAINT `jbpt_petri_nodes_fk` FOREIGN KEY (`label_id`) REFERENCES `jbpt_labels` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpt_petri_nodes`
+--
+
+LOCK TABLES `jbpt_petri_nodes` WRITE;
+/*!40000 ALTER TABLE `jbpt_petri_nodes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpt_petri_nodes` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -211,6 +256,15 @@ CREATE TABLE `pql_always_occurs` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `pql_always_occurs`
+--
+
+LOCK TABLES `pql_always_occurs` WRITE;
+/*!40000 ALTER TABLE `pql_always_occurs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pql_always_occurs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `pql_can_conflict`
 --
 
@@ -230,6 +284,15 @@ CREATE TABLE `pql_can_conflict` (
   CONSTRAINT `pql_can_conflict_fk2` FOREIGN KEY (`taskB_id`) REFERENCES `pql_tasks` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pql_can_conflict`
+--
+
+LOCK TABLES `pql_can_conflict` WRITE;
+/*!40000 ALTER TABLE `pql_can_conflict` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pql_can_conflict` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `pql_can_cooccur`
@@ -253,6 +316,15 @@ CREATE TABLE `pql_can_cooccur` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `pql_can_cooccur`
+--
+
+LOCK TABLES `pql_can_cooccur` WRITE;
+/*!40000 ALTER TABLE `pql_can_cooccur` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pql_can_cooccur` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `pql_can_occur`
 --
 
@@ -265,10 +337,19 @@ CREATE TABLE `pql_can_occur` (
   PRIMARY KEY (`net_id`,`task_id`),
   KEY `net_id` (`net_id`),
   KEY `task_id` (`task_id`),
-  CONSTRAINT `pql_can_occurs_fk` FOREIGN KEY (`net_id`) REFERENCES `jbpt_petri_nets` (`id`),
-  CONSTRAINT `pql_can_occur_fk` FOREIGN KEY (`task_id`) REFERENCES `pql_tasks` (`id`)
+  CONSTRAINT `pql_can_occur_fk` FOREIGN KEY (`task_id`) REFERENCES `pql_tasks` (`id`),
+  CONSTRAINT `pql_can_occurs_fk` FOREIGN KEY (`net_id`) REFERENCES `jbpt_petri_nets` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pql_can_occur`
+--
+
+LOCK TABLES `pql_can_occur` WRITE;
+/*!40000 ALTER TABLE `pql_can_occur` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pql_can_occur` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `pql_index_bots`
@@ -286,16 +367,24 @@ CREATE TABLE `pql_index_bots` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Temporary table structure for view `pql_index_queue`
+-- Dumping data for table `pql_index_bots`
+--
+
+LOCK TABLES `pql_index_bots` WRITE;
+/*!40000 ALTER TABLE `pql_index_bots` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pql_index_bots` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Temporary view structure for view `pql_index_queue`
 --
 
 DROP TABLE IF EXISTS `pql_index_queue`;
 /*!50001 DROP VIEW IF EXISTS `pql_index_queue`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `pql_index_queue` (
-  `id` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `pql_index_queue` AS SELECT 
+ 1 AS `id`*/;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -321,17 +410,25 @@ CREATE TABLE `pql_index_status` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Temporary table structure for view `pql_indexed_ids`
+-- Dumping data for table `pql_index_status`
+--
+
+LOCK TABLES `pql_index_status` WRITE;
+/*!40000 ALTER TABLE `pql_index_status` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pql_index_status` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Temporary view structure for view `pql_indexed_ids`
 --
 
 DROP TABLE IF EXISTS `pql_indexed_ids`;
 /*!50001 DROP VIEW IF EXISTS `pql_indexed_ids`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `pql_indexed_ids` (
-  `net_id` tinyint NOT NULL,
-  `external_id` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `pql_indexed_ids` AS SELECT 
+ 1 AS `net_id`,
+ 1 AS `external_id`*/;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -352,6 +449,15 @@ CREATE TABLE `pql_tasks` (
   CONSTRAINT `pql_tasks_fk` FOREIGN KEY (`label_id`) REFERENCES `jbpt_labels` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pql_tasks`
+--
+
+LOCK TABLES `pql_tasks` WRITE;
+/*!40000 ALTER TABLE `pql_tasks` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pql_tasks` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -390,6 +496,15 @@ CREATE TABLE `pql_tasks_sim` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `pql_tasks_sim`
+--
+
+LOCK TABLES `pql_tasks_sim` WRITE;
+/*!40000 ALTER TABLE `pql_tasks_sim` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pql_tasks_sim` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `pql_total_causal`
 --
 
@@ -411,6 +526,15 @@ CREATE TABLE `pql_total_causal` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `pql_total_causal`
+--
+
+LOCK TABLES `pql_total_causal` WRITE;
+/*!40000 ALTER TABLE `pql_total_causal` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pql_total_causal` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `pql_total_concur`
 --
 
@@ -430,6 +554,15 @@ CREATE TABLE `pql_total_concur` (
   CONSTRAINT `pql_total_concurrent_fk2` FOREIGN KEY (`taskB_id`) REFERENCES `pql_tasks` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pql_total_concur`
+--
+
+LOCK TABLES `pql_total_concur` WRITE;
+/*!40000 ALTER TABLE `pql_total_concur` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pql_total_concur` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Dumping routines for database 'pql'
@@ -847,6 +980,32 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP FUNCTION IF EXISTS `pql_index_get_end_time` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` FUNCTION `pql_index_get_end_time`(internal_id INTEGER) RETURNS int(11)
+    DETERMINISTIC
+BEGIN
+DECLARE indexend INTEGER;
+
+  SELECT `pql_index_status`.`end_time` INTO indexend
+  FROM `pql_index_status`
+  WHERE `pql_index_status`.`net_id`=internal_id;
+
+RETURN indexend;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP FUNCTION IF EXISTS `pql_index_get_next_job` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -866,6 +1025,32 @@ BEGIN
   IF result IS NULL THEN RETURN 0; END IF;
   
   RETURN result;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP FUNCTION IF EXISTS `pql_index_get_start_time` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` FUNCTION `pql_index_get_start_time`(internal_id INTEGER) RETURNS int(11)
+    DETERMINISTIC
+BEGIN
+DECLARE indexstart INTEGER;
+
+  SELECT `pql_index_status`.`start_time` INTO indexstart
+  FROM `pql_index_status`
+  WHERE `pql_index_status`.`net_id`=internal_id;
+
+RETURN indexstart;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -960,6 +1145,38 @@ BEGIN
   END IF;
 
   RETURN result;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP FUNCTION IF EXISTS `pql_index_time` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` FUNCTION `pql_index_time`(internal_id INTEGER) RETURNS int(11)
+    DETERMINISTIC
+BEGIN
+DECLARE indexstart INTEGER;
+DECLARE indexend INTEGER;
+
+  SELECT `pql_index_status`.`start_time` INTO indexstart
+  FROM `pql_index_status`
+  WHERE `pql_index_status`.`net_id`=internal_id;
+
+  SELECT `pql_index_status`.`end_time` INTO indexend
+  FROM `pql_index_status`
+  WHERE `pql_index_status`.`net_id`=internal_id;
+
+
+RETURN indexend-indexstart;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1374,6 +1591,88 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `pql_check_binary_predicate_macro` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `pql_check_binary_predicate_macro`(IN netID int, IN op TEXT, IN q TEXT, IN set1 json, IN set2 json)
+    DETERMINISTIC
+BEGIN
+       
+  SET @size1 = JSON_LENGTH(set1);
+  SET @size2 = JSON_LENGTH(set2);
+  SET @ids1 = SUBSTRING(set1,2,LENGTH(set1)-2);
+  SET @ids2 = SUBSTRING(set2,2,LENGTH(set2)-2);
+  
+  IF op='cancooccur' THEN SET @tbl='pql_can_cooccur';
+  ELSEIF op='canconflict' THEN SET @tbl='pql_can_conflict'; 
+  ELSEIF op='totalcausal' THEN SET @tbl='pql_total_causal'; 
+  ELSE SET @tbl='pql_total_concur'; 
+  END IF;
+  
+  IF q='any' OR q='all' THEN
+  SET @query = CONCAT('select count(*) INTO @count FROM ',@tbl,' WHERE net_id=',netID,' AND taskA_id IN (',@ids1,') AND taskB_id IN (',@ids2,')');
+  ELSE 
+  SET @query = CONCAT('select count(distinct taskA_id) INTO @count FROM ',@tbl,' WHERE net_id=',netID,' AND taskA_id IN (',@ids1,') AND taskB_id IN (',@ids2,')');
+  END IF;
+ 
+  PREPARE stmt FROM @query;
+  EXECUTE stmt;
+  DEALLOCATE PREPARE stmt;
+  
+  IF q='any' AND @count>0 OR q='each' AND @count=@size1 OR q='all' AND @count=@size1*@size2 THEN SET @result=TRUE; 
+  ELSE SET @result=FALSE; END IF;
+  
+  SELECT @result;
+       
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `pql_check_unary_predicate_macro` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `pql_check_unary_predicate_macro`(IN netID int, IN op TEXT, IN q TEXT, IN ids json)
+    DETERMINISTIC
+BEGIN
+       
+  SET @size = JSON_LENGTH(ids);
+  SET @idsLine = SUBSTRING(ids,2,LENGTH(ids)-2);
+  
+  IF op='canoccur' THEN SET @tbl='pql_can_occur';
+  ELSE SET @tbl='pql_always_occurs'; END IF;
+  
+  SET @query = CONCAT('select count(*) INTO @count FROM ',@tbl,' WHERE net_id=',netID,' AND task_id IN (',@idsLine,')');
+  PREPARE stmt FROM @query;
+  EXECUTE stmt;
+  DEALLOCATE PREPARE stmt;
+  
+  IF q='any' AND @count>0 OR q='all' AND @count=@size THEN SET @result=TRUE; 
+  ELSE SET @result=FALSE; END IF;
+  
+  SELECT @result;
+       
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `pql_get_indexed_ids` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1387,6 +1686,55 @@ DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `pql_get_indexed_ids`()
 BEGIN
   SELECT * FROM `pql_indexed_ids`;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `pql_get_task_ids` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `pql_get_task_ids`(IN l json, s json)
+BEGIN
+  DECLARE max INTEGER;
+  DECLARE counter INTEGER;
+  DECLARE path TEXT;
+    
+  SET counter = 0;
+  SET max = JSON_LENGTH(l)-1;
+  
+  SET @query = 'SELECT pql_tasks.id, pql_tasks.similarity, jbpt_labels.label FROM pql_tasks, jbpt_labels
+					WHERE pql_tasks.label_id=jbpt_labels.id AND (';
+					
+     
+  while counter < max do
+	SET path = CONCAT('$[', counter, ']');
+	SET @label = JSON_EXTRACT(l, path);
+    SET @sim = JSON_EXTRACT(s, path);
+    
+    SET @query = CONCAT(@query,	'jbpt_labels.label=',@label,' AND pql_tasks.similarity=',@sim,' OR ');          	
+     
+    SET counter=counter+1;
+  end while;
+  
+  SET path = CONCAT('$[', max, ']');
+  SET @label = JSON_EXTRACT(l, path);
+  SET @sim = JSON_EXTRACT(s, path);
+    
+  SET @query = CONCAT(@query,	'jbpt_labels.label=',@label,' AND pql_tasks.similarity=',@sim,')');          	
+  
+  PREPARE stmt FROM @query;
+  EXECUTE stmt;
+  DEALLOCATE PREPARE stmt;
+
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1718,7 +2066,6 @@ DELIMITER ;
 -- Final view structure for view `pql_index_queue`
 --
 
-/*!50001 DROP TABLE IF EXISTS `pql_index_queue`*/;
 /*!50001 DROP VIEW IF EXISTS `pql_index_queue`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -1737,7 +2084,6 @@ DELIMITER ;
 -- Final view structure for view `pql_indexed_ids`
 --
 
-/*!50001 DROP TABLE IF EXISTS `pql_indexed_ids`*/;
 /*!50001 DROP VIEW IF EXISTS `pql_indexed_ids`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -1761,4 +2107,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-10-22  9:39:11
+-- Dump completed on 2016-04-15 10:36:15

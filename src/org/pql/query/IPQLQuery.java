@@ -84,9 +84,6 @@ public interface IPQLQuery {
 	public IPQLBasicPredicatesOnTasks getBP();
     
 	//A.P.
-	boolean interpretUnaryPredicateMacroV1(Token op, Set<PQLTask> tasks,
-			PQLQuantifier Q);
-	//A.P.
 	boolean interpretUnaryPredicateMacroV2(Token op, Set<PQLTask> tasks,
 			PQLQuantifier Q);
     //A.P.

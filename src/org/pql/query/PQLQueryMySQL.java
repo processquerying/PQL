@@ -94,7 +94,7 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 		return false;
 	}
 	
-	//A.P. - v2
+	//A.P. - V2
 		@Override
 		public boolean interpretBinaryPredicateMacro(Token op, Set<PQLTask> set1, Set<PQLTask> set2, PQLQuantifier Q) {
 			
@@ -166,11 +166,6 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 				ids2.put(taskID);
 			}
 		
-			//System.out.println(ids);
-			//System.out.println(taskIDs);
-			//System.out.println(DBtasks);
-			//System.out.println(noDBtasks);
-			
 			//quantifier
 			String q = "";
 			if (Q==PQLQuantifier.ANY) {q = "any";} else if (Q==PQLQuantifier.ALL) {q = "all";} else {q = "each";}
@@ -178,23 +173,23 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 			switch (op.getType()) 
 			{
 				case PQLLexer.COOCCUR	: 
-					return basicPredicates.checkCooccurMacro(q, ids1, ids2);//TODO
+					return basicPredicates.checkCooccurMacro(q, ids1, ids2); //TODO optimize for sets of task IDs
 				case PQLLexer.CAN_COOCCUR	: 
 					return basicPredicates.checkBinaryPredicateMacro("cancooccur", q, ids1, ids2);
 				case PQLLexer.CONFLICT	: 
-					return basicPredicates.checkConflictMacro(q, ids1, ids2);//TODO
+					return basicPredicates.checkConflictMacro(q, ids1, ids2); //TODO optimize for sets of task IDs
 				case PQLLexer.CAN_CONFLICT	: 
-					return basicPredicates.checkCanConflictMacro(q, ids1, ids2);//TODO
+					return basicPredicates.checkCanConflictMacro(q, ids1, ids2); //TODO optimize for sets of task IDs
 				case PQLLexer.TOTAL_CAUSAL	: 
-					return basicPredicates.checkTotalCausalMacro(q, ids1, ids2);//TODO
+					return basicPredicates.checkTotalCausalMacro(q, ids1, ids2); //TODO optimize for sets of task IDs
 				case PQLLexer.TOTAL_CONCUR	: 
-					return basicPredicates.checkTotalConcurMacro(q, ids1, ids2);//TODO
+					return basicPredicates.checkTotalConcurMacro(q, ids1, ids2); //TODO optimize for sets of task IDs
 			}
 			
 			return false;
 		}
 	
-	//A.P. - v2 - using pql_check_unary_predicate_macro procedure
+	//A.P.
 	@Override
 	public boolean interpretUnaryPredicateMacroV2(Token op, Set<PQLTask> tasks, PQLQuantifier Q) {
 		
@@ -233,11 +228,6 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 			ids.put(id);
 		}
 		
-		//System.out.println(ids);
-		//System.out.println(taskIDs);
-		//System.out.println(DBtasks);
-		//System.out.println(noDBtasks);
-		
 		//operation and quantifier
 		String o = "";
 		String q = "";
@@ -254,74 +244,6 @@ public class PQLQueryMySQL extends AbstractPQLQuery {
 		if (Q==PQLQuantifier.ANY) {q = "any";} else {q = "all";}
 		
 		return basicPredicates.checkUnaryPredicateMacroV2(o, q, ids);
-	}
-	
-	//A.P. - v1 - using pql_check_unary_predicate_macro function
-	@Override
-	public boolean interpretUnaryPredicateMacroV1(Token op, Set<PQLTask> tasks, PQLQuantifier Q) {
-		
-		Vector<PQLTask> noDBtasks = new Vector<PQLTask>();
-		Vector<PQLTask> DBtasks = new Vector<PQLTask>();
-				
-		for(PQLTask task : tasks)
-		{
-			PQLTask dbTask = this.task2task.get(task); 
-			if(dbTask==null)
-			{
-				dbTask = new PQLTask(task.getLabel(), task.getSimilarity());
-				DBtasks.add(dbTask);
-				noDBtasks.add(task);
-			}
-			else
-			{
-				task.setLabel(dbTask.getLabel());
-				task.setLabels(dbTask.getSimilarLabels());
-				task.setSimilarity(dbTask.getSimilarity());
-			}
-		}
-		
-		if(DBtasks.size()>0)
-		{
-			//load task labels and similarities	
-			try {labelMngr.loadTaskLabelsSim(DBtasks, this.labelMngr.getIndexedLabelSimilarityThresholds());} catch (SQLException e) {e.printStackTrace();}
-		
-			//update task2task and taskIDs
-			for (int i=0; i<DBtasks.size(); i++) 
-			{
-			this.task2task.put(noDBtasks.elementAt(i),DBtasks.elementAt(i));
-			}
-		}
-		//----------------------------------------------------
-		String o = "";
-		String q = "";
-		JSONArray labels = new JSONArray();
-		JSONArray sim = new JSONArray();
-				
-		Iterator<PQLTask> it = tasks.iterator();
-		
-		while(it.hasNext())
-		{
-			PQLTask task = it.next();
-			labels.put(task.getLabel());
-			
-			try {
-			sim.put(task.getSimilarity());
-			} catch (JSONException e) {e.printStackTrace();}
-		}
-		
-		switch (op.getType()) 
-		{
-			case PQLLexer.CAN_OCCUR		: 
-				o = "canoccur";
-				break;
-			case PQLLexer.ALWAYS_OCCURS	: 
-				o = "alwaysoccurs";
-				break;
-		}
-		
-		if (Q==PQLQuantifier.ANY) {q = "any";} else {q = "all";}
-		
-		return basicPredicates.checkUnaryPredicateMacroV1(o, q, labels, sim);
 	}
 	
 	

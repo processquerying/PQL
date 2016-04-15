@@ -126,8 +126,6 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	public String getRepairedID(); //A.P.
 
 	//A.P.
-	public boolean checkUnaryPredicateMacroV1(String op, String q, JSONArray labels, JSONArray sim);
-	//A.P.
 	public boolean checkUnaryPredicateMacroV2(String op, String q, JSONArray ids);
 	//A.P.
 	public boolean checkCooccurMacro(String q, JSONArray ids1, JSONArray ids2);

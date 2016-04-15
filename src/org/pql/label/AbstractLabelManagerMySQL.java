@@ -110,8 +110,7 @@ public abstract class AbstractLabelManagerMySQL
 	
 	@Override
 	public void getTaskIDs(JSONArray labels, JSONArray similarities, Vector<PQLTask> tasks) throws SQLException {
-		//System.out.println(labels);
-		//System.out.println(similarities);
+	
 		if(this.PQL_GET_TASK_IDS_CS == null)
 		this.PQL_GET_TASK_IDS_CS = this.connection.prepareCall(PQL_GET_TASK_IDS);
 		
@@ -132,7 +131,7 @@ public abstract class AbstractLabelManagerMySQL
 					if(labels.getString(i).equals(label) && similarities.getDouble(i)==sim)
 					{
 						tasks.elementAt(i).setID(id);
-						Set<String> taskLabels = this.getLabels(id); //TODO optimize: getting labels for a set of task IDs
+						Set<String> taskLabels = this.getLabels(id); //TODO optimization: getting labels for a set of task IDs
 						taskLabels.add(label);
 						tasks.elementAt(i).setLabels(taskLabels);
 					}
@@ -233,64 +232,7 @@ public abstract class AbstractLabelManagerMySQL
 		return true;
 	}
 	
-	//A.P.
-	@Override
-	public boolean loadTaskLabelsSim(Vector<PQLTask> tasks, Set<Double> similarities) throws SQLException {
-		
-	for(PQLTask task : tasks)
-	{	String label = "";
-		if (task.getLabel()!=null) label = task.getLabel();
-		double s = task.getSimilarity(); 
-		if (s<0.0) s=0.0;
-		if (s>1.0) s=1.0;
-		
-		// label
-		Set<LabelScore> search = this.getSimilarLabels(label,1);
-		String newLabel = label;
-		boolean flag = false;
-		if (search!=null && !search.isEmpty()) {
-			LabelScore ls = search.iterator().next();
-			newLabel = ls.getLabel();
-			if (ls.getScore()<0.8)	// TODO: improve handling of similarity threshold
-				flag = true;
-		}
-		else flag = true;
-		
-		if (flag) {
-			task.setSimilarity(s);
-			Set<String> labels = new HashSet<String>();
-			labels.add(label);
-			task.setLabels(labels);
-			return false;
-		}
-		
-		// similarity
-		double newS = s;
-		double minDelta = Double.MAX_VALUE;
-		for (Double sim : similarities) {
-			double delta = Math.abs(sim-s);
-			if (delta < minDelta) {
-				newS = sim;
-				minDelta = delta;
-			}
-			else if (delta == minDelta && sim<newS)
-				newS = sim;
-		}
-		s = newS;
-		if (s<0.0) s=0.0;
-		if (s>1.0) s=1.0;
-		
-		// update task
-		task.setSimilarity(s);
-		Set<String> labels = new HashSet<String>();
-		labels.add(label);
-		labels.add(newLabel);
-		task.setLabels(labels);
-		task.setLabel(newLabel);//A.P. TODO ???
-		
-	}	
-		return true;
-	}
+
 	
     //A.P.
 	@Override

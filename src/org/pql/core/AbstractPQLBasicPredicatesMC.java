@@ -509,13 +509,6 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
     
 	//A.P.
 	@Override
-	public boolean checkUnaryPredicateMacroV1(String op, String q, JSONArray labels, JSONArray sim) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	
-	//A.P.
-	@Override
 	public boolean checkUnaryPredicateMacroV2(String op, String q, JSONArray ids) {
 		// TODO Auto-generated method stub
 		return false;

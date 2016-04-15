@@ -141,7 +141,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	                case PQLParser.RULE_predicate:
 	                	predicate = child;
 	                	break;
-	                case PQLParser.RULE_trace: //A.P. for INSERT TODO check
+	                case PQLParser.RULE_trace: //A.P.
 	                	this.insertTrace = this.interpretInsertTrace(this.interpretInsertTrace(child));
 	                	break;
                 }
@@ -298,14 +298,13 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			case PQLParser.RULE_binaryPredicate:
 				result = interpretBinaryPredicate(child);
 				break;
-			case PQLParser.RULE_unaryPredicateMacro: //A.P. TODO optimization
-				//result = interpretUnaryPredicateMacro(child); //original
-				//result = interpretUnaryPredicateMacroV1(child); //TODO - remove
-				result = interpretUnaryPredicateMacroV2(child); //v2 - procedure
+			case PQLParser.RULE_unaryPredicateMacro: //A.P. TODO 
+				//result = interpretUnaryPredicateMacro(child); // V1, interprets each task individually
+				result = interpretUnaryPredicateMacroV2(child); // V2 (faster), interprets sets of tasks
 				break;
-			case PQLParser.RULE_binaryPredicateMacro: //A.P. TODO optimization
-				//result = interpretBinaryPredicateMacro(child); //original
-				result = interpretBinaryPredicateMacroV2(child); //only works for CanCooccur, for others reroutes to original version; TODO others in PQLBasicPredicatesMySQL
+			case PQLParser.RULE_binaryPredicateMacro: //A.P.
+				//result = interpretBinaryPredicateMacro(child); // V1, interprets each task individually
+				result = interpretBinaryPredicateMacroV2(child); // V2 (faster), interprets sets of tasks for 'CanCooccur', for other predicates reroutes to V1
 				break;
 			case PQLParser.RULE_setPredicate:
 				result = interpretSetPredicate(child);
@@ -379,19 +378,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		return false;
 	}
 	
-	//A.P. - v1 - using pql_check_unary_predicate_macro f-n
-	protected boolean interpretUnaryPredicateMacroV1(ParseTree tree) {
-		
-		ParseTree nameChild = tree.getChild(0).getChild(0);
-		Token op = ((TerminalNode)nameChild).getSymbol();
-		
-		Set<PQLTask> tasks	= this.interpretSetOfTasks(tree.getChild(2));
-		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(4));
-			
-		return interpretUnaryPredicateMacroV1(op,tasks, Q);
-	}
-	
-	//A.P. - v2 - using pql_check_unary_predicate_macro procedure
+	//A.P.
 		protected boolean interpretUnaryPredicateMacroV2(ParseTree tree) {
 			
 			ParseTree nameChild = tree.getChild(0).getChild(0);
@@ -461,7 +448,6 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			case PQLParser.RULE_different:
 				return A.equals(B) ? false : true;
 			case PQLParser.RULE_overlapsWith:
-				//return A.removeAll(B) ? true : false; //A.P. - similar time
 				for (PQLTask task : A) 
 					if (B.contains(task)) return true;
 				
@@ -707,9 +693,9 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			
 			switch (ruleIndex) {
 				case PQLParser.RULE_unaryPredicateConstruction:
-					return interpretUnaryPredicateConstruction(child);//A.P. TODO optimization
+					return interpretUnaryPredicateConstruction(child);
 				case PQLParser.RULE_binaryPredicateConstruction:
-					return interpretBinaryPredicateConstruction(child);//A.P. TODO optimization
+					return interpretBinaryPredicateConstruction(child);
 			}	
 		}
 		
@@ -959,8 +945,6 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		Set<PQLTask> set1	= new HashSet<PQLTask>(); set1.add(task);
 		Set<PQLTask> set2	= this.interpretSetOfTasks(tree.getChild(4));
 		
-		//System.out.println(set2.iterator().next().getLabel()+" "+set2.iterator().next().getSimilarity()+" "+set2.iterator().next().getID());
-		
 		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(6));
 		
 		return interpretBinaryPredicateMacroSetSet(op,set1,set2,Q);
@@ -974,8 +958,6 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		PQLTask task		= this.interpretTask(tree.getChild(2));
 		Set<PQLTask> set1	= new HashSet<PQLTask>(); set1.add(task);
 		Set<PQLTask> set2	= this.interpretSetOfTasks(tree.getChild(4));
-		
-		//System.out.println(set2.iterator().next().getLabel()+" "+set2.iterator().next().getSimilarity()+" "+set2.iterator().next().getID());
 		
 		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(6));
 		

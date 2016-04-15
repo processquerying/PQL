@@ -23,7 +23,6 @@ import org.jbpt.petri.persist.AbstractPetriNetPersistenceLayerMySQL;
 import org.jbpt.petri.persist.IPetriNetPersistenceLayer;
 import org.jbpt.utils.IOUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.pql.alignment.AbstractReplayer;
 import org.pql.alignment.AlignmentAPI;
 import org.pql.alignment.InsertMove;
@@ -40,11 +39,6 @@ import org.processmining.models.graphbased.directed.petrinet.PetrinetGraph;
 import org.processmining.models.graphbased.directed.petrinet.elements.Transition;
 import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.mysql.fabric.xmlrpc.base.Array;
 
 /**
  * @author Artem Polyvyanyy
@@ -95,7 +89,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	
 	private boolean checkUnaryPredicate(String call, PQLTask t) {
 		try {
-			//A.P. - fix to deal with 'too many DB connections' exception
+			
 			CallableStatement cs = null;
 			switch(call)
 			{
@@ -104,7 +98,6 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 			case(PQL_ALWAYS_OCCURS) : 
 				if(PQL_ALWAYS_OCCURS_CS == null){cs = connection.prepareCall(call);}else{cs=PQL_ALWAYS_OCCURS_CS;}
 			}
-			//CallableStatement cs = connection.prepareCall(call);
 		
 			cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
 			cs.setInt(2,this.netID);
@@ -124,7 +117,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		}
 	}
 	
-	//A.P.
+	//A.P. v2
 			@Override
 			public boolean checkBinaryPredicateMacro(String op, String q, JSONArray ids1, JSONArray ids2) {
 				try {
@@ -178,38 +171,10 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 			} 
 		}
 	
-	//A.P. - v1 - using pql_check_unary_predicate function
-	@Override
-	public boolean checkUnaryPredicateMacroV1(String op, String q, JSONArray labels, JSONArray sim) {
-		try {
-								
-			String call = PQL_CHECK_UNARY_PREDICATE_MACRO_V1;
-			CallableStatement cs = connection.prepareCall(call);
-		
-			cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
-			cs.setInt(2,this.netID);
-			
-			cs.setString(3, op);
-			cs.setString(4, q);
-			cs.setObject(5, labels.toString());
-			cs.setObject(6, sim.toString());
-						
-			cs.execute();
-			boolean result = cs.getBoolean(1);
-			cs.close();
-			
-			return result;
-		}
-		catch (SQLException e) {
-			e.printStackTrace();
-			return false;
-		} 
-	}
-
 	
 	private boolean checkBinaryPredicate(String call, PQLTask t1, PQLTask t2) {
 		try {
-			//A.P. - fix to deal with 'too many DB connections' exception
+			//A.P.
 			CallableStatement cs = null;
 			switch(call)
 			{
@@ -224,8 +189,6 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		
 			}
 			
-		
-			//CallableStatement cs = connection.prepareCall(call);
 		
 			cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
 			cs.setInt(2,this.netID);

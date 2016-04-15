@@ -70,8 +70,6 @@ public interface ILabelManager {
 	 * @throws SQLException
 	 */
 	public int getTaskID(String label, double similarity) throws SQLException;
-
-	
 	
 	public boolean loadTask(PQLTask task, Set<Double> similarities) throws SQLException;
 	
@@ -101,15 +99,12 @@ public interface ILabelManager {
 
 	//A.P. - used for experiments
 	IndexWriter getIndexWriter();
+	
 	//A.P.
 	public boolean loadTasks(Vector<PQLTask> tasks, Set<Double> similarities)
 			throws SQLException;
     //A.P.
 	public void getTaskIDs(JSONArray labels, JSONArray similarities, Vector<PQLTask> tasks) throws SQLException;
 	
-	//A.P.
-	boolean loadTaskLabelsSim(Vector<PQLTask> tasks, Set<Double> similarities)
-			throws SQLException;
-
-
+	
 }
