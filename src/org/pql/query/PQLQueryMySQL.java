@@ -2,17 +2,13 @@ package org.pql.query;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.v4.runtime.Token;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.pql.antlr.PQLLexer;
 import org.pql.core.IPQLBasicPredicatesOnTasks;
 import org.pql.core.PQLException;

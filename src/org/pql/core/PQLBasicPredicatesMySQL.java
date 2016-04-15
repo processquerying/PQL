@@ -46,7 +46,7 @@ import org.processmining.models.graphbased.directed.petrinet.impl.PetrinetFactor
 public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> //A.P. <...>added 
 				implements IPQLBasicPredicatesOnTasks
 				{
-	public AtomicInteger filteredModels = new AtomicInteger(); //A.P. (used for experiments)
+	public AtomicInteger filteredModels = new AtomicInteger(); //A.P.
 	private String repairedID = null;
 	
 	protected String PETRI_NET_IDENTIFIER_TO_ID 			= "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
@@ -58,7 +58,6 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	protected final String PQL_TOTAL_CONCUR					= "{? = CALL pql.pql_total_concur(?,?,?)}";
 	
 	//A.P.
-	protected String PQL_CHECK_UNARY_PREDICATE_MACRO_V1		= "{? = CALL pql.pql_check_unary_predicate_macro(?,?,?,?,?)}";
 	protected String PQL_CHECK_UNARY_PREDICATE_MACRO		= "{CALL pql.pql_check_unary_predicate_macro(?,?,?,?)}";
 	protected String PQL_CHECK_BINARY_PREDICATE_MACRO		= "{CALL pql.pql_check_binary_predicate_macro(?,?,?,?,?)}";
 
@@ -174,7 +173,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	
 	private boolean checkBinaryPredicate(String call, PQLTask t1, PQLTask t2) {
 		try {
-			//A.P.
+			
 			CallableStatement cs = null;
 			switch(call)
 			{

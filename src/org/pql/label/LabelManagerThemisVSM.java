@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.index.IndexWriter;
 import org.themis.ir.Document;
 import org.themis.ir.vsm.VSM;
 import org.themis.util.LETTERCASE;
@@ -73,10 +72,5 @@ public class LabelManagerThemisVSM extends AbstractLabelManagerMySQL {
 		return result;
 	}
 
-	//A.P. - used for experiments
-	@Override
-	public IndexWriter getIndexWriter() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+
 }

@@ -166,24 +166,6 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		return this.netPersistenceLayer.getInternalID(externalID);
 	}
 	
-	//A.P.
-	@Override
-	public int getIndexTime(int internalID) throws SQLException {
-		return this.netPersistenceLayer.getIndexTime(internalID);
-	}
-	
-	//A.P.
-	@Override
-	public int getIndexStartTime(int internalID) throws SQLException {
-		return this.netPersistenceLayer.getIndexStartTime(internalID);
-	}
-
-	//A.P.
-	@Override
-	public int getIndexEndTime(int internalID) throws SQLException {
-		return this.netPersistenceLayer.getIndexEndTime(internalID);
-	}
-
 	@Override
 	public String getExternalID(int internalID) throws SQLException {
 		return this.netPersistenceLayer.getExternalID(internalID);
@@ -201,19 +183,6 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		return result;
 	}
 	
-	//A.P. used for Experiment 2
-	public PQLQueryResult query(String pqlQuery, String setup) throws ClassNotFoundException, SQLException {		
-
-		PQLQueryResult result = new PQLQueryResult(this.numberOfQueryThreads, this.mysqlURL, 
-				this.mysqlUser, this.mysqlPassword, pqlQuery, labelMngr, this.postgreSQLHost, 
-				this.postgreSQLName, this.postgreSQLUser, this.postgreSQLPassword, this.labelSimilarityConfig, 
-				this.defaultLabelSimilarity, this.indexedLabelSimilarities, this.labelManagerType, setup);//A.P.
-		result.disconnect();//A.P.
-
-
-		return result;
-	}
-
 
 	@Override
 	public PQLQueryResult query(String pqlQuery, Set<String> externalIDs) throws ClassNotFoundException, SQLException {
@@ -242,7 +211,7 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		return this.netPersistenceLayer.deleteNetSystem(internalID) > 0;
 	}
 	
-	//A.P. used for Experiment 3
+	//A.P.
 	public Set<String> getExternalIDs()
 	{
 		Set<String> externalIDs = new HashSet<String>();

@@ -51,21 +51,7 @@ public class LabelManagerLuceneVSM extends AbstractLabelManagerMySQL {
 		this.analyzer = new StandardAnalyzer(stopWords);
 	}
 	
-	//A.P. - used for experiments
-	@Override
-	public IndexWriter getIndexWriter(){
-			Directory directory;
-			IndexWriter iwriter = null;
-			try {
-				directory = FSDirectory.open(Paths.get(this.labelSimilarityConfig));
-				IndexWriterConfig config = new IndexWriterConfig(this.analyzer);
-				config.setSimilarity(this.similarity);
-				iwriter = new IndexWriter(directory,config);
-			
-			} catch (IOException e) {e.printStackTrace();			}
-			return iwriter;
-	}
-
+	
 	@Override
 	public int indexLabel(String label) throws SQLException {
 		try {

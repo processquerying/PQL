@@ -31,8 +31,7 @@ public class PQLQueryResult extends MySQLConnection {
 	private String pqlQuery = null;
 	private ILabelManager labelMngr = null;
 	private int numberOfQueryThreads = 1;
-	public AtomicInteger filteredModels = new AtomicInteger(0); //A.P. for experiments
-	public String setup = "";//A.P. for experiment 2
+	public AtomicInteger filteredModels = new AtomicInteger(0); //A.P.
 	
 	//A.P.
 	private PriorityBlockingQueue<String> 		 queue 	= null; 
@@ -45,39 +44,6 @@ public class PQLQueryResult extends MySQLConnection {
 	private Set<Double> 						 indexedLabelSimilarities = null;
 	private String 								 labelSimilarityConfig = null;
 	private LabelManagerType 					 labelManagerType = null;
-
-	//A.P. used for Experiment 2
-	public PQLQueryResult(int numberOfQueryThreads, String mySQLURL, String mySQLUser, String mySQLPassword, 
-			String pqlQuery, ILabelManager labelMngr, String postgreSQLHost, 
-			String postgreSQLName, String postgreSQLUser, String postgreSQLPassword, String labelSimilarityConfig, 
-			Double defaultLabelSimilarity, Set<Double> indexedLabelSimilarities, LabelManagerType labelManagerType, String setup) 
-					throws ClassNotFoundException, SQLException {
-			super(mySQLURL,mySQLUser,mySQLPassword);
-			this.numberOfQueryThreads = numberOfQueryThreads > 0 ? numberOfQueryThreads : 1;
-			this.pqlQuery = pqlQuery;
-			this.labelMngr = labelMngr;
-			this.query = new PQLQueryMySQL(this.filteredModels, this.getConnection(), this.pqlQuery, this.labelMngr);//A.P.
-			this.queryResult = new ConcurrentHashSet<String>();
-			
-			//A.P.
-			this.queue 	= new  PriorityBlockingQueue<String>();  
-			this.netIDsLoaded = new AtomicBoolean(false);
-			this.postgreSQLHost = postgreSQLHost;
-			this.postgreSQLName = postgreSQLName;
-			this.postgreSQLUser = postgreSQLUser;
-			this.postgreSQLPassword = postgreSQLPassword;
-			this.defaultLabelSimilarity = defaultLabelSimilarity;
-			this.indexedLabelSimilarities = new HashSet<Double>();
-			this.indexedLabelSimilarities.addAll(indexedLabelSimilarities);
-			this.labelSimilarityConfig = labelSimilarityConfig;
-			this.labelManagerType = labelManagerType;
-			this.setup = setup;
-		
-			if (this.getNumberOfParseErrors()>0) return;
-			
-				
-			this.query();
-		}
 	
 	public PQLQueryResult(int numberOfQueryThreads, String mySQLURL, String mySQLUser, String mySQLPassword, 
 		String pqlQuery, ILabelManager labelMngr, String postgreSQLHost, 
@@ -106,7 +72,6 @@ public class PQLQueryResult extends MySQLConnection {
 	
 		if (this.getNumberOfParseErrors()>0) return;
 		
-			
 		this.query();
 	}
 	
@@ -175,7 +140,7 @@ public class PQLQueryResult extends MySQLConnection {
 	
 			IPQLQuery threadQuery = new PQLQueryMySQL(this.filteredModels, con, this.pqlQuery, threadLabelMngr);
 			queries.add((PQLQueryMySQL) threadQuery);
-			PQLQueryThread newThread = new PQLQueryThread(this.setup, "PQL"+(q++), threadQuery, queue, this.queryResult, this.netIDsLoaded);
+			PQLQueryThread newThread = new PQLQueryThread("PQL"+(q++), threadQuery, queue, this.queryResult, this.netIDsLoaded);
 			
 			newThread.setPriority(Thread.MAX_PRIORITY);
 			newThread.start();
@@ -192,7 +157,7 @@ public class PQLQueryResult extends MySQLConnection {
 			this.netIDsLoaded.set(true);
 			
 		queries.add((PQLQueryMySQL) this.query);
-		PQLQueryThread mainThread = new PQLQueryThread(this.setup, "PQLmain", this.query, queue, this.queryResult, this.netIDsLoaded);
+		PQLQueryThread mainThread = new PQLQueryThread("PQLmain", this.query, queue, this.queryResult, this.netIDsLoaded);
 		mainThread.checkQuery();
 		
 		try{
@@ -240,7 +205,7 @@ public class PQLQueryResult extends MySQLConnection {
 	
 			IPQLQuery threadQuery = new PQLQueryMySQL(this.filteredModels, con, this.pqlQuery, threadLabelMngr);
 			queries.add((PQLQueryMySQL) threadQuery);
-			PQLQueryThread newThread = new PQLQueryThread(this.setup, "PQL"+(q++), threadQuery, queue, this.queryResult, this.netIDsLoaded);
+			PQLQueryThread newThread = new PQLQueryThread("PQL"+(q++), threadQuery, queue, this.queryResult, this.netIDsLoaded);
 
 			newThread.setPriority(Thread.MAX_PRIORITY);
 			newThread.start();
@@ -254,7 +219,7 @@ public class PQLQueryResult extends MySQLConnection {
 			this.netIDsLoaded.set(true);
 			
 		queries.add((PQLQueryMySQL) this.query);
-		PQLQueryThread qThread = new PQLQueryThread(this.setup, "PQLmain", this.query, queue, this.queryResult, this.netIDsLoaded);
+		PQLQueryThread qThread = new PQLQueryThread("PQLmain", this.query, queue, this.queryResult, this.netIDsLoaded);
 		qThread.checkQuery();
 		
 		try{

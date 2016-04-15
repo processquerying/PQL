@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,13 +39,6 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	private String PETRI_NET_CREATE						= "{? = CALL pql.jbpt_petri_nets_create(?,?,?,?,?)}";
 	private CallableStatement PETRI_NET_CREATE_CS 		= null;
 	
-	private String PQL_GET_INDEX_TIME					= "{? = CALL pql.pql_index_time(?)}";//A.P.
-	private CallableStatement PQL_GET_INDEX_TIME_CS 	= null;//A.P.
-	private String PQL_GET_INDEX_START_TIME					= "{? = CALL pql.pql_index_get_start_time(?)}";//A.P.
-	private CallableStatement PQL_GET_INDEX_START_TIME_CS 	= null;//A.P.
-	private String PQL_GET_INDEX_END_TIME					= "{? = CALL pql.pql_index_get_end_time(?)}";//A.P.
-	private CallableStatement PQL_GET_INDEX_END_TIME_CS 	= null;//A.P.
-
 	private String PETRI_NET_GET_INT_ID					= "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
 	private CallableStatement PETRI_NET_GET_INT_ID_CS 	= null;
 	private String PETRI_NET_GET_EXT_ID					= "{? = CALL pql.jbpt_petri_nets_get_external_id(?)}";
@@ -265,50 +257,6 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		return PETRI_NET_GET_INT_ID_CS.getInt(1);
 	}
 	
-	//A.P.
-	@Override
-	public int getIndexTime(int internalID) throws SQLException {
-		if(PQL_GET_INDEX_TIME_CS == null)
-			PQL_GET_INDEX_TIME_CS = connection.prepareCall(this.PQL_GET_INDEX_TIME);
-		
-		PQL_GET_INDEX_TIME_CS.registerOutParameter(1, java.sql.Types.INTEGER);
-		PQL_GET_INDEX_TIME_CS.setInt(2, internalID);
-		
-		PQL_GET_INDEX_TIME_CS.execute();
-		
-		return PQL_GET_INDEX_TIME_CS.getInt(1);
-	}
-	
-	//A.P.
-		@Override
-		public int getIndexStartTime(int internalID) throws SQLException {
-			if(PQL_GET_INDEX_START_TIME_CS == null)
-				PQL_GET_INDEX_START_TIME_CS = connection.prepareCall(this.PQL_GET_INDEX_START_TIME);
-			
-			PQL_GET_INDEX_START_TIME_CS.registerOutParameter(1, java.sql.Types.INTEGER);
-			PQL_GET_INDEX_START_TIME_CS.setInt(2, internalID);
-			
-			PQL_GET_INDEX_START_TIME_CS.execute();
-			
-			return PQL_GET_INDEX_START_TIME_CS.getInt(1);
-		}
-
-		//A.P.
-		@Override
-		public int getIndexEndTime(int internalID) throws SQLException {
-			if(PQL_GET_INDEX_END_TIME_CS == null)
-				PQL_GET_INDEX_END_TIME_CS = connection.prepareCall(this.PQL_GET_INDEX_END_TIME);
-			
-			PQL_GET_INDEX_END_TIME_CS.registerOutParameter(1, java.sql.Types.INTEGER);
-			PQL_GET_INDEX_END_TIME_CS.setInt(2, internalID);
-			
-			PQL_GET_INDEX_END_TIME_CS.execute();
-			
-			return PQL_GET_INDEX_END_TIME_CS.getInt(1);
-		}
-
-
-	
 	@Override
 	public String getExternalID(int internalID) throws SQLException {
 		if(PETRI_NET_GET_EXT_ID_CS == null)
@@ -409,7 +357,7 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		PETRI_NET_RESET_CS.executeQuery();		
 	}
 	
-	//A.P. used for Experiment #2
+	//A.P.
 	public int getNumberOfPlaces(String externalID)
 	{
 		int result = 0;
@@ -428,7 +376,7 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		return result;
 	}
 	
-	//A.P. used for Experiment #2
+	//A.P.
 	public int getNumberOfTransitions(String externalID)
 	{
 		int result = 0;
@@ -448,7 +396,7 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		return result;
 	}
 		
-	//A.P. used for Experiment #2
+	//A.P. 
 	public int getNumberOfFlowArcs(String externalID)
 	{
 		int result = 0;
@@ -513,19 +461,6 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	  	}	
 		
 		return true;
-		
-	}
-
-	//A.P. for insert testing
-	@Override
-	public void changeNetIndexStatus(int netID) {
-		
-		try {
-		Statement dbStatement = this.connection.createStatement();
-		dbStatement.executeUpdate("INSERT INTO pql.pql_index_status VALUES("+netID+",'somebot',1,0,0,0,0)");
-				
-		} catch (SQLException e) {e.printStackTrace();}
-		
 		
 	}
 

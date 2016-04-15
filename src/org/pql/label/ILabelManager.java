@@ -97,8 +97,6 @@ public interface ILabelManager {
 	 */
 	public Set<LabelScore> getSimilarLabels(String label, double sim);
 
-	//A.P. - used for experiments
-	IndexWriter getIndexWriter();
 	
 	//A.P.
 	public boolean loadTasks(Vector<PQLTask> tasks, Set<Double> similarities)
