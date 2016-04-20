@@ -36,7 +36,7 @@ public class PQLQueryThread extends Thread {
 
 	public void checkQuery()
 	{
-			while(!this.queue.isEmpty() || (!this.netIDsLoaded.get() && this.queue.isEmpty()))
+		while(!this.queue.isEmpty() || (!this.netIDsLoaded.get() && this.queue.isEmpty()))
 		{	
 					String id = this.queue.poll();
 					

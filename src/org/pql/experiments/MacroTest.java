@@ -35,7 +35,7 @@ public static void main(String[] args) throws JSONException, ClassNotFoundExcept
 			iniFile.getDefaultBotSleepTime());
 	
     long start = System.currentTimeMillis();
-	PQLQueryResult queryResult = pqlAPI.query("SELECT * FROM * WHERE (GetTasks() EXCEPT GetTasksAlwaysOccurs(GetTasks()) IS SUBSET OF GetTasksCanOccur(GetTasks()));");
+	PQLQueryResult queryResult = pqlAPI.query("SELECT * FROM * WHERE \"automatically be goods is order planned to\" IN GetTasksCooccur(GetTasks(), GetTasks(), ALL);");
 	long end = System.currentTimeMillis();
 	System.out.println(end-start);
 	Set<String> res = queryResult.getSearchResults();

@@ -1,1 +1,1 @@
-SELECT * FROM * WHERE CanCooccur("A","B") AND AlwaysOccurs("C");
+SELECT * FROM * WHERE "automatically be goods is order planned to" IN GetTasksCooccur(GetTasks(), GetTasks(), ALL);
