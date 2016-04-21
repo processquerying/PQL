@@ -1,6 +1,7 @@
 package org.pql.index;
 
 import java.sql.SQLException;
+import java.util.Set;
 
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
@@ -120,4 +121,8 @@ public interface IPQLIndex<F extends IFlow<N>, N extends INode, P extends IPlace
 	 * @throws SQLException
 	 */
 	public boolean checkNetSystem(int internalID) throws SQLException;
+	
+	public boolean checkNetSystem(int internalID, Set<Process> p) throws SQLException; //A.P.
+	
+	public void cannnotIndex(int internalID) throws SQLException; //A.P.
 }

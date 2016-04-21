@@ -32,4 +32,6 @@ public interface IModelChecker<F extends IFlow<N>, N extends INode, P extends IP
 	public boolean canReachMarkingWithAtLeastOneTokenAtEachPlace(INetSystem<F,N,P,T,M> sys, Set<P> places);
 	
 	public boolean isIndexable(INetSystem<F,N,P,T,M> sys);
+	
+	public boolean isIndexable(INetSystem<F,N,P,T,M> sys, Set<Process> p); //A.P.
 }

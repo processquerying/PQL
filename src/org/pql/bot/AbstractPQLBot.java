@@ -3,6 +3,8 @@ package org.pql.bot;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -105,7 +107,14 @@ implements IPQLBotHeartBeat {
 				}
 
 				if (indexThread.isAlive()) {
+					
+					//A.P.
+					if (!indexThread.p.isEmpty() && indexThread.p.iterator().next() != null) indexThread.p.iterator().next().destroy();
+				
 					indexThread.interrupt();
+					
+					this.index.cannnotIndex(modelID); //A.P.
+					
 					logger.warn(String.format("Interrupted job with ID %s because indexing took longer than %s seconds.", modelID, this.indexTime));
 				}
 
@@ -209,6 +218,8 @@ implements IPQLBotHeartBeat {
 	};
 
 	class PQLBotIndexThread extends Thread {
+		protected Set<Process> p = null; //A.P.
+		
 		protected IPQLIndex<F,N,P,T,M>	index = null;
 		protected IModelChecker<F,N,P,T,M> MC = null;
 
@@ -227,6 +238,8 @@ implements IPQLBotHeartBeat {
 			this.index		= index;
 			this.MC 		= mc;
 			this.indexType	= indexType;
+			
+			this.p = new HashSet<Process>(); //A.P.
 		}
 
 		@Override
@@ -234,7 +247,7 @@ implements IPQLBotHeartBeat {
 			try {
 				// check if model can be indexed
 				logger.debug(String.format("Start checking model with ID %s.", this.modelID));
-				boolean check = this.index.checkNetSystem(modelID);
+				boolean check = this.index.checkNetSystem(modelID,this.p); //A.P.
 				logger.debug(String.format("Finished checking model with ID %s.", this.modelID));
 
 				if (check) {

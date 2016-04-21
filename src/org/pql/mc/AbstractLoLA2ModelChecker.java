@@ -71,6 +71,45 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		return result;
 	}
 	
+	//A.P.
+	public boolean isSoundWorkflowNet(INetSystem<F,N,P,T,M> sys, Set<Process> pr) {
+		if (sys==null) return false;
+		
+		PetriNetStructuralChecks<F,N,P,T> check = new PetriNetStructuralChecks<F,N,P,T>();
+		boolean wf = check.isWorkflowNet(sys);
+		
+		if (!wf) return false;
+		
+		P i = sys.getSourcePlaces().iterator().next();
+		P o = sys.getSinkPlaces().iterator().next();
+		
+		for (P p : sys.getPlaces()) {
+			if (p.equals(i)) {
+				if (sys.getMarking().get(p)!=1) return false;
+			} else {
+				if (sys.getMarking().get(p)!=0) return false;
+			}
+		}
+		
+		T t = sys.createTransition();
+		t.setName("TEMP");
+		
+		sys.addTransition(t);
+		sys.addFlow(o,t);
+		sys.addFlow(t,i);
+			
+		boolean result = true;
+		
+		if (!this.isBounded(sys,pr)) result = false;
+		
+		if (result)
+			if (!this.isLive(sys,pr)) result = false;
+		
+		sys.removeTransition(t);
+		
+		return result;
+	}
+	
 	@Override
 	public boolean isLive(INetSystem<F,N,P,T,M> sys) {
 		if (sys==null) return false;
@@ -82,6 +121,18 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		
 		return true;
 	}
+	//A.P.
+	public boolean isLive(INetSystem<F,N,P,T,M> sys, Set<Process> p) {
+		if (sys==null) return false;
+		
+		for (T t : sys.getTransitions()) {
+			if (!this.isLive(sys, t, p))
+				return false;
+		}
+		
+		return true;
+	}
+
 	
 	@Override
 	public boolean isLive(INetSystem<F,N,P,T,M> sys, T t) {
@@ -119,6 +170,44 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		return result;
 	}
 	
+	//A.P.
+	public boolean isLive(INetSystem<F,N,P,T,M> sys, T t, Set<Process> ps) {
+		if (sys==null) return false;
+		if (!sys.getTransitions().contains(t)) return false;
+		
+		boolean result = false;
+		ps.clear();
+		
+		try 
+	    {
+			String[] cmds = {this.lolaPath, "--formula=AGEF FIREABLE(" + t.getName() + ")", "--quiet", "--json"};
+			Process p = Runtime.getRuntime().exec(cmds);
+			ps.add(p);
+			
+			BufferedReader input	= new BufferedReader(new InputStreamReader(p.getInputStream()));
+			BufferedWriter output	= new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));			
+			
+			String net = this.sys2lola(sys);
+			output.write(net);
+			output.close();
+			
+			String jsonString = "";
+			String line;
+			while ((line = input.readLine()) != null) {
+				jsonString += line;
+			}
+			input.close();
+			
+			JSONObject json = new JSONObject(jsonString);
+			
+			if (json.getJSONObject("analysis").get("result").toString().equals("true"))
+				result = true;
+	    } 
+	    catch(Exception e) {}
+ 		
+		return result;
+	}
+	
 	
 	@Override
 	public boolean isBounded(INetSystem<F,N,P,T,M> sys) {
@@ -131,6 +220,19 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		
 		return true;
 	}
+	
+	//A.P.
+	public boolean isBounded(INetSystem<F,N,P,T,M> sys, Set<Process> pr) {
+		if (sys==null) return false;
+		
+		for (P p : sys.getPlaces()) {
+			if (!this.isBounded(sys,p,pr))
+				return false;
+		}
+		
+		return true;
+	}
+
 
 	@Override
 	public boolean isBounded(INetSystem<F,N,P,T,M> sys, P place) {
@@ -143,6 +245,44 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 	    {
 			String cmds[] = {this.lolaPath, "--search=cover", "--encoder=full", "--formula=AG " + place.getName() + " < oo", "--quiet", "--nolog", "--json"};
 			Process p = Runtime.getRuntime().exec(cmds);
+			
+			BufferedReader input	= new BufferedReader(new InputStreamReader(p.getInputStream()));
+			BufferedWriter output	= new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
+			
+			String net = this.sys2lola(sys);
+			output.write(net);
+			output.close();
+			
+			String jsonString = "";
+			String line;
+			while ((line = input.readLine()) != null) {
+				jsonString += line;
+			}
+			input.close();
+			
+			JSONObject json = new JSONObject(jsonString);
+			
+			if (json.getJSONObject("analysis").get("result").toString().equals("true"))
+				result = true;
+	    } 
+	    catch(Exception e) {}
+ 		
+		return result;
+	}
+	
+	//A.P.
+	public boolean isBounded(INetSystem<F,N,P,T,M> sys, P place, Set<Process> ps) {
+		if (sys==null) return false;
+		if (!sys.getPlaces().contains(place)) return false;
+		
+		boolean result = false;
+		ps.clear();
+		
+		try 
+	    {
+			String cmds[] = {this.lolaPath, "--search=cover", "--encoder=full", "--formula=AG " + place.getName() + " < oo", "--quiet", "--nolog", "--json"};
+			Process p = Runtime.getRuntime().exec(cmds);
+			ps.add(p);
 			
 			BufferedReader input	= new BufferedReader(new InputStreamReader(p.getInputStream()));
 			BufferedWriter output	= new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
@@ -301,4 +441,11 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 	public boolean isIndexable(INetSystem<F,N,P,T,M> sys) {
 		return this.isSoundWorkflowNet(sys);
 	}
+	
+	//A.P.
+	@Override
+	public boolean isIndexable(INetSystem<F,N,P,T,M> sys, Set<Process> p) {
+		return this.isSoundWorkflowNet(sys,p);
+	}
+
 }

@@ -395,7 +395,26 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 		return result;
 	}
 	
-	private void cannnotIndex(int internalID) throws SQLException {
+	//A.P.
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean checkNetSystem(int internalID, Set<Process> p) throws SQLException {
+		INetSystem<F,N,P,T,M> sys = (INetSystem<F,N,P,T,M>) this.PNPersist.restoreNetSystem(internalID);
+	
+		if (sys==null) return false;
+		
+		sys.loadNaturalMarking();		
+		
+		boolean result = this.MC.isIndexable(sys,p);
+		
+		if (!result) this.cannnotIndex(internalID);
+		
+		return result;
+	}
+
+	
+	@Override //A.P.
+	public void cannnotIndex(int internalID) throws SQLException {
 		CallableStatement cs = connection.prepareCall(this.PQL_INDEX_CANNOT);
 		
 		cs.setInt(1, internalID);
