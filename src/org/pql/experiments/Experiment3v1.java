@@ -227,6 +227,8 @@ for(int run=0; run < numberOfRuns; run++)
 									
 								time += (stopTime-startTime);
 								answersCount += queryResult.getSearchResults().size();
+								
+								System.gc();
 							}
 								
 							results.add("3v1;"+(run+1)+";"+(0)+";"+threads+";"+time/numberOfRepetitions+";"+answersCount/numberOfRepetitions+";"+templates.elementAt(t).elementAt(0)+";"+templates.elementAt(t).elementAt(1)+";"+templates.elementAt(t).elementAt(2)+";"+templates.elementAt(t).elementAt(3)+";"+templates.elementAt(t).elementAt(4)+query+"\r\n");
