@@ -105,8 +105,8 @@ implements IPQLBotHeartBeat {
 				while (indexThread.isAlive() && ((System.currentTimeMillis()-startTime) < (this.indexTime * 1000L))) {
 					Thread.sleep(1000L);
 				}
-
-				if (indexThread.isAlive()) {
+				
+					if (indexThread.isAlive()) {
 					
 					//A.P.
 					if (!indexThread.p.isEmpty() && indexThread.p.iterator().next() != null) indexThread.p.iterator().next().destroy();
@@ -126,7 +126,7 @@ implements IPQLBotHeartBeat {
 				}
 				else {
 					logger.warn(String.format("Did not index model with ID %s.", modelID));
-					this.index.deleteIndex(modelID);
+					//this.index.deleteIndex(modelID);
 					return false;
 				}
 			}
@@ -249,7 +249,7 @@ implements IPQLBotHeartBeat {
 				logger.debug(String.format("Start checking model with ID %s.", this.modelID));
 				boolean check = this.index.checkNetSystem(modelID,this.p); //A.P.
 				logger.debug(String.format("Finished checking model with ID %s.", this.modelID));
-
+	
 				if (check) {
 					logger.info(String.format("Start indexing model with ID %s.", this.modelID));
 					this.result = this.index.constructIndex(modelID, this.indexType);
