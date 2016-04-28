@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INetSystem;
@@ -29,23 +31,24 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 				implements IPQLIndex<F,N,P,T,M> {
 	
 	protected Connection connection = null;
-	protected String 	PQL_INDEX_GET_TYPE			= "{? = CALL pql.pql_index_get_type(?)}";
-	protected String 	PQL_INDEX_GET_STATUS		= "{? = CALL pql.pql_index_get_status(?)}";
-	protected String 	PQL_INDEX_DELETE			= "{? = CALL pql.pql_index_delete(?)}";
-	protected String 	PQL_INDEX_CLEANUP			= "{CALL pql.pql_index_cleanup()}";
+	protected String 	PQL_INDEX_GET_TYPE					= "{? = CALL pql.pql_index_get_type(?)}";
+	protected String 	PQL_INDEX_GET_STATUS				= "{? = CALL pql.pql_index_get_status(?)}";
+	protected String 	PQL_INDEX_DELETE					= "{? = CALL pql.pql_index_delete(?)}";
+	protected String 	PQL_INDEX_DELETE_INDEXED_RELATIONS	= "{? = CALL pql.pql_index_delete_indexed_relations(?)}"; //A.P.
+	protected String 	PQL_INDEX_CLEANUP					= "{CALL pql.pql_index_cleanup()}";
 	
-	protected String	PQL_CAN_OCCUR_CREATE		= "{CALL pql.pql_can_occur_create(?,?)}";
-	protected String	PQL_ALWAYS_OCCURS_CREATE	= "{CALL pql.pql_always_occurs_create(?,?)}";
-	protected String	PQL_CAN_CONFLICT_CREATE		= "{CALL pql.pql_can_conflict_create(?,?,?)}";
-	protected String	PQL_CAN_COOCCUR_CREATE		= "{CALL pql.pql_can_cooccur_create(?,?,?)}";	
-	protected String	PQL_TOTAL_CAUSAL_CREATE		= "{CALL pql.pql_total_causal_create(?,?,?)}";
-	protected String	PQL_TOTAL_CONCUR_CREATE		= "{CALL pql.pql_total_concur_create(?,?,?)}";
+	protected String	PQL_CAN_OCCUR_CREATE			= "{CALL pql.pql_can_occur_create(?,?)}";
+	protected String	PQL_ALWAYS_OCCURS_CREATE		= "{CALL pql.pql_always_occurs_create(?,?)}";
+	protected String	PQL_CAN_CONFLICT_CREATE			= "{CALL pql.pql_can_conflict_create(?,?,?)}";
+	protected String	PQL_CAN_COOCCUR_CREATE			= "{CALL pql.pql_can_cooccur_create(?,?,?)}";	
+	protected String	PQL_TOTAL_CAUSAL_CREATE			= "{CALL pql.pql_total_causal_create(?,?,?)}";
+	protected String	PQL_TOTAL_CONCUR_CREATE			= "{CALL pql.pql_total_concur_create(?,?,?)}";
 	
-	protected String	PQL_INDEX_GET_NEXT_JOB		= "{? = CALL pql.pql_index_get_next_job()}";
-	protected String	PQL_INDEX_CLAIM_JOB			= "{CALL pql.pql_index_claim_job(?,?)}";
-	protected String	PQL_INDEX_START_JOB			= "{? = CALL pql.pql_index_start_job(?,?)}";
-	protected String	PQL_INDEX_FINISH_JOB		= "{CALL pql.pql_index_finish_job(?,?)}";
-	protected String	PQL_INDEX_CANNOT			= "{CALL pql.pql_index_cannot(?)}";
+	protected String	PQL_INDEX_GET_NEXT_JOB			= "{? = CALL pql.pql_index_get_next_job()}";
+	protected String	PQL_INDEX_CLAIM_JOB				= "{CALL pql.pql_index_claim_job(?,?)}";
+	protected String	PQL_INDEX_START_JOB				= "{? = CALL pql.pql_index_start_job(?,?)}";
+	protected String	PQL_INDEX_FINISH_JOB			= "{CALL pql.pql_index_finish_job(?,?)}";
+	protected String	PQL_INDEX_CANNOT				= "{CALL pql.pql_index_cannot(?)}";
 	
 	//TODO create CallableStatement for each DB query and check if it is null
 	
@@ -208,6 +211,143 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 		
 		return false;		
 	}
+	
+	//A.P.
+	@Override
+	public boolean constructIndex(int internalID, IndexType type, Set<Process> lolaProcesses, AtomicBoolean activeLoLA) throws SQLException {
+		// check index status
+		IndexStatus status = this.getIndexStatus(internalID);
+		if (status!=IndexStatus.INDEXING) return false;
+		
+		// get Petri net to index
+		@SuppressWarnings("unchecked")
+		INetSystem<F,N,P,T,M> sys = (INetSystem<F,N,P,T,M>) this.PNPersist.restoreNetSystem(internalID);
+		if (sys==null) return false;
+		sys.loadNaturalMarking();
+		
+		// index labels
+		for (T t : sys.getTransitions()) {
+			if (t.isSilent()) continue;
+			
+			this.labelMngr.indexLabel(t.getLabel());
+		}
+		
+		// index tasks
+		for (T t : sys.getTransitions()) {
+			if (t.isSilent()) continue;
+			
+			this.labelMngr.indexTask(t.getLabel());
+		}
+		
+		if (type==IndexType.PREDICATES) {
+			try {
+				Set<String> labels = new HashSet<String>();
+				
+				for (T t : sys.getTransitions()) {
+					if (t.isSilent()) continue;
+					
+					labels.add(t.getLabel().trim());
+				}
+				
+				Set<PQLTask> tasks = new HashSet<PQLTask>();
+				for (String label : labels) {
+					for (Double sim : this.labelMngr.getIndexedLabelSimilarityThresholds()) {
+						PQLTask task = new PQLTask(label,sim);
+						labelMngr.loadTask(task, this.labelMngr.getIndexedLabelSimilarityThresholds());
+						tasks.add(task);
+					}
+				}
+				
+				this.basicPredicates.configure(sys);
+				
+				// index unary relations
+				Map<Set<String>,Boolean> canOccurMap		= new HashMap<Set<String>,Boolean>();
+				Map<Set<String>,Boolean> alwaysOccursMap	= new HashMap<Set<String>,Boolean>();
+				Boolean canOccurValue	  = null;
+				Boolean alwaysOccursValue = null;
+				
+				for (PQLTask task : tasks) {
+					
+					if(!activeLoLA.get()) return false;//A.P.
+					
+					// canOccur
+					canOccurValue = canOccurMap.get(task.getSimilarLabels());
+					if (canOccurValue==null) { 
+						canOccurValue = this.basicPredicates.canOccur(task,lolaProcesses);
+						canOccurMap.put(task.getSimilarLabels(),canOccurValue);
+					}
+					if (canOccurValue) this.indexUnaryPredicate(this.PQL_CAN_OCCUR_CREATE, internalID, task);
+					
+					if(!activeLoLA.get()) return false;//A.P.
+					
+					//alwaysOccurs
+					alwaysOccursValue = alwaysOccursMap.get(task.getSimilarLabels());
+					if (alwaysOccursValue==null) {
+						alwaysOccursValue = this.basicPredicates.alwaysOccurs(task,lolaProcesses);
+						alwaysOccursMap.put(task.getSimilarLabels(), alwaysOccursValue);
+					}
+					if (alwaysOccursValue) this.indexUnaryPredicate(this.PQL_ALWAYS_OCCURS_CREATE, internalID, task);
+				}
+				canOccurMap.clear();
+				alwaysOccursMap.clear();
+				
+				// index symmetric binary relations
+				Map<Set<String>,Map<Set<String>,Boolean>> totalConcurMap	= new HashMap<Set<String>,Map<Set<String>,Boolean>>();
+				Map<Set<String>,Map<Set<String>,Boolean>> canCooccurMap		= new HashMap<Set<String>,Map<Set<String>,Boolean>>();
+				
+				Boolean totalConcurValue	= null;
+				Boolean canCooccurValue	= null;
+				
+				for (PQLTask taskA : tasks) {
+					for (PQLTask taskB : tasks) {
+						
+						if(!activeLoLA.get()) return false;//A.P.
+						
+						canCooccurValue = this.checkSymmetricRelation(canCooccurMap,taskA.getSimilarLabels(),taskB.getSimilarLabels());
+						if (canCooccurValue==null) {
+							canCooccurValue = this.basicPredicates.canCooccur(taskA,taskB,lolaProcesses);
+							this.storeSymmetricRelation(canCooccurMap,taskA.getSimilarLabels(),taskB.getSimilarLabels(),canCooccurValue);
+						}
+						if (canCooccurValue) this.indexBinaryPredicate(this.PQL_CAN_COOCCUR_CREATE,internalID,taskA,taskB);
+					
+						if(!activeLoLA.get()) return false;//A.P.
+						
+						totalConcurValue = this.checkSymmetricRelation(totalConcurMap,taskA.getSimilarLabels(),taskB.getSimilarLabels());
+						if (totalConcurValue==null) {
+							totalConcurValue = this.basicPredicates.totalConcur(taskA,taskB);//no lola
+							this.storeSymmetricRelation(totalConcurMap,taskA.getSimilarLabels(),taskB.getSimilarLabels(),totalConcurValue);
+						}
+						if (totalConcurValue) this.indexBinaryPredicate(this.PQL_TOTAL_CONCUR_CREATE,internalID,taskA,taskB);
+					}
+				}
+				canCooccurMap.clear();
+				totalConcurMap.clear();
+				
+				// index asymmetric binary relations
+				for (PQLTask taskA : tasks) {
+					for (PQLTask taskB : tasks) {
+						
+						if(!activeLoLA.get()) return false;//A.P.
+						
+						if (this.basicPredicates.canConflict(taskA,taskB,lolaProcesses)) this.indexBinaryPredicate(this.PQL_CAN_CONFLICT_CREATE,internalID,taskA,taskB);
+						
+						if(!activeLoLA.get()) return false;//A.P.
+						
+						if (this.basicPredicates.totalCausal(taskA,taskB,lolaProcesses)) this.indexBinaryPredicate(this.PQL_TOTAL_CAUSAL_CREATE,internalID,taskA,taskB);
+					}
+				}
+				
+				return true;	
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				
+				return false;
+			}	
+		}
+		
+		return false;		
+	}
 
 	@Override
 	public IndexType getIndexType(int internalID) throws SQLException {
@@ -255,6 +395,20 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 		
 		return cs.getBoolean(1);
 	}
+	
+	//A.P.
+	@Override
+	public boolean deleteIndexedRelations(int internalID) throws SQLException {
+		CallableStatement cs = connection.prepareCall(this.PQL_INDEX_DELETE_INDEXED_RELATIONS);
+		
+		cs.registerOutParameter(1, java.sql.Types.INTEGER);
+		cs.setInt(2, internalID);
+		
+		cs.execute();
+		
+		return cs.getBoolean(1);
+	}
+
 
 	private void storeSymmetricRelation(Map<Set<String>, Map<Set<String>, Boolean>> map,
 			Set<String> labels1, Set<String> labels2, boolean value) {

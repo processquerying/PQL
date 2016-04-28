@@ -286,7 +286,6 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 			
 			//check if net contains all trace labels 
 		  	Set<String> netLabels = LM.getAllLabels(this.netID);
-		  	System.out.println("map: "+trace.getReplacementMap());
 			 
 		   	if(!PL.netHasAllTraceLabels(trace, netLabels)) 
 		   	{
@@ -296,7 +295,7 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 			
 			INetSystem<F,N,P,T,M> netSystem = PL.restoreNetSystem(this.netID);
 		  	netSystem.loadNaturalMarking();
-			IOUtils.invokeDOT("./pics", this.netID+"-original-from-select.png", netSystem.toDOT());
+			//IOUtils.invokeDOT("./pics", this.netID+"-original-from-select.png", netSystem.toDOT());
 			
 		  	AlignmentAPI<F,N,P,T,M> api = new AlignmentAPI<F,N,P,T,M>(netSystem);
 			
@@ -556,4 +555,38 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+	//A.P.
+	@Override
+	public boolean canOccur(PQLTask t, Set<Process> p) {
+		
+		return canOccur(t);
+	}
+	
+	//A.P.
+	@Override
+	public boolean alwaysOccurs(PQLTask t, Set<Process> p) {
+		
+		return alwaysOccurs(t);
+	}
+    //A.P.
+	@Override
+	public boolean canCooccur(PQLTask t1, PQLTask t2, Set<Process> p) {
+		
+		return canCooccur(t1, t2);
+	}
+	 //A.P.
+	@Override
+	public boolean canConflict(PQLTask t1, PQLTask t2, Set<Process> p) {
+		
+		return canConflict(t1, t2);
+	}
+	//A.P.
+	@Override
+	public boolean totalCausal(PQLTask t1, PQLTask t2, Set<Process> p) {
+		
+		return totalCausal(t1, t2);
+	}
+	
+	
 }

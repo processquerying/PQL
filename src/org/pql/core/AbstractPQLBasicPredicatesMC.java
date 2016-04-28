@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jbpt.algo.graph.TransitiveClosure;
 import org.jbpt.petri.IFlow;
@@ -114,6 +115,27 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		return this.modelChecker.canReachMarkingWithAtLeastOneTokenAtEachPlace(this.TM.getNetSystem(),this.TM.getNetSystem().getPreset(lut.getUnifiedTransition()));
 	}
 	
+	//A.P.
+	@Override
+	public boolean canOccur(PQLTask task, Set<Process> p) {
+		// perform initial checks
+		if (this.TM.getNetSystem()==null) return false;
+		
+		// construct transformation
+		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
+		ILabelUnificationTransformation<F,N,P,T,M> lut = new AbstractLabelUnificationTransformation<F,N,P,T,M>(this.TM.getNetSystem(),task.getSimilarLabels());
+		log.add(lut);
+		
+		// transform net system
+		this.TM.transform(log);
+		
+		if (lut.getUnifiedTransition()==null) return false;
+				
+		// perform check
+		return this.modelChecker.canReachMarkingWithAtLeastOneTokenAtEachPlace(this.TM.getNetSystem(),this.TM.getNetSystem().getPreset(lut.getUnifiedTransition()), p);
+	}
+
+	
 	@Override
 	public boolean alwaysOccurs(T t) {
 		// perform initial checks
@@ -157,6 +179,29 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		M.add(cpt.getControlPlace());
 		M.add(this.sinkPlace);
 		return !this.modelChecker.isReachable(this.TM.getNetSystem(),M);
+	}
+	
+	@Override
+	public boolean alwaysOccurs(PQLTask t, Set<Process> p) {
+		// perform initial checks
+		if (this.TM.getNetSystem()==null) return false;
+		
+		// construct transformation
+		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
+		ILabelUnificationTransformation<F,N,P,T,M> lut = new AbstractLabelUnificationTransformation<F,N,P,T,M>(this.TM.getNetSystem(),t.getSimilarLabels());
+		IControlPlaceTransformation<F,N,P,T,M> cpt = new AbstractControlPlaceTransformation<F,N,P,T,M>(this.TM.getNetSystem(),lut);
+		
+		log.add(lut);
+		log.add(cpt);
+		
+		// transform net system
+		this.TM.transform(log);
+				
+		// perform check
+		Collection<P> M = new ArrayList<P>();
+		M.add(cpt.getControlPlace());
+		M.add(this.sinkPlace);
+		return !this.modelChecker.isReachable(this.TM.getNetSystem(),M,p);
 	}
 	
 	@Override
@@ -234,6 +279,48 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		M.add(gtt2.getGuardPlace());
 		M.add(this.sinkPlace);
 		return this.modelChecker.isReachable(this.TM.getNetSystem(),M);
+	}
+	
+	//A.P.
+	@Override
+	public boolean canConflict(PQLTask t1, PQLTask t2, Set<Process> p) {
+		// perform initial checks
+		if (this.TM.getNetSystem()==null) return false;
+		
+		// handle special case
+		if (t1.getSimilarLabels().equals(t2.getSimilarLabels()))
+			return false;
+		
+		// construct transformation
+		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
+		ILabelUnificationTransformation<F,N,P,T,M> lut1 = new AbstractLabelUnificationTransformation<F,N,P,T,M>(this.TM.getNetSystem(),t1.getSimilarLabels());
+		ILabelUnificationTransformation<F,N,P,T,M> lut2 = new AbstractLabelUnificationTransformation<F,N,P,T,M>(this.TM.getNetSystem(),t2.getSimilarLabels());
+		IGuardTransitionTransformation<F,N,P,T,M> gtt1 = new AbstractGuardTransitionTransformation<F,N,P,T,M>(this.TM.getNetSystem(),lut1);
+		IGuardTransitionTransformation<F,N,P,T,M> gtt2 = new AbstractGuardTransitionTransformation<F,N,P,T,M>(this.TM.getNetSystem(),lut2);
+		
+		if (lut1.equals(lut2)) {
+			log.add(lut1);
+			log.add(lut2);
+		}
+		else
+			log.add(lut1,lut2);
+		
+		if (gtt1.equals(gtt2)) {
+			log.add(gtt1);
+			log.add(gtt2);
+		}
+		else
+			log.add(gtt1,gtt2);
+		
+		// transform net system
+		this.TM.transform(log);
+		
+		// perform check
+		Collection<P> M = new ArrayList<P>();
+		M.add(gtt1.getControlPlace());
+		M.add(gtt2.getGuardPlace());
+		M.add(this.sinkPlace);
+		return this.modelChecker.isReachable(this.TM.getNetSystem(),M,p);
 	}
 	
 	@Override
@@ -314,6 +401,48 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		return this.modelChecker.isReachable(this.TM.getNetSystem(),M);
 	}
 	
+	//A.P.
+	@Override
+	public boolean canCooccur(PQLTask t1, PQLTask t2, Set<Process> p) {
+		// perform initial checks
+		if (this.TM.getNetSystem()==null) return false;
+		
+		// handle special case
+		if (t1.getSimilarLabels().equals(t2.getSimilarLabels()))
+			return this.canOccur(t1,p);
+		
+		// construct transformation
+		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
+		ILabelUnificationTransformation<F,N,P,T,M> lut1 = new AbstractLabelUnificationTransformation<F,N,P,T,M>(this.TM.getNetSystem(),t1.getSimilarLabels());
+		ILabelUnificationTransformation<F,N,P,T,M> lut2 = new AbstractLabelUnificationTransformation<F,N,P,T,M>(this.TM.getNetSystem(),t2.getSimilarLabels());
+		IGuardTransitionTransformation<F,N,P,T,M> gtt1 = new AbstractGuardTransitionTransformation<F,N,P,T,M>(this.TM.getNetSystem(),lut1);
+		IGuardTransitionTransformation<F,N,P,T,M> gtt2 = new AbstractGuardTransitionTransformation<F,N,P,T,M>(this.TM.getNetSystem(),lut2);
+		
+		if (lut1.equals(lut2)) {
+			log.add(lut1);
+			log.add(lut2);
+		}
+		else
+			log.add(lut1,lut2);
+		
+		if (gtt1.equals(gtt2)) {
+			log.add(gtt1);
+			log.add(gtt2);
+		}
+		else
+			log.add(gtt1,gtt2);
+		
+		// transform net system
+		this.TM.transform(log);
+		
+		// perform check
+		Collection<P> M = new ArrayList<P>();
+		M.add(gtt1.getControlPlace());
+		M.add(gtt2.getControlPlace());
+		M.add(this.sinkPlace);
+		return this.modelChecker.isReachable(this.TM.getNetSystem(),M,p);
+	}
+	
 	@Override
 	public boolean conflict(T t1, T t2) {
 		return this.canConflict(t1,t2) && this.canConflict(t2,t1) && !this.canCooccur(t1,t2);
@@ -389,6 +518,38 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		return !this.modelChecker.isReachable(this.TM.getNetSystem(),M);
 	}
 	
+	//A.P.
+	@Override
+	public boolean totalCausal(PQLTask t1, PQLTask t2, Set<Process> p) {
+		// perform initial checks
+		if (this.TM.getNetSystem()==null) return false;
+		
+		// construct transformation
+		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
+		ILabelUnificationTransformation<F,N,P,T,M> lut1 = new AbstractLabelUnificationTransformation<F,N,P,T,M>(this.TM.getNetSystem(),t1.getSimilarLabels());
+		ILabelUnificationTransformation<F,N,P,T,M> lut2 = new AbstractLabelUnificationTransformation<F,N,P,T,M>(this.TM.getNetSystem(),t2.getSimilarLabels());
+		IPrecedenceTestTransformation<F,N,P,T,M> ptt = new AbstractPrecedenceTestTransformation<F,N,P,T,M>(this.TM.getNetSystem(),lut2,lut1);
+		
+		if (lut1.equals(lut2)) {
+			log.add(lut1);
+			log.add(lut2);
+		}
+		else
+			log.add(lut1,lut2);
+		
+		
+		log.add(ptt);
+		
+		// transform net system
+		this.TM.transform(log);
+				
+		// perform check
+		Collection<P> M = new ArrayList<P>();
+		M.add(ptt.getControlPlace());
+		M.add(this.sinkPlace);
+		return !this.modelChecker.isReachable(this.TM.getNetSystem(),M,p);
+	}
+	
 	@Override
 	public boolean totalConcur(T t1, T t2) {
 		// perform initial checks
@@ -432,7 +593,7 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		// perform check
 		return this.checkTotalConcur(lut1.getUnifiedTransition(),lut2.getUnifiedTransition());
 	}
-
+	
 	@SuppressWarnings({ "rawtypes" })
 	private boolean checkTotalConcur(T t1, T t2) {
 		CompletePrefixUnfoldingSetup setup = new CompletePrefixUnfoldingSetup();

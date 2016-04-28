@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
@@ -26,10 +27,12 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 				implements IModelChecker<F,N,P,T,M> {
 	
 	private String lolaPath = "./lola.exe";
+	private AtomicBoolean activeLoLA = null; //if true then lola runs
 
 	public AbstractLoLA2ModelChecker(String lolaPath) {
 		if (lolaPath==null || lolaPath.isEmpty()) return;
 		this.lolaPath = lolaPath;
+		this.activeLoLA = new AtomicBoolean(true);
 	}
 	
 	@Override
@@ -176,6 +179,9 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		if (!sys.getTransitions().contains(t)) return false;
 		
 		boolean result = false;
+		
+		if(this.activeLoLA.get())
+		{
 		ps.clear();
 		
 		try 
@@ -204,6 +210,7 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 				result = true;
 	    } 
 	    catch(Exception e) {}
+		}
  		
 		return result;
 	}
@@ -226,6 +233,7 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		if (sys==null) return false;
 		
 		for (P p : sys.getPlaces()) {
+			
 			if (!this.isBounded(sys,p,pr))
 				return false;
 		}
@@ -276,6 +284,9 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		if (!sys.getPlaces().contains(place)) return false;
 		
 		boolean result = false;
+		
+		if(this.activeLoLA.get())
+		{	
 		ps.clear();
 		
 		try 
@@ -304,6 +315,7 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 				result = true;
 	    } 
 	    catch(Exception e) {}
+		}
  		
 		return result;
 	}
@@ -326,6 +338,27 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		
 		return this.isReachable(sys, pred);
 	}
+	
+	//A.P.
+	@Override
+	public boolean isReachable(INetSystem<F,N,P,T,M> sys, Collection<P> marking, Set<Process> pr) {
+		if (sys==null) return false;
+		for (P p : marking)
+			if (!sys.getPlaces().contains(p)) return false;
+		
+		String pred = "";			
+		Iterator<P> i = sys.getPlaces().iterator();
+		P place = i.next();
+		pred += place.getName() + " = " + Collections.frequency(marking,place);
+		while (i.hasNext()) {
+			pred += " AND ";
+			place = i.next();
+			pred += place.getName() + " = " + Collections.frequency(marking,place);
+		}
+		
+		return this.isReachable(sys, pred, pr);
+	}
+
 	
 	private boolean isReachable(INetSystem<F,N,P,T,M> sys, String pred) {
 		boolean result = false;
@@ -361,6 +394,47 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		return result;
 	}
 	
+	//A.P.
+	private boolean isReachable(INetSystem<F,N,P,T,M> sys, String pred, Set<Process> ps) {
+		boolean result = false;
+
+		if(this.activeLoLA.get())
+	{	
+		ps.clear();
+		try 
+	    {
+            String[] cmds = {this.lolaPath, "--formula=EF (" + pred + ")", "--quiet", "--json"};
+            Process p = Runtime.getRuntime().exec(cmds);
+            ps.add(p);
+			
+			BufferedReader input	= new BufferedReader(new InputStreamReader(p.getInputStream()));
+			BufferedWriter output	= new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));			
+
+			
+			String net = this.sys2lola(sys);
+
+			output.write(net);
+			output.close();
+			
+			String jsonString = "";
+			String line;
+			while ((line = input.readLine()) != null) {
+				jsonString += line;
+			}
+			input.close();
+			
+			JSONObject json = new JSONObject(jsonString);
+			
+			if (json.getJSONObject("analysis").get("result").toString().equals("true"))
+				result = true;
+	    } 
+	    catch(Exception e) {}
+	}
+ 		
+		return result;
+	}
+
+	
 	@Override
 	public boolean canReachMarkingWithAtLeastOneTokenAtEachPlace(INetSystem<F,N,P,T,M> sys, Set<P> places) {
 		if (sys==null) return false;
@@ -378,6 +452,26 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 		}
 		
 		return this.isReachable(sys, pred);
+	}
+	
+	//A.P.
+	@Override
+	public boolean canReachMarkingWithAtLeastOneTokenAtEachPlace(INetSystem<F,N,P,T,M> sys, Set<P> places, Set<Process> pr) {
+		if (sys==null) return false;
+		for (P p : places)
+			if (!sys.getPlaces().contains(p)) return false;
+		
+		String pred = "";
+		Iterator<P> i = places.iterator();
+		P p = i.next();
+		pred += p.getName() + " > 0";
+		while (i.hasNext()) {
+			pred += " AND ";
+			p = i.next();
+			pred += p.getName() + " > 0";
+		}
+		
+		return this.isReachable(sys, pred, pr);
 	}
 	
 	private String sys2lola(INetSystem<F,N,P,T,M> sys) {
@@ -446,6 +540,19 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 	@Override
 	public boolean isIndexable(INetSystem<F,N,P,T,M> sys, Set<Process> p) {
 		return this.isSoundWorkflowNet(sys,p);
+	}
+	
+	//A.P.
+	@Override
+	public void setLoLAActive(boolean run) {
+		this.activeLoLA.set(run);
+		
+	}
+
+	//A.P.
+	@Override
+	public AtomicBoolean isLoLAActive() {
+		return this.activeLoLA;
 	}
 
 }

@@ -6,10 +6,12 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.lucene.util.ThreadInterruptedException;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INode;
@@ -89,8 +91,9 @@ implements IPQLBotHeartBeat {
 
 	public boolean index(int modelID) throws SQLException, InterruptedException {
 		if (!this.isActive) return false;
-
+		
 		IndexStatus status = this.index.getIndexStatus(modelID);
+		
 
 		switch (status) {
 		case UNINDEXED:
@@ -99,6 +102,7 @@ implements IPQLBotHeartBeat {
 			boolean start = this.index.startIndexing(modelID, this.botName);
 			if (start) {
 				indexThread = new PQLBotIndexThread(modelID,this.botName,this.MC,this.index,this.indexType);
+				indexThread.MC.setLoLAActive(true); //A.P.
 				indexThread.start();
 
 				long startTime = System.currentTimeMillis();
@@ -106,14 +110,11 @@ implements IPQLBotHeartBeat {
 					Thread.sleep(1000L);
 				}
 				
-					if (indexThread.isAlive()) {
+				if (indexThread.isAlive()) {
 					
 					//A.P.
-					if (!indexThread.p.isEmpty() && indexThread.p.iterator().next() != null) indexThread.p.iterator().next().destroy();
-				
-					indexThread.interrupt();
-					
-					this.index.cannnotIndex(modelID); //A.P.
+					indexThread.MC.setLoLAActive(false);
+					if (!indexThread.lolaProcesses.isEmpty() && indexThread.lolaProcesses.iterator().next() != null) indexThread.lolaProcesses.iterator().next().destroy();
 					
 					logger.warn(String.format("Interrupted job with ID %s because indexing took longer than %s seconds.", modelID, this.indexTime));
 				}
@@ -126,7 +127,8 @@ implements IPQLBotHeartBeat {
 				}
 				else {
 					logger.warn(String.format("Did not index model with ID %s.", modelID));
-					//this.index.deleteIndex(modelID);
+					this.index.cannnotIndex(modelID);//A.P.
+					this.index.deleteIndexedRelations(modelID);//A.P.
 					return false;
 				}
 			}
@@ -218,7 +220,8 @@ implements IPQLBotHeartBeat {
 	};
 
 	class PQLBotIndexThread extends Thread {
-		protected Set<Process> p = null; //A.P.
+
+		protected Set<Process> lolaProcesses = null; //A.P.
 		
 		protected IPQLIndex<F,N,P,T,M>	index = null;
 		protected IModelChecker<F,N,P,T,M> MC = null;
@@ -239,28 +242,40 @@ implements IPQLBotHeartBeat {
 			this.MC 		= mc;
 			this.indexType	= indexType;
 			
-			this.p = new HashSet<Process>(); //A.P.
+			this.lolaProcesses = new HashSet<Process>(); //A.P.
 		}
 
 		@Override
 		public void run() {
+							
 			try {
 				// check if model can be indexed
 				logger.debug(String.format("Start checking model with ID %s.", this.modelID));
-				boolean check = this.index.checkNetSystem(modelID,this.p); //A.P.
+				
+				boolean check = this.index.checkNetSystem(modelID,this.lolaProcesses); //A.P.
+				
 				logger.debug(String.format("Finished checking model with ID %s.", this.modelID));
 	
 				if (check) {
 					logger.info(String.format("Start indexing model with ID %s.", this.modelID));
-					this.result = this.index.constructIndex(modelID, this.indexType);
-
-					if (this.result) {
-						this.index.finishIndexing(this.modelID, this.botName);
-						logger.info(String.format("Finished indexing model with ID %s.", this.modelID));
-						this.completed = true;
+					
+					this.result = this.index.constructIndex(modelID, this.indexType, this.lolaProcesses, this.MC.isLoLAActive()); //A.P.
+					
+					if(!this.MC.isLoLAActive().get()) {
+						this.index.cannnotIndex(this.modelID);
+						this.index.deleteIndexedRelations(this.modelID);
+						logger.warn(String.format("The model with ID %s can not be indexed at this stage.", this.modelID));
+					}
+					else {
+						if (this.result) {
+							this.index.finishIndexing(this.modelID, this.botName);
+							logger.info(String.format("Finished indexing model with ID %s.", this.modelID));
+							this.completed = true;
+						}
 					}
 				}
 				else {
+					this.index.cannnotIndex(this.modelID);
 					logger.warn(String.format("The model with ID %s can not be indexed at this stage.", this.modelID));
 				}
 			} catch (SQLException e) {

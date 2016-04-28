@@ -2,6 +2,7 @@ package org.pql.mc;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
@@ -22,6 +23,8 @@ public interface IModelChecker<F extends IFlow<N>, N extends INode, P extends IP
 	public boolean isLive(INetSystem<F,N,P,T,M> sys);
 
 	public boolean isReachable(INetSystem<F,N,P,T,M> sys, Collection<P> marking);
+	
+	public boolean isReachable(INetSystem<F,N,P,T,M> sys, Collection<P> marking, Set<Process> p); //A.P.
 
 	public boolean isBounded(INetSystem<F,N,P,T,M> sys);
 	
@@ -31,7 +34,13 @@ public interface IModelChecker<F extends IFlow<N>, N extends INode, P extends IP
 	
 	public boolean canReachMarkingWithAtLeastOneTokenAtEachPlace(INetSystem<F,N,P,T,M> sys, Set<P> places);
 	
+	public boolean canReachMarkingWithAtLeastOneTokenAtEachPlace(INetSystem<F,N,P,T,M> sys, Set<P> places, Set<Process> p); //A.P.
+	
 	public boolean isIndexable(INetSystem<F,N,P,T,M> sys);
 	
 	public boolean isIndexable(INetSystem<F,N,P,T,M> sys, Set<Process> p); //A.P.
+	
+	public void setLoLAActive(boolean active); //A.P.
+	
+	public AtomicBoolean isLoLAActive(); //A.P.
 }

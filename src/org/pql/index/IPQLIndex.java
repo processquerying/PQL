@@ -2,6 +2,7 @@ package org.pql.index;
 
 import java.sql.SQLException;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
@@ -37,6 +38,10 @@ public interface IPQLIndex<F extends IFlow<N>, N extends INode, P extends IPlace
 	 */
 	public boolean constructIndex(int internalID, IndexType type) throws SQLException;
 	
+	//A.P.
+	public boolean constructIndex(int internalID, IndexType type, Set<Process> p, AtomicBoolean run) throws SQLException;
+
+	
 	/**
 	 * Get index type.
 	 * 
@@ -66,6 +71,8 @@ public interface IPQLIndex<F extends IFlow<N>, N extends INode, P extends IPlace
 	 * @throws SQLException
 	 */
 	public boolean deleteIndex(int internalID) throws SQLException;
+	public boolean deleteIndexedRelations(int internalID) throws SQLException;//A.P.
+
 	
 	/**
 	 * Call PQL index cleanup routine (removes incomplete indexes).

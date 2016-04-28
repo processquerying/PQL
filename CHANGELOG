@@ -1,3 +1,9 @@
+PQL ver 1.2
+====================
+1)  Optimized execution of unary predicate macros and binary predicate macro 'CanCooccur' (handling sets of tasks instead of each individual task)
+2)  Improved handling of indexing timeouts in PQL bots (improved termination of Java threads)
+3)  Minor fix in parsing of binary predicate macros 
+
 PQL ver 1.1.2
 ====================
 1)  Changed PQL syntax from '*' to 'GetTasks()' to denote the set of all tasks of a model matched to the query.

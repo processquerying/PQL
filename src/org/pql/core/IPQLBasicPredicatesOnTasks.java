@@ -1,5 +1,8 @@
 package org.pql.core;
 
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jbpt.petri.INetSystem;
 import org.json.JSONArray;
 
@@ -28,6 +31,7 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * 
 	 * @return {@code TRUE} if {@code t} occurs in every execution of {@link INetSystem}; {@code FALSE} otherwise.
 	 */
+	public boolean canOccur(PQLTask t, Set<Process> p); //A.P.
 	public boolean alwaysOccurs(PQLTask t);
 	
 	/**
@@ -42,7 +46,9 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * 
 	 * @return {@code TRUE} if {@code t1} can conflict with {@code t2} in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
+	public boolean alwaysOccurs(PQLTask t, Set<Process> p); //A.P.
 	public boolean canConflict(PQLTask t1, PQLTask t2);
+	public boolean canConflict(PQLTask t1, PQLTask t2, Set<Process> p);//A.P.
 	
 	/**
 	 * Check if given {@link PQLTask}s {@code t1} and {@code t2} can cooccur in {@link INetSystem},
@@ -72,6 +78,7 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * 
 	 * @return {@code TRUE} if {@code t1} and {@code t2} are in conflict in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
+	public boolean canCooccur(PQLTask t1, PQLTask t2, Set<Process> p);//A.P.
 	public boolean conflict(PQLTask t1, PQLTask t2);
 	
 	/**
@@ -104,6 +111,7 @@ public interface IPQLBasicPredicatesOnTasks extends IPQLBasicPredicates {
 	 * @return {@code TRUE} if {@code t1} is total causal with {@code t2} in {@link INetSystem}; {@code FALSE} otherwise.
 	 */
 	public boolean totalCausal(PQLTask t1, PQLTask t2);
+	public boolean totalCausal(PQLTask t1, PQLTask t2, Set<Process> p);//A.P.
 	
 	/**
 	 * Check if given {@link PQLTask} {@code t1} and {@code t2} are total concurrent in {@link INetSystem},
