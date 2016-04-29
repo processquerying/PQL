@@ -15,7 +15,7 @@ public class PQLQueryParseTest extends TestCase {
 		input[0] = "PQL";
 		input[1] = "query";
 		input[2] = "-gui";
-		input[3] = "Q.pql";
+		input[3] = "SELECT.4C.pql";
 		try {
 			TestRig testRig = new TestRig(input);
 			testRig.process();
