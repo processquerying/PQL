@@ -39,9 +39,9 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 	  String collectionPath = args[0];  //apql 
 	  int numberOfBots = Integer.parseInt(args[1]); //8
 	  int kSplit = Integer.parseInt(args[2]); //4
-	  int numberOfThreads = Integer.parseInt(args[3]); //1-8
+	  int numberOfThreads = Integer.parseInt(args[3]); //8
 	  int nPerTemplate = Integer.parseInt(args[4]); //3
-	  int numberOfRepetitions = Integer.parseInt(args[5]); //3
+	  int numberOfRepetitions = Integer.parseInt(args[5]); //1
 	  int numberOfRuns = Integer.parseInt(args[6]); //3
 	  
 	Vector<Vector<String>> templates = new Vector<Vector<String>>();

@@ -37,8 +37,8 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 	  String collectionPath = args[0];  //apql 
 	  int numberOfBots = Integer.parseInt(args[1]); //8
 	  int kSplit = Integer.parseInt(args[2]); //4
-	  int numberOfNodes = Integer.parseInt(args[3]); //20
-	  int minBots = Integer.parseInt(args[4]);//1
+	  int numberOfNodes = 20; //Integer.parseInt(args[3]); //20
+	  int minBots = 1; //Integer.parseInt(args[4]);//1
 	  		
 	//setup
 	PQLIniFile iniFile = new PQLIniFile();
