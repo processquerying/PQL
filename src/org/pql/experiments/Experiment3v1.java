@@ -9,25 +9,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.lucene.index.IndexWriter;
 import org.jbpt.persist.MySQLConnection;
-import org.jbpt.petri.persist.AbstractPetriNetPersistenceLayerMySQL;
 import org.pql.api.PQLAPI;
 import org.pql.bot.AbstractPQLBot.NameInUseException;
-import org.pql.bot.PQLBot;
 import org.pql.bot.PQLBotEx;
-import org.pql.core.IPQLBasicPredicatesOnTasks;
 import org.pql.core.PQLBasicPredicatesMC;
-import org.pql.core.PQLBasicPredicatesMySQL;
 import org.pql.index.IndexType;
 import org.pql.index.PQLIndexMySQL;
 import org.pql.ini.PQLIniFile;
@@ -37,7 +29,6 @@ import org.pql.label.LabelManagerLuceneVSM;
 import org.pql.label.LabelManagerThemisVSM;
 import org.pql.mc.LoLA2ModelChecker;
 import org.pql.query.PQLQueryResult;
-import org.pql.tool.PQLToolCLI;
 
 public class Experiment3v1 {
 	private static Random rand = new Random(System.currentTimeMillis());
@@ -228,7 +219,6 @@ for(int run=0; run < numberOfRuns; run++)
 								time += (stopTime-startTime);
 								answersCount += queryResult.getSearchResults().size();
 								
-								System.gc();
 							}
 								
 							results.add("3v1;"+(run+1)+";"+(0)+";"+threads+";"+time/numberOfRepetitions+";"+answersCount/numberOfRepetitions+";"+templates.elementAt(t).elementAt(0)+";"+templates.elementAt(t).elementAt(1)+";"+templates.elementAt(t).elementAt(2)+";"+templates.elementAt(t).elementAt(3)+";"+templates.elementAt(t).elementAt(4)+query+"\r\n");
@@ -333,8 +323,11 @@ for(int run=0; run < numberOfRuns; run++)
 								}
 									
 								results.add("3v1;"+(run+1)+";"+(i+1)+";"+threads+";"+time/numberOfRepetitions+";"+answersCount/numberOfRepetitions+";"+templates.elementAt(t).elementAt(0)+";"+templates.elementAt(t).elementAt(1)+";"+templates.elementAt(t).elementAt(2)+";"+templates.elementAt(t).elementAt(3)+";"+templates.elementAt(t).elementAt(4)+query+"\r\n");
+								File Results = writeCSV(results,".\\Ex3v1Results.csv");
+								results.removeAllElements();
 								
 								pqlAPI.disconnect();
+								System.gc();
 						
 				}
 			}		
@@ -343,7 +336,7 @@ for(int run=0; run < numberOfRuns; run++)
 
 }//run complete
 
-File Results = writeCSV(results,".\\Ex3v1Results.csv");
+//File Results = writeCSV(results,".\\Ex3v1Results.csv");
 
 }
 	

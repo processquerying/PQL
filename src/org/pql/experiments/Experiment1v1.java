@@ -16,9 +16,7 @@ import org.jbpt.persist.MySQLConnection;
 import org.jbpt.petri.persist.AbstractPetriNetPersistenceLayerMySQL;
 import org.pql.api.PQLAPI;
 import org.pql.bot.AbstractPQLBot.NameInUseException;
-import org.pql.bot.PQLBot;
 import org.pql.bot.PQLBotEx;
-import org.pql.core.IPQLBasicPredicatesOnTasks;
 import org.pql.core.PQLBasicPredicatesMC;
 import org.pql.core.PQLBasicPredicatesMySQL;
 import org.pql.index.IndexType;
@@ -29,7 +27,6 @@ import org.pql.label.LabelManagerLevenshtein;
 import org.pql.label.LabelManagerLuceneVSM;
 import org.pql.label.LabelManagerThemisVSM;
 import org.pql.mc.LoLA2ModelChecker;
-import org.pql.tool.PQLToolCLI;
 
 public class Experiment1v1 {
 //'shift sets' split 
