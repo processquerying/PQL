@@ -9,6 +9,7 @@ import java.util.Vector;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.jbpt.algo.graph.DirectedGraphAlgorithms;
 import org.jbpt.algo.tree.rpst.RPST;
 import org.jbpt.algo.tree.tctree.TCType;
 import org.jbpt.petri.Flow;
@@ -28,17 +29,20 @@ public class ModelProperties
 public static void main(String[] args) throws JSONException, ClassNotFoundException, SQLException, IOException, ParserConfigurationException, SAXException, SerializationException
 {
 
-	String path = "C:/Temp/pnml/";
-
+	String path = "C:/Temp/sap/";
+	String out = "netPropertiesSAP.csv";
 	File filePath = new File(path);
 	
 	//Results title 
 	Vector<String> results = new Vector<String>();
 	String sepLine = "sep=;\r\n";
 	results.add(sepLine);
-	String titleLine = "netID;transitions;obsTransitions;places;flows;xorSplits;xorJoins;andSplits;andJoins;polygons;bonds;rigids\r\n";
+	String titleLine = "netID;transitions;obsTransitions;places;flows;xorSplits;xorJoins;andSplits;andJoins;polygons;bonds;rigids;isCyclic\r\n";
 	results.add(titleLine);
 	int counter = 1;
+	int cyclic = 0;
+	
+	DirectedGraphAlgorithms<Flow,Node> dga = new DirectedGraphAlgorithms<>();
 	
 	for (File file : filePath.listFiles()) 
 	{
@@ -57,6 +61,7 @@ public static void main(String[] args) throws JSONException, ClassNotFoundExcept
 		int bonds = 0;
 		int polygons = 0;
 		int rigids = 0;
+		int isCyclic = 0;
 		
 		String pnmlContent = readFile(file);
 		PNMLSerializer PNML = new PNMLSerializer();
@@ -84,7 +89,14 @@ public static void main(String[] args) throws JSONException, ClassNotFoundExcept
 		bonds = rpst.getRPSTNodes(TCType.BOND).size();
 		rigids = rpst.getRPSTNodes(TCType.RIGID).size();
 		
-		String line = file.getName()+";"+transitions+";"+obsTransitions+";"+places+";"+flows+";"+xorSplits+";"+xorJoins+";"+andSplits+";"+andJoins+";"+polygons+";"+bonds+";"+rigids+"\r\n";
+		boolean isCyclicB = dga.isCyclic(ns);
+		if(isCyclicB)
+		{
+			isCyclic = 1;
+			cyclic ++;
+		}
+		
+		String line = file.getName()+";"+transitions+";"+obsTransitions+";"+places+";"+flows+";"+xorSplits+";"+xorJoins+";"+andSplits+";"+andJoins+";"+polygons+";"+bonds+";"+rigids+";"+isCyclic+"\r\n";
 		results.add(line);
 
 		
@@ -106,7 +118,8 @@ public static void main(String[] args) throws JSONException, ClassNotFoundExcept
 		
 	}
 	
-	File Results = writeCSV(results,".\\netPropertiesSAP.csv");
+	System.out.println("#cyclic: " + cyclic);
+	File Results = writeCSV(results,".\\"+out);
 }
 
 private static String readFile(File file) throws IOException {

@@ -327,7 +327,7 @@ for(int run=0; run < numberOfRuns; run++)
 								results.removeAllElements();
 								
 								pqlAPI.disconnect();
-								System.gc();
+								//System.gc();
 						
 				}
 			}		
