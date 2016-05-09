@@ -1,3 +1,7 @@
+1) Test code has been moved from src/ to /test so that Maven's "test" target works
+2) References to MySQL tables and function are no longer hardcoded to use a database named "pql"
+3) Configuring a MySQL JDBC URL that includes a query part now works
+
 PQL ver 1.2
 ====================
 1)  Optimized execution of unary predicate macros and binary predicate macro 'CanCooccur' (handling sets of tasks instead of each individual task)
