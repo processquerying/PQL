@@ -147,7 +147,7 @@ public class PQLQueryResult extends MySQLConnection {
 			threads.add(newThread);
 		}
 		
-			CallableStatement cs = connection.prepareCall("{CALL pql.pql_get_indexed_ids()}");
+			CallableStatement cs = connection.prepareCall("{CALL pql_get_indexed_ids()}");
 			ResultSet res = cs.executeQuery();
 		
 			while (res.next()) {

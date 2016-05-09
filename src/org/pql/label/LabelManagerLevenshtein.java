@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public class LabelManagerLevenshtein extends AbstractLabelManagerMySQL {
 	
-	protected String PQL_LEVENSHTEIN_SEARCH					= "{CALL pql.pql_levenshtein_label_sim_search(?)}";
+	protected String PQL_LEVENSHTEIN_SEARCH					= "{CALL pql_levenshtein_label_sim_search(?)}";
 	protected CallableStatement PQL_LEVENSHTEIN_SEARCH_CS 	= null;
 	
 	public LabelManagerLevenshtein(Connection con,	double defaultSim, Set<Double> indexedSims) throws ClassNotFoundException, SQLException {

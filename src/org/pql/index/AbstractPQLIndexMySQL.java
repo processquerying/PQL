@@ -31,24 +31,24 @@ public class AbstractPQLIndexMySQL<F extends IFlow<N>, N extends INode, P extend
 				implements IPQLIndex<F,N,P,T,M> {
 	
 	protected Connection connection = null;
-	protected String 	PQL_INDEX_GET_TYPE					= "{? = CALL pql.pql_index_get_type(?)}";
-	protected String 	PQL_INDEX_GET_STATUS				= "{? = CALL pql.pql_index_get_status(?)}";
-	protected String 	PQL_INDEX_DELETE					= "{? = CALL pql.pql_index_delete(?)}";
-	protected String 	PQL_INDEX_DELETE_INDEXED_RELATIONS	= "{? = CALL pql.pql_index_delete_indexed_relations(?)}"; //A.P.
-	protected String 	PQL_INDEX_CLEANUP					= "{CALL pql.pql_index_cleanup()}";
+	protected String 	PQL_INDEX_GET_TYPE					= "{? = CALL pql_index_get_type(?)}";
+	protected String 	PQL_INDEX_GET_STATUS				= "{? = CALL pql_index_get_status(?)}";
+	protected String 	PQL_INDEX_DELETE					= "{? = CALL pql_index_delete(?)}";
+	protected String 	PQL_INDEX_DELETE_INDEXED_RELATIONS	= "{? = CALL pql_index_delete_indexed_relations(?)}"; //A.P.
+	protected String 	PQL_INDEX_CLEANUP					= "{CALL pql_index_cleanup()}";
 	
-	protected String	PQL_CAN_OCCUR_CREATE			= "{CALL pql.pql_can_occur_create(?,?)}";
-	protected String	PQL_ALWAYS_OCCURS_CREATE		= "{CALL pql.pql_always_occurs_create(?,?)}";
-	protected String	PQL_CAN_CONFLICT_CREATE			= "{CALL pql.pql_can_conflict_create(?,?,?)}";
-	protected String	PQL_CAN_COOCCUR_CREATE			= "{CALL pql.pql_can_cooccur_create(?,?,?)}";	
-	protected String	PQL_TOTAL_CAUSAL_CREATE			= "{CALL pql.pql_total_causal_create(?,?,?)}";
-	protected String	PQL_TOTAL_CONCUR_CREATE			= "{CALL pql.pql_total_concur_create(?,?,?)}";
+	protected String	PQL_CAN_OCCUR_CREATE			= "{CALL pql_can_occur_create(?,?)}";
+	protected String	PQL_ALWAYS_OCCURS_CREATE		= "{CALL pql_always_occurs_create(?,?)}";
+	protected String	PQL_CAN_CONFLICT_CREATE			= "{CALL pql_can_conflict_create(?,?,?)}";
+	protected String	PQL_CAN_COOCCUR_CREATE			= "{CALL pql_can_cooccur_create(?,?,?)}";	
+	protected String	PQL_TOTAL_CAUSAL_CREATE			= "{CALL pql_total_causal_create(?,?,?)}";
+	protected String	PQL_TOTAL_CONCUR_CREATE			= "{CALL pql_total_concur_create(?,?,?)}";
 	
-	protected String	PQL_INDEX_GET_NEXT_JOB			= "{? = CALL pql.pql_index_get_next_job()}";
-	protected String	PQL_INDEX_CLAIM_JOB				= "{CALL pql.pql_index_claim_job(?,?)}";
-	protected String	PQL_INDEX_START_JOB				= "{? = CALL pql.pql_index_start_job(?,?)}";
-	protected String	PQL_INDEX_FINISH_JOB			= "{CALL pql.pql_index_finish_job(?,?)}";
-	protected String	PQL_INDEX_CANNOT				= "{CALL pql.pql_index_cannot(?)}";
+	protected String	PQL_INDEX_GET_NEXT_JOB			= "{? = CALL pql_index_get_next_job()}";
+	protected String	PQL_INDEX_CLAIM_JOB				= "{CALL pql_index_claim_job(?,?)}";
+	protected String	PQL_INDEX_START_JOB				= "{? = CALL pql_index_start_job(?,?)}";
+	protected String	PQL_INDEX_FINISH_JOB			= "{CALL pql_index_finish_job(?,?)}";
+	protected String	PQL_INDEX_CANNOT				= "{CALL pql_index_cannot(?)}";
 	
 	//TODO create CallableStatement for each DB query and check if it is null
 	

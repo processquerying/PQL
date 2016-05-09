@@ -49,17 +49,17 @@ public class PQLBasicPredicatesMySQL<F extends IFlow<N>, N extends INode, P exte
 	public AtomicInteger filteredModels = new AtomicInteger(); //A.P.
 	private String repairedID = null;
 	
-	protected String PETRI_NET_IDENTIFIER_TO_ID 			= "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
-	protected final String PQL_CAN_OCCUR					= "{? = CALL pql.pql_can_occur(?,?)}";
-	protected final String PQL_ALWAYS_OCCURS				= "{? = CALL pql.pql_always_occurs(?,?)}";
-	protected final String PQL_CAN_CONFLICT					= "{? = CALL pql.pql_can_conflict(?,?,?)}";
-	protected final String PQL_CAN_COOCCUR					= "{? = CALL pql.pql_can_cooccur(?,?,?)}";
-	protected final String PQL_TOTAL_CAUSAL					= "{? = CALL pql.pql_total_causal(?,?,?)}";
-	protected final String PQL_TOTAL_CONCUR					= "{? = CALL pql.pql_total_concur(?,?,?)}";
+	protected String PETRI_NET_IDENTIFIER_TO_ID 			= "{? = CALL jbpt_petri_nets_get_internal_id(?)}";
+	protected final String PQL_CAN_OCCUR					= "{? = CALL pql_can_occur(?,?)}";
+	protected final String PQL_ALWAYS_OCCURS				= "{? = CALL pql_always_occurs(?,?)}";
+	protected final String PQL_CAN_CONFLICT					= "{? = CALL pql_can_conflict(?,?,?)}";
+	protected final String PQL_CAN_COOCCUR					= "{? = CALL pql_can_cooccur(?,?,?)}";
+	protected final String PQL_TOTAL_CAUSAL					= "{? = CALL pql_total_causal(?,?,?)}";
+	protected final String PQL_TOTAL_CONCUR					= "{? = CALL pql_total_concur(?,?,?)}";
 	
 	//A.P.
-	protected String PQL_CHECK_UNARY_PREDICATE_MACRO		= "{CALL pql.pql_check_unary_predicate_macro(?,?,?,?)}";
-	protected String PQL_CHECK_BINARY_PREDICATE_MACRO		= "{CALL pql.pql_check_binary_predicate_macro(?,?,?,?,?)}";
+	protected String PQL_CHECK_UNARY_PREDICATE_MACRO		= "{CALL pql_check_unary_predicate_macro(?,?,?,?)}";
+	protected String PQL_CHECK_BINARY_PREDICATE_MACRO		= "{CALL pql_check_binary_predicate_macro(?,?,?,?,?)}";
 
 	//A.P.
 	protected CallableStatement PETRI_NET_IDENTIFIER_TO_ID_CS 			= null;

@@ -36,26 +36,26 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	implements IPetriNetPersistenceLayer<F,N,P,T,M> {
 	
 	private Connection connection = null;
-	private String PETRI_NET_CREATE						= "{? = CALL pql.jbpt_petri_nets_create(?,?,?,?,?)}";
+	private String PETRI_NET_CREATE						= "{? = CALL jbpt_petri_nets_create(?,?,?,?,?)}";
 	private CallableStatement PETRI_NET_CREATE_CS 		= null;
 	
-	private String PETRI_NET_GET_INT_ID					= "{? = CALL pql.jbpt_petri_nets_get_internal_id(?)}";
+	private String PETRI_NET_GET_INT_ID					= "{? = CALL jbpt_petri_nets_get_internal_id(?)}";
 	private CallableStatement PETRI_NET_GET_INT_ID_CS 	= null;
-	private String PETRI_NET_GET_EXT_ID					= "{? = CALL pql.jbpt_petri_nets_get_external_id(?)}";
+	private String PETRI_NET_GET_EXT_ID					= "{? = CALL jbpt_petri_nets_get_external_id(?)}";
 	private CallableStatement PETRI_NET_GET_EXT_ID_CS 	= null;
-	private String PETRI_NET_GET_PNML					= "{? = CALL pql.jbpt_petri_nets_get_pnml_content(?)}";
+	private String PETRI_NET_GET_PNML					= "{? = CALL jbpt_petri_nets_get_pnml_content(?)}";
 	private CallableStatement PETRI_NET_GET_PNML_CS 	= null;
-	private String PETRI_NET_DELETE						= "{? = CALL pql.jbpt_petri_nets_delete(?)}";
+	private String PETRI_NET_DELETE						= "{? = CALL jbpt_petri_nets_delete(?)}";
 	private CallableStatement PETRI_NET_DELETE_CS 		= null;
-	private String PETRI_NET_GET_INT_IDS				= "{CALL pql.jbpt_petri_nets_get_internal_ids()}";
+	private String PETRI_NET_GET_INT_IDS				= "{CALL jbpt_petri_nets_get_internal_ids()}";
 	private CallableStatement PETRI_NET_GET_INT_IDS_CS 	= null;
-	private String PETRI_NODE_CREATE					= "{? = CALL pql.jbpt_petri_nodes_create(?,?,?,?,?,?)}";
+	private String PETRI_NODE_CREATE					= "{? = CALL jbpt_petri_nodes_create(?,?,?,?,?,?)}";
 	private CallableStatement PETRI_NODE_CREATE_CS		= null;
-	private String PETRI_FLOW_CREATE					= "{? = CALL pql.jbpt_petri_flow_create(?,?,?,?)}";
+	private String PETRI_FLOW_CREATE					= "{? = CALL jbpt_petri_flow_create(?,?,?,?)}";
 	private CallableStatement PETRI_FLOW_CREATE_CS 		= null;
-	private String PETRI_MARKINGS_CREATE				= "{? = CALL pql.jbpt_petri_markings_create(?,?)}";
+	private String PETRI_MARKINGS_CREATE				= "{? = CALL jbpt_petri_markings_create(?,?)}";
 	private CallableStatement PETRI_MARKINGS_CREATE_CS 	= null;
-	private String PETRI_NET_RESET						= "{CALL pql.reset()}";
+	private String PETRI_NET_RESET						= "{CALL reset()}";
 	private CallableStatement PETRI_NET_RESET_CS 		= null;
 	
 	public AbstractPetriNetPersistenceLayerMySQL(Connection con) throws ClassNotFoundException, SQLException {

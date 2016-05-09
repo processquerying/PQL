@@ -25,13 +25,13 @@ public abstract class AbstractLabelManagerMySQL
 	protected double		minSim		= 1.0;
 	
 	// MySQL matters
-	protected String JBPT_LABELS_CREATE 			= "{? = CALL pql.jbpt_labels_create(?)}";	
-	protected String PQL_TASKS_CREATE				= "{? = CALL pql.pql_tasks_create(?,?)}";
-	protected String PQL_TASKS_SIM_CREATE			= "{? = CALL pql.pql_tasks_sim_create(?,?,?)}";
-	protected String PQL_TASKS_GET_SIM				= "{CALL pql.pql_tasks_get_sim(?)}";
-	protected String PETRI_NET_GET_NET_LABELS_INT	= "{CALL pql.jbpt_get_net_labels_ext_id(?)}";
-	protected String PETRI_NET_GET_NET_LABELS_EXT	= "{CALL pql.jbpt_get_net_labels_int_id(?)}";
-	protected String PQL_GET_TASK_IDS				= "{CALL pql.pql_get_task_ids(?,?)}";//A.P.
+	protected String JBPT_LABELS_CREATE 			= "{? = CALL jbpt_labels_create(?)}";	
+	protected String PQL_TASKS_CREATE				= "{? = CALL pql_tasks_create(?,?)}";
+	protected String PQL_TASKS_SIM_CREATE			= "{? = CALL pql_tasks_sim_create(?,?,?)}";
+	protected String PQL_TASKS_GET_SIM				= "{CALL pql_tasks_get_sim(?)}";
+	protected String PETRI_NET_GET_NET_LABELS_INT	= "{CALL jbpt_get_net_labels_ext_id(?)}";
+	protected String PETRI_NET_GET_NET_LABELS_EXT	= "{CALL jbpt_get_net_labels_int_id(?)}";
+	protected String PQL_GET_TASK_IDS				= "{CALL pql_get_task_ids(?,?)}";//A.P.
 	
 	//A.P.
 	protected CallableStatement JBPT_LABELS_CREATE_CS = null;

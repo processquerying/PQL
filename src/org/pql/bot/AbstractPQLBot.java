@@ -49,8 +49,8 @@ implements IPQLBotHeartBeat {
 	protected PQLBotRegularServiceThread regularService = null;
 	protected PQLBotIndexThread	indexThread = null;
 
-	protected String	PQL_INDEX_BOTS_ALIVE		= "{CALL pql.pql_index_bots_alive(?)}";
-	protected String	PQL_INDEX_BOTS_IS_ALIVE		= "{? = CALL pql.pql_index_bots_is_alive(?)}";
+	protected String	PQL_INDEX_BOTS_ALIVE		= "{CALL pql_index_bots_alive(?)}";
+	protected String	PQL_INDEX_BOTS_IS_ALIVE		= "{? = CALL pql_index_bots_is_alive(?)}";
 
 	/**
 	 * @param botName  identifies this bot in log messages; cannot be the same as any other preexisting instance;
