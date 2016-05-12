@@ -1,4 +1,4 @@
-package org.pql.test.core;
+package org.pql.test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -43,6 +43,8 @@ public class PQLTestAPQLExecutes {
 				iniFile.getNumberOfQueryThreads(),
 				iniFile.getDefaultBotMaxIndexTime(),
 				iniFile.getDefaultBotSleepTime());
+		
+		// TODO check that we are connected to the right version of PQL
 		
 		PQLTestAPQLExecutes.pqlAPI.reset();
 	

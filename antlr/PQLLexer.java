@@ -1,4 +1,4 @@
-// Generated from PQL.g4 by ANTLR 4.1
+// Generated from PQL.ANTLR-latest.g4 by ANTLR 4.1
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -55,7 +55,7 @@ public class PQLLexer extends Lexer {
 	}
 
 	@Override
-	public String getGrammarFileName() { return "PQL.g4"; }
+	public String getGrammarFileName() { return "PQL.ANTLR-latest.g4"; }
 
 	@Override
 	public String[] getTokenNames() { return tokenNames; }

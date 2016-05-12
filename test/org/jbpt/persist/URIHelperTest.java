@@ -2,7 +2,10 @@ package org.jbpt.persist;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import static org.junit.Assert.assertEquals;
+
+import org.jbpt.persist.URIHelper;
 import org.junit.Test;
 
 /**

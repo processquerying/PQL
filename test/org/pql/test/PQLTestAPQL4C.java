@@ -1,12 +1,14 @@
-package org.pql.test.core;
+package org.pql.test;
 
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Set;
 
+import org.jbpt.persist.MySQLConnection;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.pql.api.PQLAPI;
@@ -30,7 +32,7 @@ public class PQLTestAPQL4C {
 			System.out.println("ERROR: Cannot load PQL ini file.");
 			return;
 		}
-		
+	
 		PQLTestAPQL4C.pqlAPI = new PQLAPI(iniFile.getMySQLURL(), iniFile.getMySQLUser(), iniFile.getMySQLPassword(),
 				iniFile.getPostgreSQLHost(), iniFile.getPostgreSQLName(), iniFile.getPostgreSQLUser(), iniFile.getPostgreSQLPassword(),
 				iniFile.getLoLA2Path(),
@@ -42,6 +44,8 @@ public class PQLTestAPQL4C {
 				iniFile.getNumberOfQueryThreads(),
 				iniFile.getDefaultBotMaxIndexTime(),
 				iniFile.getDefaultBotSleepTime());
+		
+		// TODO check that we are connected to the right version of PQL
 		
 		PQLTestAPQL4C.pqlAPI.reset();
 
