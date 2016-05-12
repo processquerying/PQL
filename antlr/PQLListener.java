@@ -19,6 +19,17 @@ public interface PQLListener extends ParseTreeListener {
 	void exitAnyAll(@NotNull PQLParser.AnyAllContext ctx);
 
 	/**
+	 * Enter a parse tree produced by {@link PQLParser#anySomeEachAll}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnySomeEachAll(@NotNull PQLParser.AnySomeEachAllContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PQLParser#anySomeEachAll}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnySomeEachAll(@NotNull PQLParser.AnySomeEachAllContext ctx);
+
+	/**
 	 * Enter a parse tree produced by {@link PQLParser#unaryPredicateName}.
 	 * @param ctx the parse tree
 	 */
@@ -369,17 +380,6 @@ public interface PQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitParentheses(@NotNull PQLParser.ParenthesesContext ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link PQLParser#anyEachAll}.
-	 * @param ctx the parse tree
-	 */
-	void enterAnyEachAll(@NotNull PQLParser.AnyEachAllContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PQLParser#anyEachAll}.
-	 * @param ctx the parse tree
-	 */
-	void exitAnyEachAll(@NotNull PQLParser.AnyEachAllContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link PQLParser#properSubsetOf}.

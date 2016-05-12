@@ -5,6 +5,7 @@ package org.pql.core;
  */
 public enum PQLQuantifier {
 	ANY, 
+	SOME,
 	EACH, 
 	ALL;
 }

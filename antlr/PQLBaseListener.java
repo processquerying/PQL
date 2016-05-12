@@ -29,6 +29,19 @@ public class PQLBaseListener implements PQLListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
+	@Override public void enterAnySomeEachAll(@NotNull PQLParser.AnySomeEachAllContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitAnySomeEachAll(@NotNull PQLParser.AnySomeEachAllContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
 	@Override public void enterUnaryPredicateName(@NotNull PQLParser.UnaryPredicateNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -439,19 +452,6 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitParentheses(@NotNull PQLParser.ParenthesesContext ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void enterAnyEachAll(@NotNull PQLParser.AnyEachAllContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitAnyEachAll(@NotNull PQLParser.AnyEachAllContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

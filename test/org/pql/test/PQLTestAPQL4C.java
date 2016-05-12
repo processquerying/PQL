@@ -4,11 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Set;
 
-import org.jbpt.persist.MySQLConnection;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.pql.api.PQLAPI;
@@ -393,5 +391,16 @@ public class PQLTestAPQL4C {
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		Set<String> res = queryResult.getSearchResults();
 		assertEquals(10,res.size());
+	}
+	
+	@Test
+	public void test026() throws ClassNotFoundException, SQLException {
+		PQLQueryResult queryResult = PQLTestAPQL4C.pqlAPI.query("x = {\"A\",\"D\",\"K\"}; y = {\"H\",\"J\"}; SELECT * FROM * WHERE TotalCausal(x,y,SOME) AND CanOccur(x UNION y,ALL);");
+		assertEquals(0,queryResult.getNumberOfParseErrors());
+		assertEquals(3,queryResult.getSearchResults().size());
+		Set<String> res = queryResult.getSearchResults();
+		assertEquals(true, res.contains("6.pnml"));
+		assertEquals(true, res.contains("8.pnml"));
+		assertEquals(true, res.contains("9.pnml"));
 	}
 }

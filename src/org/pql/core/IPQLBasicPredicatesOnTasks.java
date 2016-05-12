@@ -1,7 +1,6 @@
 package org.pql.core;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jbpt.petri.INetSystem;
 import org.json.JSONArray;

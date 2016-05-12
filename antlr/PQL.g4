@@ -26,7 +26,7 @@
     THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    */
 
-   // PQL version 1.1.2 grammar for ANTLR v4
+   // PQL version 1.2 grammar for ANTLR v4
 
    grammar PQL;
 
@@ -156,9 +156,9 @@
    binaryPredicateMacroSetSet  : 
               binaryPredicateName 
               LP setOfTasks SEP setOfTasks 
-              SEP anyEachAll RP ;
+              SEP anySomeEachAll RP ;
 
-   anyEachAll  : ANY | EACH | ALL ;
+   anySomeEachAll : ANY | SOME | EACH | ALL ;
     
    setPredicate     : taskInSetOfTasks
               | setComparison ;
@@ -281,6 +281,7 @@
    OR          : 'OR' ;
 
    ANY         : 'ANY' ;
+   SOME        : 'SOME' ;
    EACH        : 'EACH' ;
    ALL         : 'ALL' ;
 

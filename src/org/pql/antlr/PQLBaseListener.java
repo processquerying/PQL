@@ -1,3 +1,4 @@
+package org.pql.antlr;
 // Generated from PQL.g4 by ANTLR 4.1
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -23,6 +24,19 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitAnyAll(@NotNull PQLParser.AnyAllContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterAnySomeEachAll(@NotNull PQLParser.AnySomeEachAllContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitAnySomeEachAll(@NotNull PQLParser.AnySomeEachAllContext ctx) { }
 
 	/**
 	 * {@inheritDoc}
@@ -439,19 +453,6 @@ public class PQLBaseListener implements PQLListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitParentheses(@NotNull PQLParser.ParenthesesContext ctx) { }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void enterAnyEachAll(@NotNull PQLParser.AnyEachAllContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation does nothing.
-	 */
-	@Override public void exitAnyEachAll(@NotNull PQLParser.AnyEachAllContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

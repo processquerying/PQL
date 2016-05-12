@@ -1,6 +1,7 @@
 1) Test code has been moved from src/ to /test so that Maven's "test" target works
 2) References to MySQL tables and function are no longer hardcoded to use a database named "pql"
 3) Configuring a MySQL JDBC URL that includes a query part now works
+4) Extension to the PQL grammar for handling binary predicate macros (added keyword “SOME”)
 
 PQL ver 1.2
 ====================
@@ -10,11 +11,12 @@ PQL ver 1.2
 
 PQL ver 1.1.2
 ====================
-1)  Changed PQL syntax from '*' to 'GetTasks()' to denote the set of all tasks of a model matched to the query.
+1)  Changed PQL syntax from '*' to 'GetTasks()' to denote the set of all tasks of a model matched to the query
 
 PQL ver 1.1.1
 ====================
-1)  Introduced support of two PQL query attributes: Universe ('*') and AttributeName (STRING).
-2)  Introduced support of two PQL query locations: Universe ('*') and LocationPath (STRING).
-3)  Introduced org.pql.test.core package with two JUnit tests that every next PQL commit must pass.
-4)  Changed to ensure that for every PQL query, attributes and locations get interpreted only once.
+1)  Introduced support of two PQL query attributes: Universe ('*') and AttributeName (STRING)
+2)  Introduced support of two PQL query locations: Universe ('*') and LocationPath (STRING)
+3)  Introduced org.pql.test.core package with two JUnit tests that every next PQL commit must pass
+4)  Changed to ensure that for every PQL query, attributes and locations get interpreted only once
+

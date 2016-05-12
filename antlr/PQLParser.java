@@ -19,19 +19,20 @@ public class PQLParser extends Parser {
 		TILDE=17, ESC_SEQ=18, UNICODE_ESC=19, HEX_DIGIT=20, WS=21, LINE_COMMENT=22, 
 		SELECT=23, INSERT=24, INTO=25, FROM=26, WHERE=27, EQUALS=28, OVERLAPS=29, 
 		WITH=30, SUBSET=31, PROPER=32, GET_TASKS=33, NOT=34, AND=35, OR=36, ANY=37, 
-		EACH=38, ALL=39, IN=40, IS=41, OF=42, TRUE=43, FALSE=44, UNION=45, INTERSECTION=46, 
-		DIFFERENCE=47, CAN_OCCUR=48, ALWAYS_OCCURS=49, EXECUTES=50, CAN_CONFLICT=51, 
-		CAN_COOCCUR=52, CONFLICT=53, COOCCUR=54, TOTAL_CAUSAL=55, TOTAL_CONCUR=56;
+		SOME=38, EACH=39, ALL=40, IN=41, IS=42, OF=43, TRUE=44, FALSE=45, UNION=46, 
+		INTERSECTION=47, DIFFERENCE=48, CAN_OCCUR=49, ALWAYS_OCCURS=50, EXECUTES=51, 
+		CAN_CONFLICT=52, CAN_COOCCUR=53, CONFLICT=54, COOCCUR=55, TOTAL_CAUSAL=56, 
+		TOTAL_CONCUR=57;
 	public static final String[] tokenNames = {
 		"<INVALID>", "'*'", "STRING", "VARIABLE_NAME", "SIMILARITY", "'('", "')'", 
 		"'{'", "'}'", "'['", "']'", "'<'", "'>'", "'\"'", "';'", "','", "'='", 
 		"'~'", "ESC_SEQ", "UNICODE_ESC", "HEX_DIGIT", "WS", "LINE_COMMENT", "'SELECT'", 
 		"'INSERT'", "'INTO'", "'FROM'", "'WHERE'", "'EQUALS'", "'OVERLAPS'", "'WITH'", 
 		"'SUBSET'", "'PROPER'", "'GetTasks'", "'NOT'", "'AND'", "'OR'", "'ANY'", 
-		"'EACH'", "'ALL'", "'IN'", "'IS'", "'OF'", "'TRUE'", "'FALSE'", "'UNION'", 
-		"'INTERSECT'", "'EXCEPT'", "'CanOccur'", "'AlwaysOccurs'", "'Executes'", 
-		"'CanConflict'", "'CanCooccur'", "'Conflict'", "'Cooccur'", "'TotalCausal'", 
-		"'TotalConcurrent'"
+		"'SOME'", "'EACH'", "'ALL'", "'IN'", "'IS'", "'OF'", "'TRUE'", "'FALSE'", 
+		"'UNION'", "'INTERSECT'", "'EXCEPT'", "'CanOccur'", "'AlwaysOccurs'", 
+		"'Executes'", "'CanConflict'", "'CanCooccur'", "'Conflict'", "'Cooccur'", 
+		"'TotalCausal'", "'TotalConcurrent'"
 	};
 	public static final int
 		RULE_query = 0, RULE_selectQuery = 1, RULE_insertQuery = 2, RULE_variables = 3, 
@@ -45,7 +46,7 @@ public class PQLParser extends Parser {
 		RULE_binaryPredicateName = 29, RULE_predicate = 30, RULE_proposition = 31, 
 		RULE_unaryPredicate = 32, RULE_binaryPredicate = 33, RULE_unaryTracePredicate = 34, 
 		RULE_unaryPredicateMacro = 35, RULE_binaryPredicateMacro = 36, RULE_binaryPredicateMacroTaskSet = 37, 
-		RULE_binaryPredicateMacroSetSet = 38, RULE_anyEachAll = 39, RULE_setPredicate = 40, 
+		RULE_binaryPredicateMacroSetSet = 38, RULE_anySomeEachAll = 39, RULE_setPredicate = 40, 
 		RULE_taskInSetOfTasks = 41, RULE_setComparison = 42, RULE_setComparisonOperator = 43, 
 		RULE_truthValue = 44, RULE_logicalTest = 45, RULE_union = 46, RULE_intersection = 47, 
 		RULE_difference = 48, RULE_negation = 49, RULE_isTrue = 50, RULE_isNotTrue = 51, 
@@ -61,7 +62,7 @@ public class PQLParser extends Parser {
 		"unaryPredicateName", "unaryTracePredicateName", "binaryPredicateName", 
 		"predicate", "proposition", "unaryPredicate", "binaryPredicate", "unaryTracePredicate", 
 		"unaryPredicateMacro", "binaryPredicateMacro", "binaryPredicateMacroTaskSet", 
-		"binaryPredicateMacroSetSet", "anyEachAll", "setPredicate", "taskInSetOfTasks", 
+		"binaryPredicateMacroSetSet", "anySomeEachAll", "setPredicate", "taskInSetOfTasks", 
 		"setComparison", "setComparisonOperator", "truthValue", "logicalTest", 
 		"union", "intersection", "difference", "negation", "isTrue", "isNotTrue", 
 		"isFalse", "isNotFalse", "disjunction", "conjunction", "parentheses", 
@@ -2159,10 +2160,10 @@ public class PQLParser extends Parser {
 		public List<SetOfTasksContext> setOfTasks() {
 			return getRuleContexts(SetOfTasksContext.class);
 		}
-		public AnyEachAllContext anyEachAll() {
-			return getRuleContext(AnyEachAllContext.class,0);
-		}
 		public TerminalNode LP() { return getToken(PQLParser.LP, 0); }
+		public AnySomeEachAllContext anySomeEachAll() {
+			return getRuleContext(AnySomeEachAllContext.class,0);
+		}
 		public TerminalNode RP() { return getToken(PQLParser.RP, 0); }
 		public SetOfTasksContext setOfTasks(int i) {
 			return getRuleContext(SetOfTasksContext.class,i);
@@ -2200,7 +2201,7 @@ public class PQLParser extends Parser {
 			setState(345); match(SEP);
 			setState(346); setOfTasks();
 			setState(347); match(SEP);
-			setState(348); anyEachAll();
+			setState(348); anySomeEachAll();
 			setState(349); match(RP);
 			}
 		}
@@ -2215,34 +2216,35 @@ public class PQLParser extends Parser {
 		return _localctx;
 	}
 
-	public static class AnyEachAllContext extends ParserRuleContext {
+	public static class AnySomeEachAllContext extends ParserRuleContext {
+		public TerminalNode SOME() { return getToken(PQLParser.SOME, 0); }
 		public TerminalNode ALL() { return getToken(PQLParser.ALL, 0); }
 		public TerminalNode ANY() { return getToken(PQLParser.ANY, 0); }
 		public TerminalNode EACH() { return getToken(PQLParser.EACH, 0); }
-		public AnyEachAllContext(ParserRuleContext parent, int invokingState) {
+		public AnySomeEachAllContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_anyEachAll; }
+		@Override public int getRuleIndex() { return RULE_anySomeEachAll; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof PQLListener ) ((PQLListener)listener).enterAnyEachAll(this);
+			if ( listener instanceof PQLListener ) ((PQLListener)listener).enterAnySomeEachAll(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof PQLListener ) ((PQLListener)listener).exitAnyEachAll(this);
+			if ( listener instanceof PQLListener ) ((PQLListener)listener).exitAnySomeEachAll(this);
 		}
 	}
 
-	public final AnyEachAllContext anyEachAll() throws RecognitionException {
-		AnyEachAllContext _localctx = new AnyEachAllContext(_ctx, getState());
-		enterRule(_localctx, 78, RULE_anyEachAll);
+	public final AnySomeEachAllContext anySomeEachAll() throws RecognitionException {
+		AnySomeEachAllContext _localctx = new AnySomeEachAllContext(_ctx, getState());
+		enterRule(_localctx, 78, RULE_anySomeEachAll);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(351);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ANY) | (1L << EACH) | (1L << ALL))) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ANY) | (1L << SOME) | (1L << EACH) | (1L << ALL))) != 0)) ) {
 			_errHandler.recoverInline(this);
 			}
 			consume();
@@ -3764,7 +3766,7 @@ public class PQLParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\uacf5\uee8c\u4f5d\u8b0d\u4a45\u78bd\u1b2f\u3378\3:\u0235\4\2\t\2\4"+
+		"\3\uacf5\uee8c\u4f5d\u8b0d\u4a45\u78bd\u1b2f\u3378\3;\u0235\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
 		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -3803,7 +3805,7 @@ public class PQLParser extends Parser {
 		"\3;\3;\3;\3;\3;\3;\3;\3;\3;\3;\3;\3;\3;\3;\3;\3;\3;\3;\3;\5;\u0222\n;"+
 		"\3<\3<\3=\3=\3=\3>\3>\3>\3?\3?\3?\3?\3@\3@\3@\3@\3@\3@\2A\2\4\6\b\n\f"+
 		"\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJLNPRTVXZ\\^"+
-		"`bdfhjlnprtvxz|~\2\7\4\2\'\'))\3\2\62\63\3\2\65:\3\2\')\3\2-.\u0241\2"+
+		"`bdfhjlnprtvxz|~\2\7\4\2\'\'**\3\2\63\64\3\2\66;\3\2\'*\3\2./\u0241\2"+
 		"\u0082\3\2\2\2\4\u0084\3\2\2\2\6\u008f\3\2\2\2\b\u009d\3\2\2\2\n\u00a0"+
 		"\3\2\2\2\f\u00a5\3\2\2\2\16\u00a7\3\2\2\2\20\u00b1\3\2\2\2\22\u00b3\3"+
 		"\2\2\2\24\u00bd\3\2\2\2\26\u00bf\3\2\2\2\30\u00c1\3\2\2\2\32\u00c3\3\2"+
@@ -3868,7 +3870,7 @@ public class PQLParser extends Parser {
 		"\u0113\u0114\5\34\17\2\u0114\u0115\7\21\2\2\u0115\u0116\5\34\17\2\u0116"+
 		"\u0117\7\21\2\2\u0117\u0118\5\66\34\2\u0118\u0119\7\b\2\2\u0119\65\3\2"+
 		"\2\2\u011a\u011b\t\2\2\2\u011b\67\3\2\2\2\u011c\u011d\t\3\2\2\u011d9\3"+
-		"\2\2\2\u011e\u011f\7\64\2\2\u011f;\3\2\2\2\u0120\u0121\t\4\2\2\u0121="+
+		"\2\2\2\u011e\u011f\7\65\2\2\u011f;\3\2\2\2\u0120\u0121\t\4\2\2\u0121="+
 		"\3\2\2\2\u0122\u0127\5@!\2\u0123\u0127\5p9\2\u0124\u0127\5n8\2\u0125\u0127"+
 		"\5\\/\2\u0126\u0122\3\2\2\2\u0126\u0123\3\2\2\2\u0126\u0124\3\2\2\2\u0126"+
 		"\u0125\3\2\2\2\u0127?\3\2\2\2\u0128\u0132\5B\"\2\u0129\u0132\5D#\2\u012a"+
@@ -3891,7 +3893,7 @@ public class PQLParser extends Parser {
 		"\21\2\2\u015c\u015d\5\34\17\2\u015d\u015e\7\21\2\2\u015e\u015f\5P)\2\u015f"+
 		"\u0160\7\b\2\2\u0160O\3\2\2\2\u0161\u0162\t\5\2\2\u0162Q\3\2\2\2\u0163"+
 		"\u0166\5T+\2\u0164\u0166\5V,\2\u0165\u0163\3\2\2\2\u0165\u0164\3\2\2\2"+
-		"\u0166S\3\2\2\2\u0167\u0168\5(\25\2\u0168\u0169\7*\2\2\u0169\u016a\5\34"+
+		"\u0166S\3\2\2\2\u0167\u0168\5(\25\2\u0168\u0169\7+\2\2\u0169\u016a\5\34"+
 		"\17\2\u016aU\3\2\2\2\u016b\u016c\5\34\17\2\u016c\u016d\5X-\2\u016d\u016e"+
 		"\5\34\17\2\u016eW\3\2\2\2\u016f\u0175\5v<\2\u0170\u0175\5x=\2\u0171\u0175"+
 		"\5z>\2\u0172\u0175\5|?\2\u0173\u0175\5~@\2\u0174\u016f\3\2\2\2\u0174\u0170"+
@@ -3901,27 +3903,27 @@ public class PQLParser extends Parser {
 		"\2\2\u017c\u0179\3\2\2\2\u017c\u017a\3\2\2\2\u017c\u017b\3\2\2\2\u017d"+
 		"]\3\2\2\2\u017e\u0182\5\36\20\2\u017f\u0182\5b\62\2\u0180\u0182\5`\61"+
 		"\2\u0181\u017e\3\2\2\2\u0181\u017f\3\2\2\2\u0181\u0180\3\2\2\2\u0182\u0183"+
-		"\3\2\2\2\u0183\u0187\7/\2\2\u0184\u0188\5\36\20\2\u0185\u0188\5b\62\2"+
-		"\u0186\u0188\5`\61\2\u0187\u0184\3\2\2\2\u0187\u0185\3\2\2\2\u0187\u0186"+
-		"\3\2\2\2\u0188\u0191\3\2\2\2\u0189\u018d\7/\2\2\u018a\u018e\5\36\20\2"+
-		"\u018b\u018e\5b\62\2\u018c\u018e\5`\61\2\u018d\u018a\3\2\2\2\u018d\u018b"+
+		"\3\2\2\2\u0183\u0187\7\60\2\2\u0184\u0188\5\36\20\2\u0185\u0188\5b\62"+
+		"\2\u0186\u0188\5`\61\2\u0187\u0184\3\2\2\2\u0187\u0185\3\2\2\2\u0187\u0186"+
+		"\3\2\2\2\u0188\u0191\3\2\2\2\u0189\u018d\7\60\2\2\u018a\u018e\5\36\20"+
+		"\2\u018b\u018e\5b\62\2\u018c\u018e\5`\61\2\u018d\u018a\3\2\2\2\u018d\u018b"+
 		"\3\2\2\2\u018d\u018c\3\2\2\2\u018e\u0190\3\2\2\2\u018f\u0189\3\2\2\2\u0190"+
 		"\u0193\3\2\2\2\u0191\u018f\3\2\2\2\u0191\u0192\3\2\2\2\u0192_\3\2\2\2"+
 		"\u0193\u0191\3\2\2\2\u0194\u0197\5\36\20\2\u0195\u0197\5b\62\2\u0196\u0194"+
-		"\3\2\2\2\u0196\u0195\3\2\2\2\u0197\u0198\3\2\2\2\u0198\u019b\7\60\2\2"+
+		"\3\2\2\2\u0196\u0195\3\2\2\2\u0197\u0198\3\2\2\2\u0198\u019b\7\61\2\2"+
 		"\u0199\u019c\5\36\20\2\u019a\u019c\5b\62\2\u019b\u0199\3\2\2\2\u019b\u019a"+
-		"\3\2\2\2\u019c\u01a4\3\2\2\2\u019d\u01a0\7\60\2\2\u019e\u01a1\5\36\20"+
+		"\3\2\2\2\u019c\u01a4\3\2\2\2\u019d\u01a0\7\61\2\2\u019e\u01a1\5\36\20"+
 		"\2\u019f\u01a1\5b\62\2\u01a0\u019e\3\2\2\2\u01a0\u019f\3\2\2\2\u01a1\u01a3"+
 		"\3\2\2\2\u01a2\u019d\3\2\2\2\u01a3\u01a6\3\2\2\2\u01a4\u01a2\3\2\2\2\u01a4"+
 		"\u01a5\3\2\2\2\u01a5a\3\2\2\2\u01a6\u01a4\3\2\2\2\u01a7\u01a8\5\36\20"+
-		"\2\u01a8\u01a9\7\61\2\2\u01a9\u01aa\5\36\20\2\u01aa\u01b0\3\2\2\2\u01ab"+
-		"\u01ac\5\36\20\2\u01ac\u01ad\7\61\2\2\u01ad\u01ae\5b\62\2\u01ae\u01b0"+
+		"\2\u01a8\u01a9\7\62\2\2\u01a9\u01aa\5\36\20\2\u01aa\u01b0\3\2\2\2\u01ab"+
+		"\u01ac\5\36\20\2\u01ac\u01ad\7\62\2\2\u01ad\u01ae\5b\62\2\u01ae\u01b0"+
 		"\3\2\2\2\u01af\u01a7\3\2\2\2\u01af\u01ab\3\2\2\2\u01b0c\3\2\2\2\u01b1"+
 		"\u01b2\7$\2\2\u01b2\u01b3\5@!\2\u01b3e\3\2\2\2\u01b4\u01b5\5@!\2\u01b5"+
-		"\u01b6\7+\2\2\u01b6\u01b7\7-\2\2\u01b7g\3\2\2\2\u01b8\u01b9\5@!\2\u01b9"+
-		"\u01ba\7+\2\2\u01ba\u01bb\7$\2\2\u01bb\u01bc\7-\2\2\u01bci\3\2\2\2\u01bd"+
-		"\u01be\5@!\2\u01be\u01bf\7+\2\2\u01bf\u01c0\7.\2\2\u01c0k\3\2\2\2\u01c1"+
-		"\u01c2\5@!\2\u01c2\u01c3\7+\2\2\u01c3\u01c4\7$\2\2\u01c4\u01c5\7.\2\2"+
+		"\u01b6\7,\2\2\u01b6\u01b7\7.\2\2\u01b7g\3\2\2\2\u01b8\u01b9\5@!\2\u01b9"+
+		"\u01ba\7,\2\2\u01ba\u01bb\7$\2\2\u01bb\u01bc\7.\2\2\u01bci\3\2\2\2\u01bd"+
+		"\u01be\5@!\2\u01be\u01bf\7,\2\2\u01bf\u01c0\7/\2\2\u01c0k\3\2\2\2\u01c1"+
+		"\u01c2\5@!\2\u01c2\u01c3\7,\2\2\u01c3\u01c4\7$\2\2\u01c4\u01c5\7/\2\2"+
 		"\u01c5m\3\2\2\2\u01c6\u01ca\5@!\2\u01c7\u01ca\5\\/\2\u01c8\u01ca\5p9\2"+
 		"\u01c9\u01c6\3\2\2\2\u01c9\u01c7\3\2\2\2\u01c9\u01c8\3\2\2\2\u01ca\u01cb"+
 		"\3\2\2\2\u01cb\u01cf\7&\2\2\u01cc\u01d0\5@!\2\u01cd\u01d0\5\\/\2\u01ce"+
@@ -3955,9 +3957,9 @@ public class PQLParser extends Parser {
 		"\u020d\3\2\2\2\u0221\u0211\3\2\2\2\u0221\u0215\3\2\2\2\u0221\u0219\3\2"+
 		"\2\2\u0221\u021d\3\2\2\2\u0222u\3\2\2\2\u0223\u0224\7\36\2\2\u0224w\3"+
 		"\2\2\2\u0225\u0226\7$\2\2\u0226\u0227\7\36\2\2\u0227y\3\2\2\2\u0228\u0229"+
-		"\7\37\2\2\u0229\u022a\7 \2\2\u022a{\3\2\2\2\u022b\u022c\7+\2\2\u022c\u022d"+
-		"\7!\2\2\u022d\u022e\7,\2\2\u022e}\3\2\2\2\u022f\u0230\7+\2\2\u0230\u0231"+
-		"\7\"\2\2\u0231\u0232\7!\2\2\u0232\u0233\7,\2\2\u0233\177\3\2\2\2-\u0082"+
+		"\7\37\2\2\u0229\u022a\7 \2\2\u022a{\3\2\2\2\u022b\u022c\7,\2\2\u022c\u022d"+
+		"\7!\2\2\u022d\u022e\7-\2\2\u022e}\3\2\2\2\u022f\u0230\7,\2\2\u0230\u0231"+
+		"\7\"\2\2\u0231\u0232\7!\2\2\u0232\u0233\7-\2\2\u0233\177\3\2\2\2-\u0082"+
 		"\u008b\u0096\u009d\u00ac\u00b1\u00b8\u00bd\u00c9\u00d0\u00dc\u00df\u00e9"+
 		"\u00ec\u00f2\u00fc\u00fe\u0108\u0126\u0131\u014d\u0165\u0174\u017c\u0181"+
 		"\u0187\u018d\u0191\u0196\u019b\u01a0\u01a4\u01af\u01c9\u01cf\u01d5\u01d9"+

@@ -359,7 +359,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		Token op = ((TerminalNode)nameChild).getSymbol();
 		
 		Set<PQLTask> tasks	= this.interpretSetOfTasks(tree.getChild(2));
-		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(4));
+		PQLQuantifier Q	= this.interpretAnySomeEachAll(tree.getChild(4));
 		
 		for (PQLTask task : tasks) {
 			if (this.interpretUnaryPredicate(op, task)==true) {
@@ -385,7 +385,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			Token op = ((TerminalNode)nameChild).getSymbol();
 			
 			Set<PQLTask> tasks	= this.interpretSetOfTasks(tree.getChild(2));
-			PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(4));
+			PQLQuantifier Q	= this.interpretAnySomeEachAll(tree.getChild(4));
 				
 			return interpretUnaryPredicateMacroV2(op,tasks, Q);
 		}
@@ -851,7 +851,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		Token op = ((TerminalNode)tree.getChild(1).getChild(0)).getSymbol();
 		Set<PQLTask> set1	= this.interpretSetOfTasks(tree.getChild(3));
 		Set<PQLTask> set2	= this.interpretSetOfTasks(tree.getChild(5));
-		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(7));
+		PQLQuantifier Q	= this.interpretAnySomeEachAll(tree.getChild(7));
 
 		for (PQLTask task2 : set2) {
 			boolean flag = true;
@@ -888,7 +888,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		Token op = ((TerminalNode)nameChild).getSymbol();
 		Set<PQLTask> set1	= this.interpretSetOfTasks(tree.getChild(2));
 		Set<PQLTask> set2	= this.interpretSetOfTasks(tree.getChild(4));
-		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(6));
+		PQLQuantifier Q	= this.interpretAnySomeEachAll(tree.getChild(6));
 		
 		return interpretBinaryPredicateMacroSetSet(op,set1,set2,Q);
 	}
@@ -899,7 +899,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		Token op = ((TerminalNode)nameChild).getSymbol();
 		Set<PQLTask> set1	= this.interpretSetOfTasks(tree.getChild(2));
 		Set<PQLTask> set2	= this.interpretSetOfTasks(tree.getChild(4));
-		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(6));
+		PQLQuantifier Q	= this.interpretAnySomeEachAll(tree.getChild(6));
 		
 		if(op.getType()==PQLLexer.CAN_COOCCUR)
 		return interpretBinaryPredicateMacro(op,set1,set2,Q);
@@ -909,30 +909,52 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 	
 	
 	protected boolean interpretBinaryPredicateMacroSetSet(Token op, Set<PQLTask> set1, Set<PQLTask> set2, PQLQuantifier Q) {
-		for (PQLTask task1 : set1) {
-			boolean flag = false;
-			
-			for (PQLTask task2 : set2) {
-				if (this.interpretBinaryPredicate(op,task1,task2)==true) {
-					if (Q==PQLQuantifier.ANY) return true;
-					else if (Q==PQLQuantifier.EACH) {
-						flag = true;
-						break;
-					}
+		if (Q==PQLQuantifier.ANY) {
+			for (PQLTask task1 : set1) {
+				for (PQLTask task2 : set2) {
+					if (this.interpretBinaryPredicate(op,task1,task2))
+						return true;
+				}
+			}
+		}
+		else if (Q==PQLQuantifier.SOME) {
+			for (PQLTask task1 : set1) {
+				boolean flag = true;
+				
+				for (PQLTask task2 : set2) {
+					flag &= this.interpretBinaryPredicate(op,task1,task2);
+					if (!flag) break;
 				}
 				
-				if (this.interpretBinaryPredicate(op,task1,task2)!=true) {
-					if (Q==PQLQuantifier.ALL) return false;
+				if (flag) return true;
+			}
+			
+			return false;
+		}
+		else if (Q==PQLQuantifier.EACH) {
+			boolean flag = true;
+			for (PQLTask task1 : set1) {
+				boolean flag2 = false;
+				for (PQLTask task2 : set2) {
+					flag2 = this.interpretBinaryPredicate(op,task1,task2);
+					if (flag2) break;
+				}
+				
+				if (!flag2) return false;
+			}
+			
+			return flag;
+		}
+		else if (Q==PQLQuantifier.ALL) {
+			for (PQLTask task1 : set1) {
+				for (PQLTask task2 : set2) {
+					if (!this.interpretBinaryPredicate(op,task1,task2))
+						return false;
 				}
 			}
 			
-			if (Q==PQLQuantifier.EACH && !flag)
-				return false;
+			return true;
 		}
-		
-		if (Q==PQLQuantifier.ANY) return false;
-		if (Q==PQLQuantifier.EACH) return true;
-		if (Q==PQLQuantifier.ALL) return true;
 		
 		return false;
 	}
@@ -945,7 +967,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		Set<PQLTask> set1	= new HashSet<PQLTask>(); set1.add(task);
 		Set<PQLTask> set2	= this.interpretSetOfTasks(tree.getChild(4));
 		
-		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(6));
+		PQLQuantifier Q	= this.interpretAnySomeEachAll(tree.getChild(6));
 		
 		return interpretBinaryPredicateMacroSetSet(op,set1,set2,Q);
 	}
@@ -959,7 +981,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		Set<PQLTask> set1	= new HashSet<PQLTask>(); set1.add(task);
 		Set<PQLTask> set2	= this.interpretSetOfTasks(tree.getChild(4));
 		
-		PQLQuantifier Q	= this.interpretAnyEachAll(tree.getChild(6));
+		PQLQuantifier Q	= this.interpretAnySomeEachAll(tree.getChild(6));
 		
 		if(op.getType()==PQLLexer.CAN_COOCCUR)
 			return interpretBinaryPredicateMacro(op,set1,set2,Q);
@@ -968,13 +990,15 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		}
 
 
-	protected PQLQuantifier interpretAnyEachAll(ParseTree tree) {
+	protected PQLQuantifier interpretAnySomeEachAll(ParseTree tree) {
 		
 		Token token = ((TerminalNode)tree.getChild(0)).getSymbol();
 		
 		switch(token.getType()) {
 			case PQLLexer.ANY:
 				return PQLQuantifier.ANY;
+			case PQLLexer.SOME:
+				return PQLQuantifier.SOME;
 			case PQLLexer.EACH:
 				return PQLQuantifier.EACH;
 			case PQLLexer.ALL:

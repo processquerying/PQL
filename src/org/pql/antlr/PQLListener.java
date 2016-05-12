@@ -1,3 +1,4 @@
+package org.pql.antlr;
 // Generated from PQL.g4 by ANTLR 4.1
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
@@ -17,6 +18,17 @@ public interface PQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAnyAll(@NotNull PQLParser.AnyAllContext ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link PQLParser#anySomeEachAll}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnySomeEachAll(@NotNull PQLParser.AnySomeEachAllContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PQLParser#anySomeEachAll}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnySomeEachAll(@NotNull PQLParser.AnySomeEachAllContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link PQLParser#unaryPredicateName}.
@@ -369,17 +381,6 @@ public interface PQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitParentheses(@NotNull PQLParser.ParenthesesContext ctx);
-
-	/**
-	 * Enter a parse tree produced by {@link PQLParser#anyEachAll}.
-	 * @param ctx the parse tree
-	 */
-	void enterAnyEachAll(@NotNull PQLParser.AnyEachAllContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PQLParser#anyEachAll}.
-	 * @param ctx the parse tree
-	 */
-	void exitAnyEachAll(@NotNull PQLParser.AnyEachAllContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link PQLParser#properSubsetOf}.

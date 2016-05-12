@@ -21,7 +21,6 @@ import org.jbpt.petri.IPlace;
 import org.jbpt.petri.ITransition;
 import org.jbpt.petri.persist.AbstractPetriNetPersistenceLayerMySQL;
 import org.jbpt.petri.persist.IPetriNetPersistenceLayer;
-import org.jbpt.utils.IOUtils;
 import org.json.JSONArray;
 import org.pql.alignment.AbstractReplayer;
 import org.pql.alignment.AlignmentAPI;
