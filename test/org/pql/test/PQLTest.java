@@ -172,11 +172,9 @@ public class PQLTest {
 	public void test007() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE \"E\" IN (GetTasksAlwaysOccurs(GetTasks()) UNION GetTasksTotalCausal(GetTasks(), GetTasks(), ALL));");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
-		assertEquals(5,queryResult.getSearchResults().size());
+		assertEquals(3,queryResult.getSearchResults().size());
 		Set<String> res = queryResult.getSearchResults();
-		assertEquals(true, res.contains("4.pnml"));
 		assertEquals(true, res.contains("7.pnml"));
-		assertEquals(true, res.contains("8.pnml"));
 		assertEquals(true, res.contains("9.pnml"));
 		assertEquals(true, res.contains("10.pnml"));
 		

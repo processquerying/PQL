@@ -853,12 +853,12 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		Set<PQLTask> set2	= this.interpretSetOfTasks(tree.getChild(5));
 		PQLQuantifier Q	= this.interpretAnySomeEachAll(tree.getChild(7));
 
-		for (PQLTask task2 : set2) {
+		for (PQLTask task1 : set1) {
 			boolean flag = true;
-			for (PQLTask task1 : set1) {
+			for (PQLTask task2 : set2) {
 				boolean value = this.interpretBinaryPredicate(op, task1, task2);
 				if (value==true && Q==PQLQuantifier.ANY) {
-					result.add(task2);
+					result.add(task1);
 					break;
 				}
 				else if (value!=true && Q==PQLQuantifier.ALL) {
@@ -868,7 +868,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			}
 			
 			if (flag && Q==PQLQuantifier.ALL)
-				result.add(task2);
+				result.add(task1);
 		}
 		
 		return result;
