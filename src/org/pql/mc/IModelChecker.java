@@ -40,6 +40,8 @@ public interface IModelChecker<F extends IFlow<N>, N extends INode, P extends IP
 	
 	public boolean isIndexable(INetSystem<F,N,P,T,M> sys, Set<Process> p); //A.P.
 	
+	public StateSpaceStatistics getStateSpaceStatistics(INetSystem<F,N,P,T,M> sys);
+	
 	public void setLoLAActive(boolean active); //A.P.
 	
 	public AtomicBoolean isLoLAActive(); //A.P.
