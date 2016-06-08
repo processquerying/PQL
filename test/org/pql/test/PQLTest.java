@@ -170,44 +170,7 @@ public class PQLTest {
 	
 	@Test
 	public void test007() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE \"E\" IN (GetTasksAlwaysOccurs(GetTasks()) UNION GetTasksTotalCausal(GetTasks(), GetTasks(), ALL));");
-		assertEquals(0,queryResult.getNumberOfParseErrors());
-		assertEquals(3,queryResult.getSearchResults().size());
-		Set<String> res = queryResult.getSearchResults();
-		assertEquals(true, res.contains("7.pnml"));
-		assertEquals(true, res.contains("9.pnml"));
-		assertEquals(true, res.contains("10.pnml"));
-		
-	}
-	
-	@Test
-	public void test008() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE \"C\" IN (GetTasksCanOccur(GetTasks()) INTERSECT GetTasksConflict(GetTasks(), GetTasks(), ANY));");
-		assertEquals(0,queryResult.getNumberOfParseErrors());
-		assertEquals(4,queryResult.getSearchResults().size());
-		Set<String> res = queryResult.getSearchResults();
-		assertEquals(true, res.contains("2.pnml"));
-		assertEquals(true, res.contains("3.pnml"));
-		assertEquals(true, res.contains("5.pnml"));
-		assertEquals(true, res.contains("6.pnml"));
-		
-	}
-
-
-	@Test
-	public void test009() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE GetTasksCooccur(GetTasks(), GetTasks(), ANY) NOT EQUALS GetTasksTotalConcurrent(GetTasks(), GetTasks(), ANY);");
-		assertEquals(0,queryResult.getNumberOfParseErrors());
-		assertEquals(1,queryResult.getSearchResults().size());
-		Set<String> res = queryResult.getSearchResults();
-		assertEquals(true, res.contains("9.pnml"));
-		
-	}
-
-
-	@Test
-	public void test010() throws ClassNotFoundException, SQLException {
-		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE (GetTasks() EXCEPT GetTasksCooccur(GetTasks(), GetTasks(), ALL)) OVERLAPS WITH GetTasksConflict(GetTasks(), GetTasks(), ANY);");
+		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE \"C\" IN (GetTasksAlwaysOccurs({\"C\"}) UNION GetTasksTotalCausal({\"C\"}, {\"B\", \"D\"}, ALL));");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(7,queryResult.getSearchResults().size());
 		Set<String> res = queryResult.getSearchResults();
@@ -215,10 +178,53 @@ public class PQLTest {
 		assertEquals(true, res.contains("2.pnml"));
 		assertEquals(true, res.contains("3.pnml"));
 		assertEquals(true, res.contains("4.pnml"));
-		assertEquals(true, res.contains("5.pnml"));
-		assertEquals(true, res.contains("6.pnml"));
+		assertEquals(true, res.contains("7.pnml"));
+		assertEquals(true, res.contains("9.pnml"));
+		assertEquals(true, res.contains("10.pnml"));
+	
+		
+	}
+	
+	@Test
+	public void test008() throws ClassNotFoundException, SQLException {
+		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE \"G\" IN (GetTasksCanOccur({\"G\"}) INTERSECT GetTasksConflict({\"G\"}, {\"D\", \"E\", \"F\"}, ANY));");
+		assertEquals(0,queryResult.getNumberOfParseErrors());
+		assertEquals(1,queryResult.getSearchResults().size());
+		Set<String> res = queryResult.getSearchResults();
 		assertEquals(true, res.contains("8.pnml"));
 		
+	}
+
+
+	@Test
+	public void test009() throws ClassNotFoundException, SQLException {
+		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE GetTasksCooccur({\"A\", \"B\", \"C\"}, {\"D\", \"E\"}, ANY) NOT EQUALS GetTasksTotalConcurrent({\"A\", \"B\", \"C\"}, {\"D\", \"E\"}, ANY);");
+		assertEquals(0,queryResult.getNumberOfParseErrors());
+		assertEquals(7,queryResult.getSearchResults().size());
+		Set<String> res = queryResult.getSearchResults();
+		assertEquals(true, res.contains("3.pnml"));
+		assertEquals(true, res.contains("4.pnml"));
+		assertEquals(true, res.contains("5.pnml"));
+		assertEquals(true, res.contains("6.pnml"));
+		assertEquals(true, res.contains("7.pnml"));
+		assertEquals(true, res.contains("9.pnml"));
+		assertEquals(true, res.contains("10.pnml"));
+	
+		
+	}
+
+
+	@Test
+	public void test010() throws ClassNotFoundException, SQLException {
+		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE ({\"A\", \"B\", \"E\", \"F\"} EXCEPT GetTasksCooccur({\"A\", \"B\", \"E\", \"F\"}, {\"C\", \"D\"}, ALL)) OVERLAPS WITH GetTasksConflict({\"A\", \"B\", \"E\", \"F\"}, {\"C\", \"D\"}, ANY);");
+		assertEquals(0,queryResult.getNumberOfParseErrors());
+		assertEquals(5,queryResult.getSearchResults().size());
+		Set<String> res = queryResult.getSearchResults();
+		assertEquals(true, res.contains("1.pnml"));
+		assertEquals(true, res.contains("2.pnml"));
+		assertEquals(true, res.contains("3.pnml"));
+		assertEquals(true, res.contains("5.pnml"));
+		assertEquals(true, res.contains("6.pnml"));
 		
 	}
 
