@@ -2,6 +2,8 @@
 2) References to MySQL tables and function are no longer hardcoded to use a database named "pql"
 3) Configuring a MySQL JDBC URL that includes a query part now works
 4) Extension to the PQL grammar for handling binary predicate macros (added keyword “SOME”)
+5) Binary predicate constructions are now interpreted correctly according to the dynamic semantics of PQL
+6) Updated the PQL tool and PQL bot CLI messages
 
 PQL ver 1.2
 ====================

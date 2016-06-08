@@ -6,12 +6,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.apache.lucene.util.ThreadInterruptedException;
 import org.jbpt.petri.IFlow;
 import org.jbpt.petri.IMarking;
 import org.jbpt.petri.INode;
@@ -21,6 +16,8 @@ import org.pql.index.IPQLIndex;
 import org.pql.index.IndexStatus;
 import org.pql.index.IndexType;
 import org.pql.mc.IModelChecker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -84,6 +81,8 @@ implements IPQLBotHeartBeat {
 	 * Report of an attempt to create a bot without a unique name.
 	 */
 	public static class NameInUseException extends Exception {
+		private static final long serialVersionUID = 1L;
+		
 		private final String name;
 		NameInUseException(String name) { this.name = name; }
 		String getName() { return name; }

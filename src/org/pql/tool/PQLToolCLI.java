@@ -330,10 +330,10 @@ public final class PQLToolCLI {
 	private static void showHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
     	formatter.printHelp(80, "java -jar PQL.jar <options>", 
-    							String.format("===========================================================\n"+
-    										   " Process Query Language (PQL) ver. %s by Artem Polyvyanyy\n"+
-    										  "===========================================================\n", PQLToolCLI.version), 
+    							String.format("===============================================================================\n"+
+    										   " Process Query Language (PQL) Tool ver. %s by Artem Polyvyanyy\n"+
+    										  "===============================================================================\n", PQLToolCLI.version), 
     							options, 
-    							"===========================================================\n");
+    							"===============================================================================\n");
 	}
 }

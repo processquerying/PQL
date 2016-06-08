@@ -35,44 +35,30 @@ public class PQLBotCLI {
 	final private static String	version	= "1.2";
 	
 	public static void main(String[] args) throws AbstractPQLBot.NameInUseException, InterruptedException, ClassNotFoundException, SQLException, IOException {
-		System.out.println("===============================================================");
-		System.out.println(String.format(" Process Query Language (PQL) Bot ver. %s by Artem Polyvyanyy", PQLBotCLI.version));
-		System.out.println("===============================================================");
-		
-		String botName = null;
-		
-		
-		// read parameters from the ini file
-		PQLIniFile iniFile = new PQLIniFile();
-		if (!iniFile.load()) { 
-			iniFile.create();
-			if (!iniFile.load()) {
-				System.out.println("ERROR: Cannot load PQL ini file. PQL Bot stopped.");
-				System.out.println("===============================================================");
-				return;
-			}
-		}
-		
-		Connection connection = (new MySQLConnection(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword())).getConnection();
-		
-		int sleepTime = iniFile.getDefaultBotSleepTime();
-		int indexTime = iniFile.getDefaultBotMaxIndexTime();
-				
 		// read parameters from the CLI
 		CommandLineParser parser = new DefaultParser();
+		
+		Connection connection = null;
+		
+		PQLIniFile	iniFile = null;
+		String 		botName = null;
+		int 		sleepTime = 0;
+		int 		indexTime = 0;
 		
 	    try {
 	    	// create Options object
 	    	Options options = new Options();
 	    	
 	    	// create options
-	    	Option helpOption	= Option.builder("h").longOpt("help").optionalArg(true).desc("print this message").hasArg(false).build();
-	    	Option nameOption	= Option.builder("n").longOpt("name").hasArg().optionalArg(true).desc("name of this bot (maximum 36 characters)").valueSeparator().argName("botName").build();
-	    	Option sleepOption	= Option.builder("s").longOpt("sleep").hasArg().optionalArg(true).desc("time to sleep between indexing jobs (in seconds)").valueSeparator().argName("sleepTime").build();
-	    	Option indexOption	= Option.builder("i").longOpt("index").hasArg().optionalArg(true).desc("maximal indexing time (in seconds)").valueSeparator().argName("indexTime").build();
+	    	Option helpOption		= Option.builder("h").longOpt("help").optionalArg(true).desc("print this message").hasArg(false).build();
+	    	Option versionOption	= Option.builder("v").longOpt("version").optionalArg(true).desc("get version of this tool").hasArg(false).build();
+	    	Option nameOption		= Option.builder("n").longOpt("name").hasArg().optionalArg(true).desc("name of this bot (maximum 36 characters)").valueSeparator().argName("string").build();
+	    	Option sleepOption		= Option.builder("s").longOpt("sleep").hasArg().optionalArg(true).desc("time to sleep between indexing jobs (in seconds)").valueSeparator().argName("number").build();
+	    	Option indexOption		= Option.builder("i").longOpt("index").hasArg().optionalArg(true).desc("maximal indexing time (in seconds)").valueSeparator().argName("number").build();
 	    	
 	    	// add options
 	    	options.addOption(helpOption);
+	    	options.addOption(versionOption);
 	    	options.addOption(nameOption);
 	    	options.addOption(sleepOption);
 	    	options.addOption(indexOption);
@@ -80,19 +66,46 @@ public class PQLBotCLI {
 	        // parse the command line arguments
 	        CommandLine cmd = parser.parse(options, args);
 	        
-	        // handle help
+	        // handle version
+	        if(cmd.hasOption("v")) {
+	        	System.out.println(PQLBotCLI.version);
+	        	return;
+	        }
+	        
+	        System.out.println("===============================================================================");
+			System.out.println(String.format(" Process Query Language (PQL) Bot ver. %s by Artem Polyvyanyy", PQLBotCLI.version));
+			System.out.println("===============================================================================");
+			
+			// handle help
 	        if(cmd.hasOption("h")) {
 	        	HelpFormatter formatter = new HelpFormatter();
 	        	formatter.printHelp("PQL",options);
+	        	System.out.println("===============================================================================");
 	        	return;
 	        }
+			
+			// read parameters from the ini file
+			iniFile = new PQLIniFile();
+			if (!iniFile.load()) { 
+				iniFile.create();
+				if (!iniFile.load()) {
+					System.out.println("ERROR: Cannot load PQL ini file. PQL Bot stopped.");
+					System.out.println("===============================================================================");
+					return;
+				}
+			}
+			
+			connection = (new MySQLConnection(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword())).getConnection();
+			
+			sleepTime = iniFile.getDefaultBotSleepTime();
+			indexTime = iniFile.getDefaultBotMaxIndexTime();
 	        
 	        // handle name
 	        botName = cmd.getOptionValue("n");
 	        if (botName==null) botName = UUID.randomUUID().toString();
 	        else if (botName.length()>36) {
 	        	System.out.println("ERROR: Bot name exceeds maximum allowed length of 36 characters. PQL Bot stopped.");
-				System.out.println("===============================================================");
+				System.out.println("===============================================================================");
 				return;
 	        }
 	        // handle sleep
@@ -110,7 +123,7 @@ public class PQLBotCLI {
 	    System.out.println(String.format("Bot name:\t\t%s", botName));
 	    System.out.println(String.format("Sleep time:\t\t%ss", sleepTime));
 	    System.out.println(String.format("Max. index time:\t%ss", indexTime));
-	    System.out.println("===============================================================");
+	    System.out.println("===============================================================================");
 	    
 	    // TODO: develop a factory to generate objects from iniFile (use here and for API)
 	    
