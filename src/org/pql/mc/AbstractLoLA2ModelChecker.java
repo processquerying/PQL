@@ -21,13 +21,15 @@ import org.jbpt.petri.structure.PetriNetStructuralChecks;
 import org.json.JSONObject;
 
 /**
+ * An implementation of a wrapper of LoLA 2.0 model checker: http://home.gna.org/service-tech/lola/
+ * 
  * @author Artem Polyvyanyy
  */
 public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P extends IPlace, T extends ITransition, M extends IMarking<F,N,P,T>> 
 				implements IModelChecker<F,N,P,T,M> {
 	
 	private String lolaPath = "./lola.exe";
-	private AtomicBoolean activeLoLA = null; //if true then lola runs
+	private AtomicBoolean activeLoLA = null; // if true then LoLA runs
 
 	public AbstractLoLA2ModelChecker(String lolaPath) {
 		if (lolaPath==null || lolaPath.isEmpty()) return;
@@ -589,6 +591,41 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 	    }
  		
 		
+	}
+
+	@Override
+	public boolean check(INetSystem<F,N,P,T,M> sys, String property) {
+		if (sys==null) return false;
+		
+		boolean result = false;
+		
+		try 
+	    {
+			String[] cmds = {this.lolaPath, "--formula="+property, "--quiet", "--json"};
+			Process p = Runtime.getRuntime().exec(cmds);
+			
+			BufferedReader input	= new BufferedReader(new InputStreamReader(p.getInputStream()));
+			BufferedWriter output	= new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));			
+			
+			String net = this.sys2lola(sys);
+			output.write(net);
+			output.close();
+			
+			String jsonString = "";
+			String line;
+			while ((line = input.readLine()) != null) {
+				jsonString += line;
+			}
+			input.close();
+			
+			JSONObject json = new JSONObject(jsonString);
+			
+			if (json.getJSONObject("analysis").get("result").toString().equals("true"))
+				result = true;
+	    } 
+	    catch(Exception e) {}
+ 		
+		return result;
 	}
 
 }

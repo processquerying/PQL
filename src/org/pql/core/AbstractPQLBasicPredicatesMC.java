@@ -1,5 +1,6 @@
 package org.pql.core;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import org.jbpt.petri.unfolding.Event;
 import org.jbpt.petri.unfolding.IEvent;
 import org.jbpt.petri.unfolding.IOccurrenceNet;
 import org.jbpt.petri.unfolding.order.AdequateOrderType;
+import org.jbpt.utils.IOUtils;
 import org.json.JSONArray;
 import org.pql.mc.IModelChecker;
 import org.pql.petri.AbstractControlPlaceTransformation;
@@ -504,7 +506,6 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		else
 			log.add(lut1,lut2);
 		
-		
 		log.add(ptt);
 		
 		// transform net system
@@ -574,6 +575,13 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		// perform initial checks
 		if (this.TM.getNetSystem()==null) return false;
 		
+		// !!!
+		/*try {
+			IOUtils.invokeDOT(".", "sys.png", this.TM.getNetSystem().toDOT());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}*/
+		
 		// construct transformation
 		TransformationLog<F,N,P,T,M> log = new TransformationLog<F,N,P,T,M>();
 		ILabelUnificationTransformation<F,N,P,T,M> lut1 = new AbstractLabelUnificationTransformation<F,N,P,T,M>(this.TM.getNetSystem(),t1.getSimilarLabels());
@@ -581,7 +589,6 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		
 		if (lut1.equals(lut2)) {
 			log.add(lut1);
-			log.add(lut2);
 		}
 		else
 			log.add(lut1,lut2);
@@ -589,7 +596,16 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		// transform net system
 		this.TM.transform(log);
 		
+		// !!!
+		/*try {
+			IOUtils.invokeDOT(".", "sys2.png", this.TM.getNetSystem().toDOT());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}*/
+		
 		// perform check
+		if (lut1.equals(lut2)) return this.checkTotalConcur(lut1.getUnifiedTransition(),lut1.getUnifiedTransition()); 
+			
 		return this.checkTotalConcur(lut1.getUnifiedTransition(),lut2.getUnifiedTransition());
 	}
 	
@@ -601,10 +617,26 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		setup.MAX_EVENTS = Integer.MAX_VALUE;
 		setup.MAX_BOUND = Integer.MAX_VALUE;
 		
+		// !!!
+		/*try {
+			IOUtils.invokeDOT(".", "sys3.png", this.TM.getNetSystem().toDOT());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		
 		AbstractCompletePrefixUnfolding unf = new AbstractCompletePrefixUnfolding(this.TM.getNetSystem(), setup);
 		
 		IOccurrenceNet occNet = unf.getOccurrenceNet();
 		Set<Event> cutoffs = unf.getCutoffEvents();
+		
+		// !!!
+		/*try {
+			IOUtils.invokeDOT(".", "unf.png", occNet.toDOT());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
 		
 		Set<T> ts = new HashSet<T>(occNet.getTransitions());
 		for (Event cutoff : cutoffs) {
@@ -631,11 +663,21 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 			}
 		}
 		
+		// !!!
+		/*try {
+			IOUtils.invokeDOT(".", "unf2.png", occNet.toDOT());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		
 		TransitiveClosure<F,N> TC = new TransitiveClosure<F,N>(occNet);
+		
+		// !!!
+		//System.out.println(TC); 
+		
 		for (T tt1 : ts) {
 			for (T tt2 : ts) {
-				if (tt1.equals(tt2)) continue;
-				
 				if (!occNet.getEvent(tt1).getTransition().equals(t1)) continue;
 				if (!occNet.getEvent(tt2).getTransition().equals(t2)) continue;
 				
@@ -646,6 +688,7 @@ public class AbstractPQLBasicPredicatesMC<F extends IFlow<N>, N extends INode, P
 		
 		return true;
 	}
+	
 	//A.P.
 	@Override
 	public boolean executes(PQLTrace trace) {

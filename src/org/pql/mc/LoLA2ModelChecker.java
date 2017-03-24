@@ -7,6 +7,8 @@ import org.jbpt.petri.Place;
 import org.jbpt.petri.Transition;
 
 /**
+ * A wrapper of LoLA 2.0 model checker: http://home.gna.org/service-tech/lola/
+ *  
  * @author Artem Polyvyanyy
  */
 public class LoLA2ModelChecker extends AbstractLoLA2ModelChecker<Flow,Node,Place,Transition,Marking> {
