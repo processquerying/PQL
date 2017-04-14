@@ -559,7 +559,6 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 
 	@Override
 	public StateSpaceStatistics getStateSpaceStatistics(INetSystem<F,N,P,T,M> sys) {
-
 		try 
 	    {
             String[] cmds = {this.lolaPath, "--check=full", "--quiet", "--json"};
@@ -608,6 +607,7 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 			BufferedWriter output	= new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));			
 			
 			String net = this.sys2lola(sys);
+			// System.out.println(net); // debug
 			output.write(net);
 			output.close();
 			
@@ -620,6 +620,7 @@ public class AbstractLoLA2ModelChecker<F extends IFlow<N>, N extends INode, P ex
 			
 			JSONObject json = new JSONObject(jsonString);
 			
+			//System.out.println(jsonString); // debug
 			if (json.getJSONObject("analysis").get("result").toString().equals("true"))
 				result = true;
 	    } 
