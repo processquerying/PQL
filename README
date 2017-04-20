@@ -34,7 +34,7 @@ FRIEND PROJECTS
 ---------------
 
 1. The jBPT Library (https://github.com/jbpt/codebase) provides many useful functionalities to the PQL tool.
-2. Apromore process model repository (https://github.com/apromore/ApromoreCode) integrates the PQL tool, refer 
-   to the custom installation instructions in the README file of the Apromore project. A screencast on using
-   PQL in Apromore is available here: https://www.youtube.com/watch?v=S_U6frTWd3M.
+2. Apromore process model repository (https://github.com/apromore/ApromoreCode) integrates the PQL tool, 
+   refer to the custom installation instructions in the README file of the Apromore project. A screencast 
+   on using PQL in Apromore is available here: https://www.youtube.com/watch?v=S_U6frTWd3M.
 
