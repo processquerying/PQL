@@ -53,13 +53,13 @@
    attribute  : universe
               | attributeName ;
            
-   locations  : location (SEP location)* ;
-   location   : universe
-              | locationPath ;
+   locations  : universe | location (SEP location)* ;
+   location   : locationPath | nestedQuery;
               
    universe           : UNIVERSE ;
    attributeName      : STRING ;
    locationPath       : STRING ;
+   nestedQuery        : (LP (selectQuery|insertQuery) RP) ;
 
    setOfTasks : tasks
               | union

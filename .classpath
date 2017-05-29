@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/antlr-4.1-complete.jar"/>
+	<classpathentry kind="lib" path="lib/BasicUtils.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.3.1-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/EfficientStorage.jar"/>
+	<classpathentry kind="lib" path="lib/InductiveMiner.jar"/>
+	<classpathentry kind="lib" path="lib/ini4j-0.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/jbpt-0.2.432.jar"/>
+	<classpathentry kind="lib" path="lib/logback-classic-1.0.13.jar"/>
+	<classpathentry kind="lib" path="lib/logback-core-1.0.13.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-analyzers-common-5.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-core-5.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-queryparser-5.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.26-bin.jar"/>
+	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.38-bin.jar"/>
+	<classpathentry kind="lib" path="lib/OpenXES-1.5.jar"/>
+	<classpathentry kind="lib" path="lib/org.json.jar"/>
+	<classpathentry kind="lib" path="lib/PetriNets.jar"/>
+	<classpathentry kind="lib" path="lib/PNetReplayer.jar"/>
+	<classpathentry kind="lib" path="lib/postgresql-9.3-1101.jdbc41.jar"/>
+	<classpathentry kind="lib" path="lib/ProcessTree.jar"/>
+	<classpathentry kind="lib" path="lib/ProM-Contexts.jar"/>
+	<classpathentry kind="lib" path="lib/ProM-Framework.jar"/>
+	<classpathentry kind="lib" path="lib/ProM-Models.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/themis.jar"/>
+	<classpathentry kind="lib" path="lib/trove-3.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/Uitopia.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

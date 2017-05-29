@@ -1,5 +1,5 @@
-package org.pql.antlr;
 // Generated from PQL.g4 by ANTLR 4.1
+package org.pql.antlr;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -80,14 +80,14 @@ public class PQLLexer extends Lexer {
 		case 21: LINE_COMMENT_action((RuleContext)_localctx, actionIndex); break;
 		}
 	}
-	private void WS_action(RuleContext _localctx, int actionIndex) {
-		switch (actionIndex) {
-		case 0: skip();  break;
-		}
-	}
 	private void LINE_COMMENT_action(RuleContext _localctx, int actionIndex) {
 		switch (actionIndex) {
 		case 1: skip();  break;
+		}
+	}
+	private void WS_action(RuleContext _localctx, int actionIndex) {
+		switch (actionIndex) {
+		case 0: skip();  break;
 		}
 	}
 

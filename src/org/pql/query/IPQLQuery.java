@@ -76,7 +76,7 @@ public interface IPQLQuery {
 	 * @return The {@link List} of all parse error messages for this PQL query.
 	 */
 	public List<String> getParseErrorMessages();
-	
+
 	//A.P.
 	public PQLTrace getInsertTrace();
 	
