@@ -37,7 +37,7 @@ public interface IPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, 
 	 * @return A unique internal ID of the stored model, or {@code 0} if the model was not stored.
 	 * @throws SQLException
 	 */
-	public int storeModel(File pnmlFile, String externalID) throws SQLException;
+	public int storeModel(File pnmlFile, String externalID, String target) throws SQLException;
 	
 	/**
 	 * Store a model.
@@ -47,7 +47,7 @@ public interface IPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, 
 	 * @return A unique internal ID of the stored model, or {@code 0} if the model was not stored.
 	 * @throws SQLException
 	 */
-	public int storeModel(byte[] pnmlByteContent, String externalID) throws SQLException;
+	public int storeModel(byte[] pnmlByteContent, String externalID, String target) throws SQLException;
 	
 	/**
 	 * Store a model.
@@ -57,7 +57,7 @@ public interface IPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, 
 	 * @return A unique internal ID of the stored model, or {@code 0} if the model was not stored.
 	 * @throws SQLException
 	 */
-	public int storeModel(INetSystem<F,N,P,T,M> sys, String externalID) throws SQLException;
+	public int storeModel(INetSystem<F,N,P,T,M> sys, String externalID, String target) throws SQLException;
 	
 	/**
 	 * Get Petri net stored under an internal ID.
@@ -166,6 +166,15 @@ public interface IPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, 
 	 * @throws SQLException
 	 */
 	public IndexStatus getIndexStatus(int internalID) throws SQLException;
+
+	/* -----------------------
+	 * LOCATIONS CAPSTONE EDIT
+	 * -----------------------
+	*/
+	
+	public int moveModel(String id_name, String targetFolder) throws SQLException;
+
+	public int moveFolder(String movingFolder, String targetFolder) throws SQLException;
 
 	
 }

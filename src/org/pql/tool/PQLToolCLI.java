@@ -68,12 +68,15 @@ public final class PQLToolCLI {
 	    	Option checkOption		= Option.builder("c").longOpt("check").numberOfArgs(0).required(false).desc("check if model can be indexed").hasArg(false).build();
 	    	Option queryOption		= Option.builder("q").longOpt("query").numberOfArgs(0).required(false).desc("execute PQL query").hasArg(false).build();
 	    	Option deleteOption		= Option.builder("d").longOpt("delete").numberOfArgs(0).required(false).desc("delete model (and its index)").hasArg(false).build();
+	    	Option moveOption		= Option.builder("m").longOpt("move").numberOfArgs(0).required(false).desc("move model(s) to target").hasArg(false).build();
 	    	
 	    	// TODO: Option retrieveOption	= Option.builder("r").longOpt("retrieve").numberOfArgs(0).required(false).desc("retrieve model").hasArg(false).build();
 	    	
 	    	Option pnmlOption		= Option.builder("pnml").longOpt("pnmlPath").hasArg(true).optionalArg(false).valueSeparator('=').argName("path").required(false).desc("PNML path").build();
 	    	Option pqlOption		= Option.builder("pql").longOpt("pqlPath").hasArg(true).optionalArg(false).valueSeparator('=').argName("path").required(false).desc("PQL path").build();
 	    	Option idOption			= Option.builder("id").longOpt("identifier").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("model identifier").build();
+	    	Option folderOption			= Option.builder("folder").longOpt("folderID").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("folder identifier").build();
+	    	Option targetOption			= Option.builder("target").longOpt("targetFolder").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("target folder").build();
 	    	
 	    	// add options
 	    	cmdGroup.addOption(helpOption);
@@ -85,6 +88,7 @@ public final class PQLToolCLI {
 	    	cmdGroup.addOption(deleteOption);
 	    	cmdGroup.addOption(checkOption);
 	    	cmdGroup.addOption(queryOption);
+	    	cmdGroup.addOption(moveOption);
 	    	
 	    	// cmdGroup.addOption(retrieveOption);
 	    	
@@ -95,6 +99,8 @@ public final class PQLToolCLI {
 	    	options.addOption(pnmlOption);
 	    	options.addOption(pqlOption);
 	    	options.addOption(idOption);
+	    	options.addOption(folderOption);
+	    	options.addOption(targetOption);
 	    	
 	        // parse the command line arguments
 	        CommandLine cmd = parser.parse(options, args);
@@ -145,17 +151,47 @@ public final class PQLToolCLI {
 	        		
 	        		if (pnmlFile.isFile()) {
 	        			if (cmd.hasOption("id")) {
-	        				PQLToolCLI.store(pnmlFile,cmd.getOptionValue("id"));	
+	        				if (cmd.hasOption("target")) {
+	        					PQLToolCLI.store(pnmlFile,cmd.getOptionValue("id"),cmd.getOptionValue("target"));
+	        				}
 	        			}
 	        			else throw new ParseException("-s and -pnml option requires -id option");
 	        		}
 	        		else if (pnmlFile.isDirectory()) {
-	        			PQLToolCLI.store(pnmlFile);
+	        			if (cmd.hasOption("target")) {
+	        				PQLToolCLI.storeDirectory(pnmlFile,cmd.getOptionValue("target"));
+	        			}
 	        		}
 	        	}
 	        	else throw new ParseException("-s option requires -pnml option");
 	        	
 	        	return;
+	        }
+	        
+	        /* -----------------------
+	    	 * LOCATIONS CAPSTONE EDIT
+	    	 * -----------------------
+	    	*/
+	        
+	        // handle move
+	        if (cmd.hasOption("m")) {
+	        	if (cmd.hasOption("id")) {
+	        		String id_name = cmd.getOptionValue("id");
+	        		if (cmd.hasOption("target")) {
+	        			String targetFolder = cmd.getOptionValue("target");
+	        			PQLToolCLI.moveModel(id_name,targetFolder);
+	        		}
+	        		else throw new ParseException("-id option requires -target option");
+	        	}
+	        	else if (cmd.hasOption("folder")) {
+	        		String movingFolder = cmd.getOptionValue("folder");
+	        		if (cmd.hasOption("target")) {
+	        			String targetFolder = cmd.getOptionValue("target");
+	        			PQLToolCLI.moveFolder(movingFolder,targetFolder);
+	        		}
+	        		else throw new ParseException("-folder option requires -target option");
+	        	}
+	        	else throw new ParseException("-m option requires -id or -folder option");
 	        }
 	        
 	        // handle parse
@@ -304,26 +340,59 @@ public final class PQLToolCLI {
 	    }
 	}
 	
-	private static void store(File pnmlFile, String identifier) throws SQLException {
-		if (pnmlFile==null || identifier==null) {
+	/* -----------------------
+	 * LOCATIONS CAPSTONE EDIT
+	 * -----------------------
+	*/
+	
+	private static void moveFolder(String movingFolder, String targetFolder) throws SQLException {
+		if (movingFolder==null || targetFolder==null) {
+			System.out.println("Cannot move folder.");
+			return;
+		}
+		
+		int result = PQLToolCLI.pqlAPI.moveFolder(movingFolder, targetFolder);
+		
+		if (result>0) 
+			System.out.println(String.format("Folder %s moved to %s.", movingFolder, targetFolder));
+		else
+			System.out.println(String.format("Folder %s cannot be moved to %s.", movingFolder, targetFolder));
+	}
+
+	private static void moveModel(String id_name, String targetFolder) throws SQLException {
+		if (id_name==null || targetFolder==null) {
+			System.out.println("Cannot move model.");
+			return;
+		}
+		
+		int result = PQLToolCLI.pqlAPI.moveModel(id_name, targetFolder);
+		
+		if (result>0) 
+			System.out.println(String.format("Model %s moved to %s.", id_name, targetFolder));
+		else
+			System.out.println(String.format("Model %s cannot be moved to %s.", id_name, targetFolder));
+	}
+
+	private static void store(File pnmlFile, String identifier, String target) throws SQLException {
+		if (pnmlFile==null || identifier==null || target==null) {
 			System.out.println("Cannot store model.");
 			return;
 		}
 		
-		int result = PQLToolCLI.pqlAPI.storeModel(pnmlFile, identifier);
+		int result = PQLToolCLI.pqlAPI.storeModel(pnmlFile, identifier, target);
 		
 		if (result>0) 
-			System.out.println(String.format("Model %s stored under unique identifier %s.", pnmlFile.getAbsolutePath(), identifier));
+			System.out.println(String.format("Model %s stored under unique identifier %s in folder %s.", pnmlFile.getAbsolutePath(), identifier, target));
 		else
-			System.out.println(String.format("Model %s cannot be stored under identifier %s.", pnmlFile.getAbsolutePath(), identifier));
+			System.out.println(String.format("Model %s cannot be stored under identifier %s in folder %s.", pnmlFile.getAbsolutePath(), identifier, target));
 	}
 
-	private static void store(File pnmlDir) throws SQLException {
+	private static void storeDirectory(File pnmlDir, String target) throws SQLException {
 		for (File file : pnmlDir.listFiles()) {
 			if (!file.isFile()) continue;
 			if (!file.getName().endsWith(".pnml")) continue;
 			
-			PQLToolCLI.store(file, file.getName());
+			PQLToolCLI.store(file, file.getName(), target);
 		}
 	}
 

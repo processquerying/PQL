@@ -55,8 +55,21 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	private CallableStatement PETRI_FLOW_CREATE_CS 		= null;
 	private String PETRI_MARKINGS_CREATE				= "{? = CALL jbpt_petri_markings_create(?,?)}";
 	private CallableStatement PETRI_MARKINGS_CREATE_CS 	= null;
+	
 	private String PETRI_NET_RESET						= "{CALL reset()}";
 	private CallableStatement PETRI_NET_RESET_CS 		= null;
+	
+	/* -----------------------
+	 * LOCATIONS CAPSTONE EDIT
+	 * -----------------------
+	*/
+	
+	private String PETRI_LOCATIONS_CREATE				= "{? = CALL fldr_id_create(?,?)}";
+	private CallableStatement PETRI_LOCATIONS_CREATE_CS 	= null;
+	private String PETRI_MODEL_MOVE						= "{? = CALL fldr_id_move(?,?)}";
+	private CallableStatement PETRI_MODEL_MOVE_CS 	= null;
+	private String PETRI_FOLDER_MOVE						= "{? = CALL fldr_struct_move(?,?)}";
+	private CallableStatement PETRI_FOLDER_MOVE_CS 	= null;
 	
 	public AbstractPetriNetPersistenceLayerMySQL(Connection con) throws ClassNotFoundException, SQLException {
 		this.connection = con;
@@ -64,7 +77,7 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public int storeNetSystem(String pnmlFilePath, String externalID) throws SQLException {
+	public int storeNetSystem(String pnmlFilePath, String externalID, String target) throws SQLException {
 		if (pnmlFilePath==null || externalID==null) return 0;
 		
 		File pnmlFile = new File(pnmlFilePath);
@@ -84,10 +97,48 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		}
 		else return 0;
 	}
+	
+	/* -----------------------
+	 * LOCATIONS CAPSTONE EDIT
+	 * -----------------------
+	*/
+	@Override
+	@SuppressWarnings("unchecked")
+	public int moveNetSystem(String id_name, String targetFolder) throws SQLException {
+		if (id_name==null || targetFolder==null) return 0;
+		
+		if(PETRI_MODEL_MOVE_CS == null)
+			PETRI_MODEL_MOVE_CS = connection.prepareCall(this.PETRI_MODEL_MOVE);
+			
+			PETRI_MODEL_MOVE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+			PETRI_MODEL_MOVE_CS.setString(2, id_name);
+			PETRI_MODEL_MOVE_CS.setString(3, targetFolder);
+				
+			PETRI_MODEL_MOVE_CS.execute();
+		
+		return 1;
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public int moveFolderNetSystem(String movingFolder, String targetFolder) throws SQLException {
+		if (movingFolder==null || targetFolder==null) return 0;
+		
+		if(PETRI_FOLDER_MOVE_CS == null)
+			PETRI_FOLDER_MOVE_CS = connection.prepareCall(this.PETRI_FOLDER_MOVE);
+			
+			PETRI_FOLDER_MOVE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+			PETRI_FOLDER_MOVE_CS.setString(2, movingFolder);
+			PETRI_FOLDER_MOVE_CS.setString(3, targetFolder);
+				
+			PETRI_FOLDER_MOVE_CS.execute();
+		
+		return 1;
+	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public int storeNetSystem(File pnmlFile, String externalID) throws SQLException {
+	public int storeNetSystem(File pnmlFile, String externalID, String target) throws SQLException {
 		if (pnmlFile==null || externalID==null) return 0;
 		
 		String pnmlFilePath = null;
@@ -115,7 +166,7 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public int storeNetSystem(byte[] pnmlByteContent, String externalID) throws SQLException {
+	public int storeNetSystem(byte[] pnmlByteContent, String externalID, String target) throws SQLException {
 		if (pnmlByteContent==null || externalID==null) return 0;
 
 		String pnmlContent =new String(pnmlByteContent, StandardCharsets.UTF_8); 
@@ -127,7 +178,7 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	}
 
 	@Override
-	public int storeNetSystem(INetSystem<F,N,P,T,M> sys, String externalID) throws SQLException {
+	public int storeNetSystem(INetSystem<F,N,P,T,M> sys, String externalID, String target) throws SQLException {
 		// TODO: check why PNMLSerializer.serializePetriNet throws SerializationException
 		// TODO: implement SerializationException for interfaces
 		try {
@@ -176,6 +227,20 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		
 		int result = PETRI_NET_CREATE_CS.getInt(1);
 		if (result==0) return result;
+		
+		/* -----------------------
+		 * LOCATIONS CAPSTONE EDIT
+		 * -----------------------
+		*/
+		
+		// create location records
+				if(PETRI_LOCATIONS_CREATE_CS == null)
+					PETRI_LOCATIONS_CREATE_CS = connection.prepareCall(this.PETRI_LOCATIONS_CREATE);
+				    PETRI_LOCATIONS_CREATE_CS.registerOutParameter(1, java.sql.Types.INTEGER);//must have a place for the return call in sql
+					PETRI_LOCATIONS_CREATE_CS.setString(2, externalID);
+					PETRI_LOCATIONS_CREATE_CS.setInt(3, 1);
+					
+					PETRI_LOCATIONS_CREATE_CS.execute();
 		
 		Map<N,Integer> n2id = new HashMap<N, Integer>(); 
 		

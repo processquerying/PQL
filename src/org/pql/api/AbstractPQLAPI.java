@@ -146,13 +146,28 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	}
 
 	@Override
-	public int storeModel(INetSystem<F,N,P,T,M> sys, String externalID) throws SQLException {
-		return this.netPersistenceLayer.storeNetSystem(sys,externalID);
+	public int storeModel(INetSystem<F,N,P,T,M> sys, String externalID, String target) throws SQLException {
+		return this.netPersistenceLayer.storeNetSystem(sys,externalID,target);
 	}
 
 	@Override
-	public int storeModel(File pnmlFile, String externalID) throws SQLException {
-		return this.netPersistenceLayer.storeNetSystem(pnmlFile, externalID);
+	public int storeModel(File pnmlFile, String externalID, String target) throws SQLException {
+		return this.netPersistenceLayer.storeNetSystem(pnmlFile, externalID, target);
+	}
+	
+	/* -----------------------
+	 * LOCATIONS CAPSTONE EDIT
+	 * -----------------------
+	*/
+	
+	@Override
+	public int moveModel(String id_name, String targetFolder) throws SQLException {
+		return this.netPersistenceLayer.moveNetSystem(id_name, targetFolder);
+	}
+	
+	@Override
+	public int moveFolder(String movingFolder, String targetFolder) throws SQLException {
+		return this.netPersistenceLayer.moveFolderNetSystem(movingFolder, targetFolder);
 	}
 	
 	@Override
@@ -197,8 +212,8 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	}
 
 	@Override
-	public int storeModel(byte[] pnmlByteContent, String externalID) throws SQLException {
-		return this.netPersistenceLayer.storeNetSystem(pnmlByteContent, externalID);
+	public int storeModel(byte[] pnmlByteContent, String externalID, String target) throws SQLException {
+		return this.netPersistenceLayer.storeNetSystem(pnmlByteContent, externalID, target);
 	}
 
 	@Override

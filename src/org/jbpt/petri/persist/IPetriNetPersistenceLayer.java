@@ -28,7 +28,7 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	 * @return Internal ID of the stored Petri net, or 0 if the Petri net was not stored.
 	 * @throws SQLException
 	 */
-	public int storeNetSystem(String pnmlFilePath, String externalID) throws SQLException;
+	public int storeNetSystem(String pnmlFilePath, String externalID, String target) throws SQLException;
 	
 	/**
 	 * Store a Petri net.
@@ -38,7 +38,7 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	 * @return Internal ID of the stored Petri net, or 0 if the Petri net was not stored.
 	 * @throws SQLException
 	 */
-	public int storeNetSystem(File pnmlFile, String externalID) throws SQLException;
+	public int storeNetSystem(File pnmlFile, String externalID, String target) throws SQLException;
 	
 	/**
 	 * Store a Petri net.
@@ -48,7 +48,7 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	 * @return Internal ID of the stored Petri net, or 0 if the Petri net was not stored.
 	 * @throws SQLException
 	 */
-	public int storeNetSystem(byte[] pnmlByteContent, String externalID) throws SQLException;
+	public int storeNetSystem(byte[] pnmlByteContent, String externalID, String target) throws SQLException;
 	
 	/**
 	 * Store a Petri net.
@@ -58,7 +58,7 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	 * @return Internal ID of the stored Petri net, or 0 if the Petri net was not stored.
 	 * @throws SQLException
 	 */
-	public int storeNetSystem(INetSystem<F,N,P,T,M> sys, String externalID) throws SQLException;
+	public int storeNetSystem(INetSystem<F,N,P,T,M> sys, String externalID, String target) throws SQLException;
 	
 	/**
 	 * Get internal ID of a Petri net.
@@ -129,5 +129,14 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	public void reset() throws SQLException;
 
 	public boolean netHasAllTraceLabels(PQLTrace trace, Set<String> netLabels); //A.P.
+
+	/* -----------------------
+	 * LOCATIONS CAPSTONE EDIT
+	 * -----------------------
+	*/
+	
+	public int moveNetSystem(String id_name, String targetFolder) throws SQLException;
+
+	public int moveFolderNetSystem(String movingFolder, String targetFolder) throws SQLException;
 	
 }
