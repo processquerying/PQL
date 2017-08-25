@@ -139,4 +139,8 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 
 	public int moveFolderNetSystem(String movingFolder, String targetFolder) throws SQLException;
 	
+	public int createFolderNetSystem(String folderName, String targetFolder) throws SQLException;
+	
+	public int deleteFolderNetSystem(String folderName) throws SQLException;
+	
 }

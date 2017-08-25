@@ -176,5 +176,11 @@ public interface IPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlace, 
 
 	public int moveFolder(String movingFolder, String targetFolder) throws SQLException;
 
+    public int createFolder(String folderName, String targetFolder) throws SQLException;
+    
+    public int deleteFolder(String folderName) throws SQLException;
+    
+    
+
 	
 }

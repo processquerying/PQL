@@ -171,6 +171,16 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	}
 	
 	@Override
+	public int createFolder(String folderName, String targetFolder) throws SQLException {
+		return this.netPersistenceLayer.createFolderNetSystem(folderName, targetFolder);
+	}
+	
+	@Override
+    public int deleteFolder(String folderName) throws SQLException {
+        return this.netPersistenceLayer.deleteFolderNetSystem(folderName);
+    }
+	
+	@Override
 	public void cleanupIndex() throws SQLException {
 		this.pqlIndex.cleanupIndex();
 	}	

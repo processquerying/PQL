@@ -70,6 +70,11 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	private CallableStatement PETRI_MODEL_MOVE_CS 	= null;
 	private String PETRI_FOLDER_MOVE						= "{? = CALL fldr_struct_move(?,?)}";
 	private CallableStatement PETRI_FOLDER_MOVE_CS 	= null;
+	//make sure im right
+	private String PETRI_FOLDER_CREATE						= "{? = CALL PETRI_FOLDER_CREATE(?,?)}";
+	private CallableStatement PETRI_FOLDER_CREATE_CS 	= null;
+	private String PETRI_FOLDER_DELETE                     = "{? = CALL PETRI_FOLDER_DELETE(?)}";
+    private CallableStatement PETRI_FOLDER_DELETE_CS    = null;
 	
 	public AbstractPetriNetPersistenceLayerMySQL(Connection con) throws ClassNotFoundException, SQLException {
 		this.connection = con;
@@ -135,6 +140,46 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		
 		return 1;
 	}
+	
+	//====================
+    //current todo for PQL
+    //====================
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public int createFolderNetSystem(String folderName, String targetFolder) throws SQLException {
+		if (folderName==null || targetFolder==null) return 0;
+		//what do
+		if(PETRI_FOLDER_CREATE_CS == null)
+			PETRI_FOLDER_CREATE_CS = connection.prepareCall(this.PETRI_FOLDER_CREATE);
+			//================
+			//fix dis shit
+			PETRI_FOLDER_CREATE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+			PETRI_FOLDER_CREATE_CS.setString(2, folderName);
+			PETRI_FOLDER_CREATE_CS.setString(3, targetFolder);
+			//=================	
+			PETRI_FOLDER_CREATE_CS.execute();
+		
+		return 1;
+	}
+	
+	@Override
+    @SuppressWarnings("unchecked")
+    public int deleteFolderNetSystem(String folderName) throws SQLException {
+        if (folderName==null) return 0;
+        //what do
+        if(PETRI_FOLDER_DELETE_CS == null)
+            PETRI_FOLDER_DELETE_CS = connection.prepareCall(this.PETRI_FOLDER_DELETE);
+            //================
+            //fix dis shit
+            PETRI_FOLDER_DELETE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+            PETRI_FOLDER_DELETE_CS.setString(2, folderName);
+            //================= 
+            PETRI_FOLDER_DELETE_CS.execute();
+        
+        return 1;
+    }
+	
 
 	@Override
 	@SuppressWarnings("unchecked")

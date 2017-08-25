@@ -69,6 +69,8 @@ public final class PQLToolCLI {
 	    	Option queryOption		= Option.builder("q").longOpt("query").numberOfArgs(0).required(false).desc("execute PQL query").hasArg(false).build();
 	    	Option deleteOption		= Option.builder("d").longOpt("delete").numberOfArgs(0).required(false).desc("delete model (and its index)").hasArg(false).build();
 	    	Option moveOption		= Option.builder("m").longOpt("move").numberOfArgs(0).required(false).desc("move model(s) to target").hasArg(false).build();
+	    	Option createFolderOption       = Option.builder("cr").longOpt("createFolder").numberOfArgs(0).required(false).desc("create folder for use within the database").hasArg(false).build();
+	    	Option deleteFolderOption       = Option.builder("df").longOpt("deleteFolder").numberOfArgs(0).required(false).desc("delete folder within the database").hasArg(false).build();
 	    	
 	    	// TODO: Option retrieveOption	= Option.builder("r").longOpt("retrieve").numberOfArgs(0).required(false).desc("retrieve model").hasArg(false).build();
 	    	
@@ -77,6 +79,11 @@ public final class PQLToolCLI {
 	    	Option idOption			= Option.builder("id").longOpt("identifier").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("model identifier").build();
 	    	Option folderOption			= Option.builder("folder").longOpt("folderID").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("folder identifier").build();
 	    	Option targetOption			= Option.builder("target").longOpt("targetFolder").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("target folder").build();
+	    	
+	    	
+	    	//I dont know what to put this as either name or fname	    	   	
+	    	Option folderNameOption			= Option.builder("folderName").longOpt("folderNames").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("folder name").build();
+	    	
 	    	
 	    	// add options
 	    	cmdGroup.addOption(helpOption);
@@ -89,6 +96,8 @@ public final class PQLToolCLI {
 	    	cmdGroup.addOption(checkOption);
 	    	cmdGroup.addOption(queryOption);
 	    	cmdGroup.addOption(moveOption);
+	    	cmdGroup.addOption(createFolderOption);
+	    	cmdGroup.addOption(deleteFolderOption);
 	    	
 	    	// cmdGroup.addOption(retrieveOption);
 	    	
@@ -99,6 +108,7 @@ public final class PQLToolCLI {
 	    	options.addOption(pnmlOption);
 	    	options.addOption(pqlOption);
 	    	options.addOption(idOption);
+	    	options.addOption(folderNameOption);
 	    	options.addOption(folderOption);
 	    	options.addOption(targetOption);
 	    	
@@ -193,6 +203,36 @@ public final class PQLToolCLI {
 	        	}
 	        	else throw new ParseException("-m option requires -id or -folder option");
 	        }
+	        
+	        //====================
+	        //current todo for PQL
+	        //====================
+	        
+	        //handle create folder
+	        
+	        if(cmd.hasOption("cr")){
+	            if(cmd.hasOption("folderName")){
+	                String folder_name = cmd.getOptionValue("folderName");
+	                if(cmd.hasOption("target")){
+	                	String targetFolder = cmd.getOptionValue("target");
+	                	PQLToolCLI.createFolder(folder_name, targetFolder);
+	                    //need an exception for if the target has the name in the target folder
+	                }
+	                //dont know if this is the right thing to write
+	                else throw new ParseException("-tagetFolder requires -target option");
+	            }
+	            else throw new ParseException("-cr requires -name and -target option");
+	        }
+	        
+	        //handle delete
+	        if(cmd.hasOption("df")){
+                if(cmd.hasOption("folderName")){
+                    String folder_name = cmd.getOptionValue("folderName");
+                    PQLToolCLI.deleteFolder(folder_name);
+                    //dont know if this is the right thing to write
+                }
+                else throw new ParseException("-df requires -name");
+            }
 	        
 	        // handle parse
 	        if (cmd.hasOption("p")) {
@@ -358,6 +398,38 @@ public final class PQLToolCLI {
 		else
 			System.out.println(String.format("Folder %s cannot be moved to %s.", movingFolder, targetFolder));
 	}
+	
+	//====================
+    //current todo for PQL
+    //====================
+	
+	private static void createFolder(String folderName, String targetFolder) throws SQLException {
+		if (folderName==null || targetFolder==null) {
+			System.out.println("Cannot create folder.");
+			return;
+		}
+		//todo
+		int result = PQLToolCLI.pqlAPI.createFolder(folderName, targetFolder);
+		
+		if (result>0) 
+			System.out.println(String.format("Folder %s created in %s.", folderName, targetFolder));
+		else
+			System.out.println(String.format("Folder %s cannot be created in %s.", folderName, targetFolder));
+	}
+	
+	private static void deleteFolder(String folderName) throws SQLException {
+        if (folderName==null) {
+            System.out.println("Cannot delete folder.");
+            return;
+        }
+        //todo
+        int result = PQLToolCLI.pqlAPI.deleteFolder(folderName);
+        
+        if (result>0) 
+            System.out.println(String.format("Folder %s deleted.", folderName));
+        else
+            System.out.println(String.format("Folder %s cannot be deleted.", folderName));
+    }
 
 	private static void moveModel(String id_name, String targetFolder) throws SQLException {
 		if (id_name==null || targetFolder==null) {
