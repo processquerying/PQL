@@ -25,6 +25,8 @@ import org.pql.util.ConcurrentHashSet;
 
 import java.sql.Connection;
 
+import java.util.StringTokenizer;
+
 public class PQLQueryResult extends MySQLConnection {
 	private Set<String>	queryResult = null;
 	private IPQLQuery	query = null;
@@ -147,11 +149,58 @@ public class PQLQueryResult extends MySQLConnection {
 			threads.add(newThread);
 		}
 		
-			CallableStatement cs = connection.prepareCall("{CALL pql_get_indexed_ids()}");
-			ResultSet res = cs.executeQuery();
+		/* -----------------------
+    	 * LOCATIONS CAPSTONE EDIT
+    	 * -----------------------
+    	*/
 		
+		char locationPos = this.pqlQuery.charAt(14);
+		CallableStatement cs = null;
+		String locationString1 = null;
+		String locationString2 = null;
+		StringTokenizer folders = null;
+		int counter = 0;
+		int folder_id = 1;
+		
+		if(locationPos == '*') {
+			cs = connection.prepareCall("{CALL pql_get_indexed_ids()}");
+		}
+		
+		else {
+			locationString1 = this.pqlQuery.replaceAll("(.*)/([^/]+)\"(.*)", "$1");
+			locationString2 = locationString1.replaceAll(".*//([^/]+)", "$1");
+			
+			System.out.println(locationString2);
+			
+			folders = new StringTokenizer(locationString2, "/");
+			
+			//count the number of folders there are in the path
+			while (folders.hasMoreElements()) {
+				cs = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + folders.nextElement().toString() + "\")}");
+				ResultSet res = cs.executeQuery();
+				res.next();
+				folder_id = res.getInt(1);
+				counter++;
+			}
+			
+			//reset the counter and folders for a new loop
+			folders = new StringTokenizer(locationString2, "/");
+			String[] folderList;
+			folderList = new String[counter];
+			counter = 0;
+			
+			while (folders.hasMoreElements()) {
+				folderList[counter] = folders.nextElement().toString();
+				counter++;
+			}
+			
+			cs = connection.prepareCall("{CALL locations_query(" + folder_id + ")}");
+		} 
+			
+			ResultSet res = cs.executeQuery();
+			
 			while (res.next()) {
-				queue.put(res.getString(2));
+				queue.put(res.getString(1));
 			}
 			
 			this.netIDsLoaded.set(true);

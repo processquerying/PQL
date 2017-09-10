@@ -1,1 +1,1 @@
-SELECT * FROM "//def", (SELECT * FROM (SELECT * FROM "//abc"; ) ;) WHERE CanCooccur("A","B") AND AlwaysOccurs("C");
+SELECT * FROM "//folder1/" WHERE CanCooccur("A","B") AND AlwaysOccurs("C");

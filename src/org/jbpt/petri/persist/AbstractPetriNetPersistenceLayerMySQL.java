@@ -71,9 +71,9 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	private String PETRI_FOLDER_MOVE						= "{? = CALL fldr_struct_move(?,?)}";
 	private CallableStatement PETRI_FOLDER_MOVE_CS 	= null;
 	//make sure im right
-	private String PETRI_FOLDER_CREATE						= "{? = CALL PETRI_FOLDER_CREATE(?,?)}";
+	private String PETRI_FOLDER_CREATE						= "{? = CALL pql_folder_create(?,?)}";
 	private CallableStatement PETRI_FOLDER_CREATE_CS 	= null;
-	private String PETRI_FOLDER_DELETE                     = "{? = CALL PETRI_FOLDER_DELETE(?)}";
+	private String PETRI_FOLDER_DELETE                     = "{? = CALL pql_folder_delete(?)}";
     private CallableStatement PETRI_FOLDER_DELETE_CS    = null;
 	
 	public AbstractPetriNetPersistenceLayerMySQL(Connection con) throws ClassNotFoundException, SQLException {
