@@ -82,7 +82,7 @@ public final class PQLToolCLI {
 	    	
 	    	
 	    	//I dont know what to put this as either name or fname	    	   	
-	    	Option folderNameOption			= Option.builder("folderName").longOpt("folderNames").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("folder name").build();
+	    	Option folderNameOption			= Option.builder("FolderName").longOpt("FolderNames").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("folder name").build();
 	    	
 	    	
 	    	// add options
@@ -394,7 +394,7 @@ public final class PQLToolCLI {
 		int result = PQLToolCLI.pqlAPI.moveFolder(movingFolder, targetFolder);
 		
 		if (result>0) 
-			System.out.println(String.format("Folder %s moved to %s.", movingFolder, targetFolder));
+			System.out.println(String.format("Folder %s moved to %s. result it %s", movingFolder, targetFolder, result));
 		else
 			System.out.println(String.format("Folder %s cannot be moved to %s.", movingFolder, targetFolder));
 	}
