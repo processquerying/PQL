@@ -142,5 +142,7 @@ public interface IPetriNetPersistenceLayer<F extends IFlow<N>, N extends INode, 
 	public int createFolderNetSystem(String folderName, String targetFolder) throws SQLException;
 	
 	public int deleteFolderNetSystem(String folderName) throws SQLException;
+
+	public int check_folder(String name) throws SQLException;;
 	
 }

@@ -390,14 +390,36 @@ public final class PQLToolCLI {
 			System.out.println("Cannot move folder.");
 			return;
 		}
+		/*try {
+		      CallableStatement cstmt = con.prepareCall("{? = call verify_existance(?)}");
+		      cstmt.registerOutParameter(1, java.sql.Types.INTEGER);
+		      cstmt.setString(2, movingFolder);
+		      cstmt.execute();
+		      System.out.println("RETURN STATUS: " + cstmt.getInt(1));
+		      cstmt.close();
+		   }
+		   catch (Exception e) {
+		      e.printStackTrace();
+		   }*/
 		
+		int verify = PQLToolCLI.pqlAPI.check_folder(movingFolder);
+		
+		if(verify>0){
 		int result = PQLToolCLI.pqlAPI.moveFolder(movingFolder, targetFolder);
+		
+		
 		
 		if (result>0) 
 			System.out.println(String.format("Folder %s moved to %s. result it %s", movingFolder, targetFolder, result));
 		else
 			System.out.println(String.format("Folder %s cannot be moved to %s.", movingFolder, targetFolder));
-	}
+	
+		}
+		else{
+			
+			System.out.println(String.format("No folder under name of %s", movingFolder));
+		}
+		}
 	
 	//====================
     //current todo for PQL
@@ -437,12 +459,14 @@ public final class PQLToolCLI {
 			return;
 		}
 		
-		int result = PQLToolCLI.pqlAPI.moveModel(id_name, targetFolder);
+			int result = PQLToolCLI.pqlAPI.moveModel(id_name, targetFolder);
+			
+			if (result>0) 
+				System.out.println(String.format("Model %s moved to %s.", id_name, targetFolder));
+			else
+				System.out.println(String.format("Model %s cannot be moved to %s.", id_name, targetFolder));
 		
-		if (result>0) 
-			System.out.println(String.format("Model %s moved to %s.", id_name, targetFolder));
-		else
-			System.out.println(String.format("Model %s cannot be moved to %s.", id_name, targetFolder));
+		
 	}
 
 	private static void store(File pnmlFile, String identifier, String target) throws SQLException {
