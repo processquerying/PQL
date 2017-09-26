@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,10 +19,13 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.jbpt.persist.MySQLConnection;
 import org.pql.api.PQLAPI;
 import org.pql.core.PQLTask;
 import org.pql.ini.PQLIniFile;
 import org.pql.query.PQLQueryResult;
+
+import com.mysql.jdbc.CallableStatement;
 
 /**
  * Implementation of the PQL Tool command line interface.
@@ -33,7 +37,6 @@ import org.pql.query.PQLQueryResult;
  */ 
 public final class PQLToolCLI {
 	final private static String	version	= "1.2";
-	
 	private static PQLAPI pqlAPI = null;
 		
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, InterruptedException {
@@ -390,14 +393,21 @@ public final class PQLToolCLI {
 			System.out.println("Cannot move folder.");
 			return;
 		}
+		//connection = (new MySQLConnection(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword())).getConnection();
 		
+		int verify = PQLToolCLI.pqlAPI.check_folder(movingFolder);
+		if(verify==0){
+			System.out.println(String.format("Folder %s cannot be moved to %s.", movingFolder, targetFolder));
+		}
+		else{
 		int result = PQLToolCLI.pqlAPI.moveFolder(movingFolder, targetFolder);
 		
+		
 		if (result>0) 
-			System.out.println(String.format("Folder %s moved to %s. result it %s", movingFolder, targetFolder, result));
+			System.out.println(String.format("Folder %s moved to %s.", movingFolder, targetFolder));
 		else
 			System.out.println(String.format("Folder %s cannot be moved to %s.", movingFolder, targetFolder));
-	}
+	}}
 	
 	//====================
     //current todo for PQL

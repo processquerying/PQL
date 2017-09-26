@@ -75,6 +75,10 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	private CallableStatement PETRI_FOLDER_CREATE_CS 	= null;
 	private String PETRI_FOLDER_DELETE                     = "{? = CALL PETRI_FOLDER_DELETE(?)}";
     private CallableStatement PETRI_FOLDER_DELETE_CS    = null;
+    private String PETRI_FOLDER_CHECK                    = "{? = CALL verify_existance(?)}";
+    
+    private CallableStatement PETRI_FOLDER_CHECK_CS    = null;
+ 
 	
 	public AbstractPetriNetPersistenceLayerMySQL(Connection con) throws ClassNotFoundException, SQLException {
 		this.connection = con;
@@ -123,6 +127,41 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		
 		return 1;
 	}
+	
+	 @Override
+	 
+	  @SuppressWarnings("unchecked")
+	 
+	  public int check_folder(String name) throws SQLException {
+	 
+	    if (name==null) return 0;
+	 
+	    
+	 
+	    if(PETRI_FOLDER_CHECK_CS == null)
+	 
+	      PETRI_FOLDER_CHECK_CS = connection.prepareCall(this.PETRI_FOLDER_CHECK);
+	 
+	      PETRI_FOLDER_CHECK_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+	 
+	      PETRI_FOLDER_CHECK_CS.setString(2, name);
+	 
+	      PETRI_FOLDER_CHECK_CS.execute();
+	      
+	      String count = PETRI_FOLDER_CHECK_CS.getString(1);
+	      
+	      //System.out.println(String.format("count %s", count));
+		
+	      int result = Integer.parseInt(count);
+	      
+	     // PETRI_FOLDER_CHECK_CS.getDataType(1);
+	 
+	    
+	 
+	    return result;
+	 
+	  }
+	 
 	
 	@Override
 	@SuppressWarnings("unchecked")

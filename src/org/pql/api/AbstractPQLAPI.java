@@ -122,6 +122,13 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		return this.pqlIndex.deleteIndex(internalID);
 	}
 
+	  @Override
+	  public int check_folder(String name) throws SQLException {
+	 
+	    return this.netPersistenceLayer.check_folder(name);
+	 
+	  }
+	 
 	@Override
 	public void parsePQLQuery(String pqlPath) throws Exception {
 		String[] input = new String[4];
