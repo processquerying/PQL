@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -26,7 +28,7 @@ import org.pql.ini.PQLIniFile;
 import org.pql.query.PQLQueryResult;
 
 import com.mysql.jdbc.CallableStatement;
-
+import java.util.StringTokenizer;
 /**
  * Implementation of the PQL Tool command line interface.
  * 
@@ -389,25 +391,59 @@ public final class PQLToolCLI {
 	*/
 	
 	private static void moveFolder(String movingFolder, String targetFolder) throws SQLException {
+		List list1 = new ArrayList();//lists to place all tokensied elements
+		List list2 = new ArrayList();
+		String MovingFolder;//placeholders for the location
+		String TargetFolder;
+		
 		if (movingFolder==null || targetFolder==null) {
 			System.out.println("Cannot move folder.");
 			return;
 		}
-		//connection = (new MySQLConnection(iniFile.getMySQLURL(),iniFile.getMySQLUser(),iniFile.getMySQLPassword())).getConnection();
+		//tokenising time
+		StringTokenizer f1 = new StringTokenizer(movingFolder, "/");
+		int r=0;
+		int x=0;
+		while (f1.hasMoreElements()) {
+			list1.add(f1.nextElement());
+			//C.I
+			r++;
+		}
+		MovingFolder = (String) list1.get(r-1);//last tokenised element
+		StringTokenizer f2 = new StringTokenizer(targetFolder, "/");
+
+		while (f2.hasMoreElements()) {
+			list2.add(f2.nextElement());
+			x++;
+			//C.I
+		}
 		
-		int verify = PQLToolCLI.pqlAPI.check_folder(movingFolder);
+		TargetFolder = (String)list2.get(x-1);
+		//end tokenising
+		
+		//tokenised runthrough
+		
+		
+		//
+		
+		int verify = PQLToolCLI.pqlAPI.check_folder(MovingFolder);//verifying if moving and target folder exist
 		if(verify==0){
-			System.out.println(String.format("Folder %s cannot be moved to %s.", movingFolder, targetFolder));
+			System.out.println(String.format("Folder %s cannot be moved to %s.", MovingFolder, TargetFolder));
 		}
 		else{
-		int result = PQLToolCLI.pqlAPI.moveFolder(movingFolder, targetFolder);
-		
-		
-		if (result>0) 
-			System.out.println(String.format("Folder %s moved to %s.", movingFolder, targetFolder));
-		else
-			System.out.println(String.format("Folder %s cannot be moved to %s.", movingFolder, targetFolder));
-	}}
+			verify = PQLToolCLI.pqlAPI.check_folder(TargetFolder);
+			if(verify==0){
+				System.out.println(String.format("Folder %s cannot be moved to %s.", MovingFolder, TargetFolder));
+			}
+			else{
+				int result = PQLToolCLI.pqlAPI.moveFolder(MovingFolder, TargetFolder);
+				
+				
+				if (result>0) 
+					System.out.println(String.format("Folder %s moved to %s.", MovingFolder, TargetFolder));
+				else
+					System.out.println(String.format("Folder %s cannot be moved to %s.", MovingFolder, TargetFolder));
+	}}}
 	
 	//====================
     //current todo for PQL
@@ -418,13 +454,32 @@ public final class PQLToolCLI {
 			System.out.println("Cannot create folder.");
 			return;
 		}
+		
+		//tokenise items
+		
+		List list1 = new ArrayList();//lists to place all tokensied elements
+		String TargetFolder;
+
+		//tokenising time
+				StringTokenizer f1 = new StringTokenizer(targetFolder, "/");
+				int r=0;
+				
+				while (f1.hasMoreElements()) {
+					list1.add(f1.nextElement());
+					//C.I
+					r++;
+				}
+				TargetFolder = (String) list1.get(r-1);//last tokenised element
+		
+		//end tokenise
+		
 		//todo
-		int result = PQLToolCLI.pqlAPI.createFolder(folderName, targetFolder);
+		int result = PQLToolCLI.pqlAPI.createFolder(folderName, TargetFolder);
 		
 		if (result>0) 
-			System.out.println(String.format("Folder %s created in %s.", folderName, targetFolder));
+			System.out.println(String.format("Folder %s created in %s.", folderName, TargetFolder));
 		else
-			System.out.println(String.format("Folder %s cannot be created in %s.", folderName, targetFolder));
+			System.out.println(String.format("Folder %s cannot be created in %s.", folderName, TargetFolder));
 	}
 	
 	private static void deleteFolder(String folderName) throws SQLException {
@@ -432,13 +487,34 @@ public final class PQLToolCLI {
             System.out.println("Cannot delete folder.");
             return;
         }
+        
+      //tokenise items
+		
+      		List list1 = new ArrayList();//lists to place all tokensied elements
+      		String TargetFolder;
+      	//its tokenising time - insert fantastic four reference
+      		
+      		StringTokenizer f1 = new StringTokenizer(folderName, "/");
+			int r=0;
+			
+			while (f1.hasMoreElements()) {
+				list1.add(f1.nextElement());
+				//C.I
+				r++;
+			}
+			TargetFolder = (String) list1.get(r-1);//last tokenised element
+        
+        
+        
+        //end tokenising
+        
         //todo
-        int result = PQLToolCLI.pqlAPI.deleteFolder(folderName);
+        int result = PQLToolCLI.pqlAPI.deleteFolder(TargetFolder);
         
         if (result>0) 
-            System.out.println(String.format("Folder %s deleted.", folderName));
+            System.out.println(String.format("Folder %s deleted.", TargetFolder));
         else
-            System.out.println(String.format("Folder %s cannot be deleted.", folderName));
+            System.out.println(String.format("Folder %s cannot be deleted.", TargetFolder));
     }
 
 	private static void moveModel(String id_name, String targetFolder) throws SQLException {
