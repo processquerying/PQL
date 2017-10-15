@@ -161,6 +161,11 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	*/
 	
 	@Override
+	public void listFolders() throws SQLException {
+		this.netPersistenceLayer.listNetSystem();
+	}
+	
+	@Override
 	public int moveModel(String id_name, String targetFolder) throws SQLException {
 		return this.netPersistenceLayer.moveNetSystem(id_name, targetFolder);
 	}

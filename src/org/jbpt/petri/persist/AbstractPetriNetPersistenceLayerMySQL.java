@@ -107,6 +107,38 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	 * LOCATIONS CAPSTONE EDIT
 	 * -----------------------
 	*/
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public void listNetSystem() throws SQLException {
+		
+		int folderID = 1;
+		String folderName = null;
+		int temp = 0;
+		
+		//procedure getting folderID 1 name
+		System.out.println(folderName);
+		
+		//procedure checking number of folders
+		while (temp > 0) {
+			
+			//checkChildren(); //returns 1 if children exist
+			//if (/*checkChildren returns 1*/) {
+				//childrenNames(); //returns the names of the children
+				
+			//}
+			
+			//else(){
+				//return to previous folderID stored in array
+			//}
+			//print first child name that has not already been printed else return to the most recent parent with surviving children
+			//update folderID to equal the first child
+			//use a hashtable to store each folder with the number of it's children
+			
+			//temp --;
+		}
+	}
+	
 	@Override
 	@SuppressWarnings("unchecked")
 	public int moveNetSystem(String id_name, String targetFolder) throws SQLException {

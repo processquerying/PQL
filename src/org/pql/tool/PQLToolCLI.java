@@ -270,6 +270,11 @@ public final class PQLToolCLI {
 	        	return;
 	        }
 	        
+	        //handle list
+	        if (cmd.hasOption("l")) {
+	        	pqlAPI.listFolders();
+	        }
+	        
 	        // handle delete
 	        if (cmd.hasOption("d")) {
 	        	if (cmd.hasOption("id")) {

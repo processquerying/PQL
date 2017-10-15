@@ -1,6 +1,8 @@
 package org.pql.query;
 
+import java.sql.SQLException;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.pql.core.PQLException;
@@ -24,7 +26,7 @@ public class PQLQueryThread extends Thread {
 		this.netIDsLoaded = netIDsLoaded;
 		}
 
-	public void checkQuery()
+	public void checkQuery() throws SQLException
 	{
 			while(!this.queue.isEmpty() || (!this.netIDsLoaded.get() && this.queue.isEmpty()))
 		{	
@@ -42,7 +44,7 @@ public class PQLQueryThread extends Thread {
 						{
 							if (this.query.getInsertTrace() == null) //SELECT query
 							{
-								this.queryResult.add(id);
+								this.queryResult.add(id);								
 							}
 							else //INSERT query 
 							{	
@@ -65,7 +67,12 @@ public class PQLQueryThread extends Thread {
 	@Override
 	public void run() {
 		
-			checkQuery();
+			try {
+				checkQuery();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		
 	}
 

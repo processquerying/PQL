@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jbpt.persist.MySQLConnection;
 import org.pql.core.PQLAttribute;
+import org.pql.core.PQLException;
 import org.pql.core.PQLLocation;
 import org.pql.core.PQLTask;
 import org.pql.label.ILabelManager;
@@ -148,61 +149,115 @@ public class PQLQueryResult extends MySQLConnection {
 			newThread.start();
 			threads.add(newThread);
 		}
-		
-		/* -----------------------
-    	 * LOCATIONS CAPSTONE EDIT
-    	 * -----------------------
-    	*/
-		
-		char locationPos = this.pqlQuery.charAt(14);
-		CallableStatement cs = null;
-		String locationString1 = null;
-		String locationString2 = null;
-		StringTokenizer folders = null;
-		int counter = 0;
-		int folder_id = 1;
-		
-		if(locationPos == '*') {
-			cs = connection.prepareCall("{CALL pql_get_indexed_ids()}");
-		}
-		
-		else {
-			locationString1 = this.pqlQuery.replaceAll("(.*)/([^/]+)\"(.*)", "$1");
-			locationString2 = locationString1.replaceAll(".*//([^/]+)", "$1");
 			
-			System.out.println(locationString2);
+			try {
+				this.query.configure(new Integer(0));
+				this.query.check();
+			} catch (PQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			
-			folders = new StringTokenizer(locationString2, "/");
+			//if (this.query.getLocations().size()==1 && this.query.getLocations().iterator().next().isUniverse()) {
+			if (this.query.getLocations().toString() != "[]") {
+					StringTokenizer folderPath = new StringTokenizer(this.query.getLocations().toString(), "[]");
+					String folderPathString = folderPath.nextElement().toString();
+					
+					StringTokenizer folderPaths = new StringTokenizer(folderPathString, ", ");
+					int folder_id = 1;
+					CallableStatement cs = null;
+					
+					while (folderPaths.hasMoreElements()) {
+						String temp = folderPaths.nextElement().toString();
+						if (temp.endsWith("/")) {
+							StringTokenizer folders = new StringTokenizer(temp, "/");
+							
+							while (folders.hasMoreElements()) {
+								cs = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + folders.nextElement().toString() + "\")}");
+								ResultSet res = cs.executeQuery();
+								res.next();
+								folder_id = res.getInt(1);
+							}
+							cs = connection.prepareCall("{CALL locations_query(" + folder_id + ")}");
+							ResultSet res = cs.executeQuery();
+							
+							while (res.next()) {
+								queue.put(res.getString(1));
+							}
+							folder_id = 1;
+						}
+						
+						else {
+							StringTokenizer folders = new StringTokenizer(temp, "/");
+							int counter =0;
+							
+							while (folders.hasMoreElements()) {
+								folders.nextElement();
+								counter++;
+							}
+							
+							//limits to the final element
+							counter = (counter - 1);
+							
+							//retokenises temp
+							StringTokenizer foldertofile = new StringTokenizer(temp, "/");
+							
+							while(counter > 0) {
+								cs = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + foldertofile.nextElement().toString() + "\")}");
+								ResultSet res = cs.executeQuery();
+								res.next();
+								folder_id = res.getInt(1);
+								counter--;
+							}
+							
+							String lastPos = foldertofile.nextElement().toString();
+							int folderCheck;
+							
+							cs = connection.prepareCall("{CALL double_up(\"" + lastPos + "\", " + folder_id + ")}");
+							ResultSet res = cs.executeQuery();
+							res.next();
+							folderCheck = res.getInt(1);
+							
+							if(folderCheck == 1) {
+								
+								cs = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + lastPos + "\")}");
+								ResultSet res2 = cs.executeQuery();
+								res2.next();
+								folder_id = res2.getInt(1);
+								
+								cs = connection.prepareCall("{CALL locations_query(" + folder_id + ")}");
+								res2 = cs.executeQuery();
+								
+								while (res2.next()) {
+									queue.put(res2.getString(1));
+								}
+							}
+							
+							else {
+								CallableStatement cs2 = connection.prepareCall("{CALL file_query(" + folder_id + ", \"" + lastPos + "\")}");
+								ResultSet res2 = cs2.executeQuery();
+								
+								while (res2.next()) {
+									queue.put(res2.getString(1));
+								}
+							}
+							folder_id = 1;
+						}
+						
+						
+					}
+			}
 			
-			//count the number of folders there are in the path
-			while (folders.hasMoreElements()) {
-				cs = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + folders.nextElement().toString() + "\")}");
+			else {
+				
+				CallableStatement cs = connection.prepareCall("{CALL pql_get_universe_ids()}");
 				ResultSet res = cs.executeQuery();
-				res.next();
-				folder_id = res.getInt(1);
-				counter++;
+				
+				while (res.next()) {
+					queue.put(res.getString(1));
+				}
 			}
-			
-			//reset the counter and folders for a new loop
-			folders = new StringTokenizer(locationString2, "/");
-			String[] folderList;
-			folderList = new String[counter];
-			counter = 0;
-			
-			while (folders.hasMoreElements()) {
-				folderList[counter] = folders.nextElement().toString();
-				counter++;
-			}
-			
-			cs = connection.prepareCall("{CALL locations_query(" + folder_id + ")}");
-		} 
-			
-			ResultSet res = cs.executeQuery();
-			
-			while (res.next()) {
-				queue.put(res.getString(1));
-			}
-			
+		
 			this.netIDsLoaded.set(true);
 			
 		queries.add((PQLQueryMySQL) this.query);

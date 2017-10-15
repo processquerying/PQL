@@ -244,6 +244,7 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		
 		if (child instanceof RuleNode) {
             int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
+            System.out.println("Location is interpreted");
             
             switch (ruleIndex) {
 	            case PQLParser.RULE_universe :
