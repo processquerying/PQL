@@ -1,1 +1,1 @@
-SELECT * FROM "/folder1/6.pnml", "/folder1/folder2";
+SELECT * FROM "/folder1/6.pnml";

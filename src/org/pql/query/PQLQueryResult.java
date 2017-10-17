@@ -234,11 +234,13 @@ public class PQLQueryResult extends MySQLConnection {
 							}
 							
 							else {
-								CallableStatement cs2 = connection.prepareCall("{CALL file_query(" + folder_id + ", \"" + lastPos + "\")}");
+								CallableStatement cs2 = connection.prepareCall("{CALL double_up_file(\"" + lastPos + "\", " + folder_id + ")}");
 								ResultSet res2 = cs2.executeQuery();
+								res2.next();
+                                int fileCheck = res2.getInt(1);
 								
-								while (res2.next()) {
-									queue.put(res2.getString(1));
+								if(fileCheck == 1) {
+								    queue.put(lastPos);
 								}
 							}
 							folder_id = 1;

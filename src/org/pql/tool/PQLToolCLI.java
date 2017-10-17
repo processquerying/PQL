@@ -4,11 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.CallableStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -69,7 +74,7 @@ public final class PQLToolCLI {
 	    	Option queryOption		= Option.builder("q").longOpt("query").numberOfArgs(0).required(false).desc("execute PQL query").hasArg(false).build();
 	    	Option deleteOption		= Option.builder("d").longOpt("delete").numberOfArgs(0).required(false).desc("delete model (and its index)").hasArg(false).build();
 	    	Option moveOption		= Option.builder("m").longOpt("move").numberOfArgs(0).required(false).desc("move model(s) to target").hasArg(false).build();
-	    	Option createFolderOption       = Option.builder("cr").longOpt("createFolder").numberOfArgs(0).required(false).desc("create folder for use within the database").hasArg(false).build();
+	    	Option createFolderOption       = Option.builder("Mkdir").longOpt("createFolder").numberOfArgs(0).required(false).desc("create folder for use within the database").hasArg(false).build();
 	    	Option deleteFolderOption       = Option.builder("df").longOpt("deleteFolder").numberOfArgs(0).required(false).desc("delete folder within the database").hasArg(false).build();
 	    	
 	    	// TODO: Option retrieveOption	= Option.builder("r").longOpt("retrieve").numberOfArgs(0).required(false).desc("retrieve model").hasArg(false).build();
@@ -79,11 +84,6 @@ public final class PQLToolCLI {
 	    	Option idOption			= Option.builder("id").longOpt("identifier").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("model identifier").build();
 	    	Option folderOption			= Option.builder("folder").longOpt("folderID").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("folder identifier").build();
 	    	Option targetOption			= Option.builder("target").longOpt("targetFolder").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("target folder").build();
-	    	
-	    	
-	    	//I dont know what to put this as either name or fname	    	   	
-	    	Option folderNameOption			= Option.builder("folderName").longOpt("folderNames").hasArg(true).optionalArg(false).valueSeparator('=').argName("string").required(false).desc("folder name").build();
-	    	
 	    	
 	    	// add options
 	    	cmdGroup.addOption(helpOption);
@@ -108,7 +108,6 @@ public final class PQLToolCLI {
 	    	options.addOption(pnmlOption);
 	    	options.addOption(pqlOption);
 	    	options.addOption(idOption);
-	    	options.addOption(folderNameOption);
 	    	options.addOption(folderOption);
 	    	options.addOption(targetOption);
 	    	
@@ -210,7 +209,7 @@ public final class PQLToolCLI {
 	        
 	        //handle create folder
 	        
-	        if(cmd.hasOption("cr")){
+	        if(cmd.hasOption("Mkdir")){
 	            if(cmd.hasOption("folderName")){
 	                String folder_name = cmd.getOptionValue("folderName");
 	                if(cmd.hasOption("target")){
@@ -226,10 +225,9 @@ public final class PQLToolCLI {
 	        
 	        //handle delete
 	        if(cmd.hasOption("df")){
-                if(cmd.hasOption("folderName")){
-                    String folder_name = cmd.getOptionValue("folderName");
+                if(cmd.hasOption("target")){
+                    String folder_name = cmd.getOptionValue("target");
                     PQLToolCLI.deleteFolder(folder_name);
-                    //dont know if this is the right thing to write
                 }
                 else throw new ParseException("-df requires -name");
             }
@@ -413,6 +411,8 @@ public final class PQLToolCLI {
 			System.out.println("Cannot create folder.");
 			return;
 		}
+        //todo
+        //int existance = veriy_check(folderName);
 		//todo
 		int result = PQLToolCLI.pqlAPI.createFolder(folderName, targetFolder);
 		
