@@ -158,7 +158,7 @@ public class PQLQueryResult extends MySQLConnection {
 				e1.printStackTrace();
 			}
 			
-			//if (this.query.getLocations().size()==1 && this.query.getLocations().iterator().next().isUniverse()) {
+			//if (!(this.query.getLocations().size()==1 && this.query.getLocations().iterator().next().isUniverse())) {
 			if (this.query.getLocations().toString() != "[]") {
 					StringTokenizer folderPath = new StringTokenizer(this.query.getLocations().toString(), "[]");
 					String folderPathString = folderPath.nextElement().toString();
@@ -245,8 +245,7 @@ public class PQLQueryResult extends MySQLConnection {
 							}
 							folder_id = 1;
 						}
-						
-						
+							
 					}
 			}
 			

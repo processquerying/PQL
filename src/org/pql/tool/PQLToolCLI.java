@@ -73,10 +73,10 @@ public final class PQLToolCLI {
 	    	Option checkOption		= Option.builder("c").longOpt("check").numberOfArgs(0).required(false).desc("check if model can be indexed").hasArg(false).build();
 	    	Option queryOption		= Option.builder("q").longOpt("query").numberOfArgs(0).required(false).desc("execute PQL query").hasArg(false).build();
 	    	Option deleteOption		= Option.builder("d").longOpt("delete").numberOfArgs(0).required(false).desc("delete model (and its index)").hasArg(false).build();
-	    	Option moveOption		= Option.builder("m").longOpt("move").numberOfArgs(0).required(false).desc("move model(s) to target").hasArg(false).build();
+	    	Option moveOption		= Option.builder("Mv").longOpt("move").numberOfArgs(0).required(false).desc("move model(s) to target").hasArg(false).build();
 	    	Option createFolderOption       = Option.builder("Mkdir").longOpt("createFolder").numberOfArgs(0).required(false).desc("create folder for use within the database").hasArg(false).build();
-	    	Option deleteFolderOption       = Option.builder("df").longOpt("deleteFolder").numberOfArgs(0).required(false).desc("delete folder within the database").hasArg(false).build();
-	    	
+	    	Option deleteFolderOption       = Option.builder("Rmdir").longOpt("deleteFolder").numberOfArgs(0).required(false).desc("delete folder within the database").hasArg(false).build();
+	    	Option listOption     = Option.builder("ls").longOpt("list").numberOfArgs(0).required(false).desc("list folder structure").hasArg(false).build();
 	    	// TODO: Option retrieveOption	= Option.builder("r").longOpt("retrieve").numberOfArgs(0).required(false).desc("retrieve model").hasArg(false).build();
 	    	
 	    	Option pnmlOption		= Option.builder("pnml").longOpt("pnmlPath").hasArg(true).optionalArg(false).valueSeparator('=').argName("path").required(false).desc("PNML path").build();
@@ -98,6 +98,7 @@ public final class PQLToolCLI {
 	    	cmdGroup.addOption(moveOption);
 	    	cmdGroup.addOption(createFolderOption);
 	    	cmdGroup.addOption(deleteFolderOption);
+	    	cmdGroup.addOption(listOption);
 	    	
 	    	// cmdGroup.addOption(retrieveOption);
 	    	
@@ -183,7 +184,7 @@ public final class PQLToolCLI {
 	    	*/
 	        
 	        // handle move
-	        if (cmd.hasOption("m")) {
+	        if (cmd.hasOption("Mv")) {
 	        	if (cmd.hasOption("id")) {
 	        		String id_name = cmd.getOptionValue("id");
 	        		if (cmd.hasOption("target")) {
@@ -200,7 +201,7 @@ public final class PQLToolCLI {
 	        		}
 	        		else throw new ParseException("-folder option requires -target option");
 	        	}
-	        	else throw new ParseException("-m option requires -id or -folder option");
+	        	else throw new ParseException("-Mv option requires -id or -folder option");
 	        }
 	        
 	        //====================
@@ -210,8 +211,8 @@ public final class PQLToolCLI {
 	        //handle create folder
 	        
 	        if(cmd.hasOption("Mkdir")){
-	            if(cmd.hasOption("folderName")){
-	                String folder_name = cmd.getOptionValue("folderName");
+	            if(cmd.hasOption("folder")){
+	                String folder_name = cmd.getOptionValue("folder");
 	                if(cmd.hasOption("target")){
 	                	String targetFolder = cmd.getOptionValue("target");
 	                	PQLToolCLI.createFolder(folder_name, targetFolder);
@@ -224,12 +225,18 @@ public final class PQLToolCLI {
 	        }
 	        
 	        //handle delete
-	        if(cmd.hasOption("df")){
+	        if(cmd.hasOption("Rmdir")){
                 if(cmd.hasOption("target")){
                     String folder_name = cmd.getOptionValue("target");
+                    if(folder_name.equals("/")) {
+                        PQLToolCLI.pqlAPI.reset();
+                        System.out.println("The database was reset as you deleted root!");
+                    } else {
                     PQLToolCLI.deleteFolder(folder_name);
-                }
-                else throw new ParseException("-df requires -name");
+                    }
+                } 
+                
+                else throw new ParseException("-Rmdir requires -name");
             }
 	        
 	        // handle parse
@@ -269,7 +276,8 @@ public final class PQLToolCLI {
 	        }
 	        
 	        //handle list
-	        if (cmd.hasOption("l")) {
+	        if (cmd.hasOption("ls")) {
+	            
 	        	pqlAPI.listFolders();
 	        }
 	        
@@ -401,10 +409,6 @@ public final class PQLToolCLI {
 		else
 			System.out.println(String.format("Folder %s cannot be moved to %s.", movingFolder, targetFolder));
 	}
-	
-	//====================
-    //current todo for PQL
-    //====================
 	
 	private static void createFolder(String folderName, String targetFolder) throws SQLException {
 		if (folderName==null || targetFolder==null) {

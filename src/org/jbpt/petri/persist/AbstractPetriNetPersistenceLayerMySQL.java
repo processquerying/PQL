@@ -108,62 +108,95 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	 * -----------------------
 	*/
 	
+	@SuppressWarnings("javadoc")
+    public static int tabCounter = 0;
+	
 	@Override
 	@SuppressWarnings("unchecked")
 	public void listNetSystem() throws SQLException {
 		
-		int folderID = 1;
-		String folderName = null;
-		int temp = 0;
-		
-		//procedure getting folderID 1 name
-		System.out.println(folderName);
-		
-		//procedure checking number of folders
-		while (temp > 0) {
-			
-			//checkChildren(); //returns 1 if children exist
-			//if (/*checkChildren returns 1*/) {
-				//childrenNames(); //returns the names of the children
-				
-			//}
-			
-			//else(){
-				//return to previous folderID stored in array
-			//}
-			//print first child name that has not already been printed else return to the most recent parent with surviving children
-			//update folderID to equal the first child
-			//use a hashtable to store each folder with the number of it's children
-			
-			//temp --;
-		}
+		int folder_id = 1;
+		ChildPrinter(folder_id);
+	    
 	}
 	
-	@Override
+	private void ChildPrinter(int folder_id) throws SQLException {
+        CallableStatement cs = connection.prepareCall("{CALL id_to_foldername(" + folder_id + ")}");
+        ResultSet res = cs.executeQuery();
+        res.next();
+        
+        for(int i = 0; i < AbstractPetriNetPersistenceLayerMySQL.tabCounter; i++){
+            System.out.print("====<>");
+        }
+        
+        System.out.println(res.getString(1));
+        
+        CallableStatement cs2 = connection.prepareCall("{CALL id_to_children(" + folder_id + ")}");
+        ResultSet res2 = cs2.executeQuery();
+        
+        while(res2.next()){
+            AbstractPetriNetPersistenceLayerMySQL.tabCounter++;
+            ChildPrinter(res2.getInt(1));
+        }
+        AbstractPetriNetPersistenceLayerMySQL.tabCounter--;
+	}
+
+    @Override
 	@SuppressWarnings("unchecked")
 	public int moveNetSystem(String id_name, String targetFolder) throws SQLException {
 		if (id_name==null || targetFolder==null) return 0;
 		
 		StringTokenizer folders = new StringTokenizer(targetFolder, "/");
-        int folder_id = 1;
+		int targetId = 1;
         CallableStatement cs = null;
         
         while (folders.hasMoreElements()) {
-            cs = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + folders.nextElement().toString() + "\")}");
+            cs = connection.prepareCall("{CALL return_id(" + targetId + ", \"" + folders.nextElement().toString() + "\")}");
             ResultSet res = cs.executeQuery();
             res.next();
-            folder_id = res.getInt(1);
+            targetId = res.getInt(1);
+        }
+		
+		
+		int folder_id = 1;
+		StringTokenizer folders2 = new StringTokenizer(id_name, "/");
+        int counter =0;
+        
+        while (folders2.hasMoreElements()) {
+            folders2.nextElement();
+            counter++;
         }
         
-       
-		if(PETRI_MODEL_MOVE_CS == null)
-			PETRI_MODEL_MOVE_CS = connection.prepareCall(this.PETRI_MODEL_MOVE);
-			
-			PETRI_MODEL_MOVE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
-			PETRI_MODEL_MOVE_CS.setString(2, id_name);
-			PETRI_MODEL_MOVE_CS.setInt(3, folder_id);
-				
-			PETRI_MODEL_MOVE_CS.execute();
+        //limits to the final element
+        counter = (counter - 1);
+        
+        //retokenises temp
+        StringTokenizer foldertofile = new StringTokenizer(id_name, "/");
+        
+        while(counter > 0) {
+            CallableStatement cs2 = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + foldertofile.nextElement().toString() + "\")}");
+            ResultSet res2 = cs2.executeQuery();
+            res2.next();
+            folder_id = res2.getInt(1);
+            counter--;
+        }
+        
+        String lastPos = foldertofile.nextElement().toString();
+        CallableStatement cs2 = connection.prepareCall("{CALL double_up_file(\"" + lastPos + "\", " + folder_id + ")}");
+        ResultSet res2 = cs2.executeQuery();
+        res2.next();
+        int fileCheck = res2.getInt(1);
+            
+        if(fileCheck == 1) {
+            if(PETRI_MODEL_MOVE_CS == null)
+                PETRI_MODEL_MOVE_CS = connection.prepareCall(this.PETRI_MODEL_MOVE);
+                
+                PETRI_MODEL_MOVE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
+                PETRI_MODEL_MOVE_CS.setString(2, lastPos);
+                PETRI_MODEL_MOVE_CS.setInt(3, targetId);
+                    
+                PETRI_MODEL_MOVE_CS.execute();
+        }
 		
 		return 1;
 	}
@@ -172,18 +205,8 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	@SuppressWarnings("unchecked")
 	public int moveFolderNetSystem(String movingFolder, String targetFolder) throws SQLException {
 		if (movingFolder==null || targetFolder==null) return 0;
-		StringTokenizer folders = new StringTokenizer(targetFolder, "/");
-        int folder_id = 1;
-        CallableStatement cs = null;
-        
-        while (folders.hasMoreElements()) {
-            cs = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + folders.nextElement().toString() + "\")}");
-            ResultSet res = cs.executeQuery();
-            res.next();
-            folder_id = res.getInt(1);
-        }
-        
-        StringTokenizer folders2 = new StringTokenizer(movingFolder, "/");
+		
+		StringTokenizer folders2 = new StringTokenizer(movingFolder, "/");
         int folder_id2 = 1;
         CallableStatement cs2 = null;
         
@@ -193,9 +216,65 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
             res2.next();
             folder_id2 = res2.getInt(1);
         }
-        System.out.println("ouch");
-        System.out.println(folder_id);
-        System.out.println(folder_id2);
+		
+		StringTokenizer folders = new StringTokenizer(targetFolder, "/");
+        int folder_id = 1;
+        CallableStatement cs = null;
+        
+        while (folders.hasMoreElements()) {
+            cs = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + folders.nextElement().toString() + "\")}");
+            ResultSet res = cs.executeQuery();
+            res.next();
+            folder_id = res.getInt(1);
+            if(folder_id == folder_id2){
+                return 0;
+            }
+        }
+        
+        StringTokenizer folders3 = new StringTokenizer(movingFolder, "/");
+        int counter =0;
+        int folder_id3 = 1;
+        
+        while (folders3.hasMoreElements()) {
+            folders3.nextElement();
+            counter++;
+        }
+        
+        //limits to the final element
+        counter = (counter - 1);
+        
+        //retokenises temp
+        StringTokenizer foldertofile = new StringTokenizer(movingFolder, "/");
+        
+        while(counter > 0) {
+            CallableStatement cs3 = connection.prepareCall("{CALL return_id(" + folder_id3 + ", \"" + foldertofile.nextElement().toString() + "\")}");
+            ResultSet res3 = cs3.executeQuery();
+            res3.next();
+            folder_id3 = res3.getInt(1);
+            counter--;
+        }
+        
+        String lastPos = foldertofile.nextElement().toString();
+        int folderCheck;
+        
+        cs = connection.prepareCall("{CALL double_up(\"" + lastPos + "\", " + folder_id + ")}");
+        ResultSet res = cs.executeQuery();
+        res.next();
+        folderCheck = res.getInt(1);
+        
+        if(folderCheck == 1) {
+            return 0;
+        }
+        
+        cs2 = connection.prepareCall("{CALL double_up_file(\"" + lastPos + "\", " + folder_id + ")}");
+        ResultSet res2 = cs2.executeQuery();
+        res2.next();
+        int fileCheck = res2.getInt(1);
+        
+        if(fileCheck == 1) {
+            return 0;
+        }
+        
 		if(PETRI_FOLDER_MOVE_CS == null)
 			PETRI_FOLDER_MOVE_CS = connection.prepareCall(this.PETRI_FOLDER_MOVE);
 			
@@ -227,6 +306,26 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
             ResultSet res = cs.executeQuery();
             res.next();
             folder_id = res.getInt(1);
+        }
+        
+        int folderCheck;
+        
+        cs = connection.prepareCall("{CALL double_up(\"" + folderName + "\", " + folder_id + ")}");
+        ResultSet res = cs.executeQuery();
+        res.next();
+        folderCheck = res.getInt(1);
+        
+        if(folderCheck == 1) {
+            return 0;
+        }
+        
+        CallableStatement cs2 = connection.prepareCall("{CALL double_up_file(\"" + folderName + "\", " + folder_id + ")}");
+        ResultSet res2 = cs2.executeQuery();
+        res2.next();
+        int fileCheck = res2.getInt(1);
+        
+        if(fileCheck == 1) {
+            return 0;
         }
 		
 		if(PETRI_FOLDER_CREATE_CS == null)

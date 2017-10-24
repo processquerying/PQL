@@ -1,2 +1,3 @@
-java -jar PQL.TOOL-latest.jar --store -pnml="./pnml/apql"
+java -jar locations.jar -store -pnml="./pnml/apql" -target="/"
+
 pause

@@ -1,2 +1,2 @@
-java -jar PQL.TOOL-latest.jar --reset
+java -jar locations.jar -reset
 pause
