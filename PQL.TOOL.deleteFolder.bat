@@ -1,2 +1,2 @@
-java -jar locations.jar -Rmdir -target="/A/"
+java -jar locations.jar -rmdir -target="/A/"
 pause

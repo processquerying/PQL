@@ -73,9 +73,9 @@ public final class PQLToolCLI {
 	    	Option checkOption		= Option.builder("c").longOpt("check").numberOfArgs(0).required(false).desc("check if model can be indexed").hasArg(false).build();
 	    	Option queryOption		= Option.builder("q").longOpt("query").numberOfArgs(0).required(false).desc("execute PQL query").hasArg(false).build();
 	    	Option deleteOption		= Option.builder("d").longOpt("delete").numberOfArgs(0).required(false).desc("delete model (and its index)").hasArg(false).build();
-	    	Option moveOption		= Option.builder("Mv").longOpt("move").numberOfArgs(0).required(false).desc("move model(s) to target").hasArg(false).build();
-	    	Option createFolderOption       = Option.builder("Mkdir").longOpt("createFolder").numberOfArgs(0).required(false).desc("create folder for use within the database").hasArg(false).build();
-	    	Option deleteFolderOption       = Option.builder("Rmdir").longOpt("deleteFolder").numberOfArgs(0).required(false).desc("delete folder within the database").hasArg(false).build();
+	    	Option moveOption		= Option.builder("mv").longOpt("move").numberOfArgs(0).required(false).desc("move model(s) to target").hasArg(false).build();
+	    	Option createFolderOption       = Option.builder("mkdir").longOpt("createFolder").numberOfArgs(0).required(false).desc("create folder for use within the database").hasArg(false).build();
+	    	Option deleteFolderOption       = Option.builder("rmdir").longOpt("deleteFolder").numberOfArgs(0).required(false).desc("delete folder within the database").hasArg(false).build();
 	    	Option listOption     = Option.builder("ls").longOpt("list").numberOfArgs(0).required(false).desc("list folder structure").hasArg(false).build();
 	    	// TODO: Option retrieveOption	= Option.builder("r").longOpt("retrieve").numberOfArgs(0).required(false).desc("retrieve model").hasArg(false).build();
 	    	
@@ -184,7 +184,7 @@ public final class PQLToolCLI {
 	    	*/
 	        
 	        // handle move
-	        if (cmd.hasOption("Mv")) {
+	        if (cmd.hasOption("mv")) {
 	        	if (cmd.hasOption("id")) {
 	        		String id_name = cmd.getOptionValue("id");
 	        		if (cmd.hasOption("target")) {
@@ -210,22 +210,20 @@ public final class PQLToolCLI {
 	        
 	        //handle create folder
 	        
-	        if(cmd.hasOption("Mkdir")){
+	        if(cmd.hasOption("mkdir")){
 	            if(cmd.hasOption("folder")){
 	                String folder_name = cmd.getOptionValue("folder");
 	                if(cmd.hasOption("target")){
 	                	String targetFolder = cmd.getOptionValue("target");
 	                	PQLToolCLI.createFolder(folder_name, targetFolder);
-	                    //need an exception for if the target has the name in the target folder
 	                }
-	                //dont know if this is the right thing to write
 	                else throw new ParseException("-tagetFolder requires -target option");
 	            }
 	            else throw new ParseException("-cr requires -name and -target option");
 	        }
 	        
 	        //handle delete
-	        if(cmd.hasOption("Rmdir")){
+	        if(cmd.hasOption("rmdir")){
                 if(cmd.hasOption("target")){
                     String folder_name = cmd.getOptionValue("target");
                     if(folder_name.equals("/")) {
@@ -279,6 +277,8 @@ public final class PQLToolCLI {
 	        if (cmd.hasOption("ls")) {
 	            
 	        	pqlAPI.listFolders();
+	        	
+	        	return;
 	        }
 	        
 	        // handle delete
@@ -415,9 +415,7 @@ public final class PQLToolCLI {
 			System.out.println("Cannot create folder.");
 			return;
 		}
-        //todo
-        //int existance = veriy_check(folderName);
-		//todo
+
 		int result = PQLToolCLI.pqlAPI.createFolder(folderName, targetFolder);
 		
 		if (result>0) 
@@ -439,6 +437,7 @@ public final class PQLToolCLI {
         else
             System.out.println(String.format("Folder %s cannot be deleted.", folderName));
     }
+	
 
 	private static void moveModel(String id_name, String targetFolder) throws SQLException {
 		if (id_name==null || targetFolder==null) {

@@ -1,2 +1,2 @@
-java -jar locations.jar -Mv -folder="/A/C/" -target="/A/B/"
+java -jar locations.jar -mv -folder="/A/C/" -target="/A/B/"
 pause

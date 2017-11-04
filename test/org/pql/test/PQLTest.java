@@ -12,6 +12,8 @@ import org.junit.Test;
 import org.pql.api.PQLAPI;
 import org.pql.ini.PQLIniFile;
 import org.pql.query.PQLQueryResult;
+import org.junit.Test
+import org.pql.tool.PQLToolCLI;
 
 /**
  * This test is part of the core test package.
@@ -227,7 +229,67 @@ public class PQLTest {
 		assertEquals(true, res.contains("6.pnml"));
 		
 	}
-
 	
+	
+	@Test
+	public void test011() throws ClassNotFoundException, SQLException {
+	    PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM \"/\";");
+        assertEquals(0,queryResult.getNumberOfParseErrors());
+        assertEquals(10,queryResult.getSearchResults().size());
+        Set<String> res = queryResult.getSearchResults();
+        assertEquals(true, res.contains("1.pnml"));
+        assertEquals(true, res.contains("2.pnml"));
+        assertEquals(true, res.contains("3.pnml"));
+        assertEquals(true, res.contains("4.pnml"));
+        assertEquals(true, res.contains("5.pnml"));
+        assertEquals(true, res.contains("6.pnml"));
+        assertEquals(true, res.contains("7.pnml"));
+        assertEquals(true, res.contains("8.pnml"));
+        assertEquals(true, res.contains("9.pnml"));
+        assertEquals(true, res.contains("10.pnml"));
+	}
+
+	@Test
+    public void test012() throws ClassNotFoundException, SQLException {
+	    PQLTest.pqlAPI.createFolder("A", "/");
+	    PQLTest.pqlAPI.moveModel("/1.pnml", "/A/");
+        PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM \"/A/\";");
+        assertEquals(0,queryResult.getNumberOfParseErrors());
+        assertEquals(10,queryResult.getSearchResults().size());
+        Set<String> res = queryResult.getSearchResults();
+        assertEquals(true, res.contains("1.pnml"));
+        
+    }
+	
+	@Test
+    public void test013() throws ClassNotFoundException, SQLException {
+        PQLTest.pqlAPI.createFolder("B", "/");
+        PQLTest.pqlAPI.moveFolder("B", "/A/");
+        PQLTest.pqlAPI.moveModel("/2.pnml", "/A/B/");
+        PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM \"/A/B/\";");
+        assertEquals(0,queryResult.getNumberOfParseErrors());
+        assertEquals(10,queryResult.getSearchResults().size());
+        Set<String> res = queryResult.getSearchResults();
+        assertEquals(true, res.contains("2.pnml"));
+        
+    }
+	
+	@Test
+    public void test014() throws ClassNotFoundException, SQLException {
+        PQLTest.pqlAPI.deleteFolder("/A/");
+        PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM *;");
+        assertEquals(0,queryResult.getNumberOfParseErrors());
+        assertEquals(10,queryResult.getSearchResults().size());
+        Set<String> res = queryResult.getSearchResults();
+        assertEquals(true, res.contains("3.pnml"));
+        assertEquals(true, res.contains("4.pnml"));
+        assertEquals(true, res.contains("5.pnml"));
+        assertEquals(true, res.contains("6.pnml"));
+        assertEquals(true, res.contains("7.pnml"));
+        assertEquals(true, res.contains("8.pnml"));
+        assertEquals(true, res.contains("9.pnml"));
+        assertEquals(true, res.contains("10.pnml"));
+        
+    }
 	
 }

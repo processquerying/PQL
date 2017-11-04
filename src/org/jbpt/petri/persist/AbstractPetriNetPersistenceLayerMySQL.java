@@ -70,7 +70,6 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	private CallableStatement PETRI_MODEL_MOVE_CS 	= null;
 	private String PETRI_FOLDER_MOVE						= "{? = CALL pql_folder_move(?,?)}";
 	private CallableStatement PETRI_FOLDER_MOVE_CS 	= null;
-	//make sure im right
 	private String PETRI_FOLDER_CREATE						= "{? = CALL pql_folder_create(?,?)}";
 	private CallableStatement PETRI_FOLDER_CREATE_CS 	= null;
 	private String PETRI_FOLDER_DELETE                     = "{? = CALL pql_folder_delete(?)}";
@@ -120,6 +119,14 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 	    
 	}
 	
+	@SuppressWarnings("unchecked")
+    public void listFileNetSystem() throws SQLException {
+        
+        int folder_id = 1;
+        ChildFilePrinter(folder_id);
+        
+    }
+	
 	private void ChildPrinter(int folder_id) throws SQLException {
         CallableStatement cs = connection.prepareCall("{CALL id_to_foldername(" + folder_id + ")}");
         ResultSet res = cs.executeQuery();
@@ -131,6 +138,19 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
         
         System.out.println(res.getString(1));
         
+        CallableStatement cs3 = connection.prepareCall("{CALL id_to_filename(" + folder_id + ")}");
+        ResultSet res3 = cs3.executeQuery();
+        
+        while(res3.next()){
+            
+            for(int i = 0; i < AbstractPetriNetPersistenceLayerMySQL.tabCounter; i++){
+                System.out.print("====<>");
+            }
+            
+            System.out.print(res.getString(1) + ": ");
+            System.out.println(res3.getString(1));
+        }
+        
         CallableStatement cs2 = connection.prepareCall("{CALL id_to_children(" + folder_id + ")}");
         ResultSet res2 = cs2.executeQuery();
         
@@ -140,6 +160,40 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
         }
         AbstractPetriNetPersistenceLayerMySQL.tabCounter--;
 	}
+	
+	private void ChildFilePrinter(int folder_id) throws SQLException {
+        CallableStatement cs = connection.prepareCall("{CALL id_to_foldername(" + folder_id + ")}");
+        ResultSet res = cs.executeQuery();
+        res.next();
+        
+        for(int i = 0; i < AbstractPetriNetPersistenceLayerMySQL.tabCounter; i++){
+            System.out.print("====<>");
+        }
+        
+        System.out.println(res.getString(1));
+        
+        CallableStatement cs3 = connection.prepareCall("{CALL id_to_filename(" + folder_id + ")}");
+        ResultSet res3 = cs3.executeQuery();
+        
+        while(res3.next()){
+            
+            for(int i = 0; i < AbstractPetriNetPersistenceLayerMySQL.tabCounter; i++){
+                System.out.print("====<>");
+            }
+            
+            System.out.print(res.getString(1) + ": ");
+            System.out.println(res3.getString(1));
+        }
+        
+        CallableStatement cs2 = connection.prepareCall("{CALL id_to_children(" + folder_id + ")}");
+        ResultSet res2 = cs2.executeQuery();
+        
+        while(res2.next()){
+            AbstractPetriNetPersistenceLayerMySQL.tabCounter++;
+            ChildPrinter(res2.getInt(1));
+        }
+        AbstractPetriNetPersistenceLayerMySQL.tabCounter--;
+    }
 
     @Override
 	@SuppressWarnings("unchecked")
@@ -287,15 +341,11 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		return 1;
 	}
 	
-	//====================
-    //current todo for PQL
-    //====================
 	
 	@Override
 	@SuppressWarnings("unchecked")
 	public int createFolderNetSystem(String folderName, String targetFolder) throws SQLException {
 		if (folderName==null || targetFolder==null) return 0;
-		//what do
 		
 		StringTokenizer folders = new StringTokenizer(targetFolder, "/");
         int folder_id = 1;
@@ -330,12 +380,9 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 		
 		if(PETRI_FOLDER_CREATE_CS == null)
 			PETRI_FOLDER_CREATE_CS = connection.prepareCall(this.PETRI_FOLDER_CREATE);
-			//================
-			//fix dis shit
 			PETRI_FOLDER_CREATE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
 			PETRI_FOLDER_CREATE_CS.setInt(2, folder_id);
 			PETRI_FOLDER_CREATE_CS.setString(3, folderName);
-			//=================	
 			PETRI_FOLDER_CREATE_CS.execute();
 		
 		return 1;
@@ -357,14 +404,10 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
             folder_id = res.getInt(1);
         }
         
-        //what do
         if(PETRI_FOLDER_DELETE_CS == null)
             PETRI_FOLDER_DELETE_CS = connection.prepareCall(this.PETRI_FOLDER_DELETE);
-            //================
-            //fix dis shit
             PETRI_FOLDER_DELETE_CS.registerOutParameter(1, java.sql.Types.INTEGER);
             PETRI_FOLDER_DELETE_CS.setInt(2, folder_id);
-            //================= 
             PETRI_FOLDER_DELETE_CS.execute();
         
         return 1;
@@ -414,8 +457,6 @@ public class AbstractPetriNetPersistenceLayerMySQL<F extends IFlow<N>, N extends
 
 	@Override
 	public int storeNetSystem(INetSystem<F,N,P,T,M> sys, String externalID, String target) throws SQLException {
-		// TODO: check why PNMLSerializer.serializePetriNet throws SerializationException
-		// TODO: implement SerializationException for interfaces
 		try {
 			String pnmlContent = PNMLSerializer.serializePetriNet((NetSystem) sys);
 			
