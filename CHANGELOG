@@ -1,9 +1,14 @@
+PQL ver 1.3
+====================
 1) Test code has been moved from src/ to /test so that Maven's "test" target works
 2) References to MySQL tables and function are no longer hardcoded to use a database named "pql"
 3) Configuring a MySQL JDBC URL that includes a query part now works
-4) Extension to the PQL grammar for handling binary predicate macros (added keyword ìSOMEî)
+4) Extension to the PQL grammar for handling binary predicate macros (added keyword ‚ÄúSOME‚Äù)
 5) Binary predicate constructions are now interpreted correctly according to the dynamic semantics of PQL
 6) Updated the PQL tool and PQL bot CLI messages
+7) Folder heirarchy has been added to database ('pql_folder_id', 'pql_folder_name', 'pql_folder_struct')
+8) Added new command line functions: 'mkdir', 'rmdir', 'ls' and 'mv'
+9) Updated query, store, delete and reset functionality
 
 PQL ver 1.2
 ====================
