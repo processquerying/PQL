@@ -12,8 +12,6 @@ import org.junit.Test;
 import org.pql.api.PQLAPI;
 import org.pql.ini.PQLIniFile;
 import org.pql.query.PQLQueryResult;
-import org.junit.Test
-import org.pql.tool.PQLToolCLI;
 
 /**
  * This test is part of the core test package.
@@ -50,25 +48,25 @@ public class PQLTest {
 		PQLTest.pqlAPI.reset();
 
 		System.out.println("Reset done!");
-		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/1.pnml"),"1.pnml");
+		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/1.pnml"),"1.pnml", "/");
 		System.out.println("1.pnml stored");
-		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/2.pnml"),"2.pnml");
+		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/2.pnml"),"2.pnml", "/");
 		System.out.println("2.pnml stored");
-		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/3.pnml"),"3.pnml");
+		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/3.pnml"),"3.pnml", "/");
 		System.out.println("3.pnml stored");
-		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/4.pnml"),"4.pnml");
+		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/4.pnml"),"4.pnml", "/");
 		System.out.println("4.pnml stored");
-		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/5.pnml"),"5.pnml");
+		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/5.pnml"),"5.pnml", "/");
 		System.out.println("5.pnml stored");
-		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/6.pnml"),"6.pnml");
+		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/6.pnml"),"6.pnml", "/");
 		System.out.println("6.pnml stored");
-		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/7.pnml"),"7.pnml");
+		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/7.pnml"),"7.pnml", "/");
 		System.out.println("7.pnml stored");
-		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/8.pnml"),"8.pnml");
+		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/8.pnml"),"8.pnml", "/");
 		System.out.println("8.pnml stored");
-		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/9.pnml"),"9.pnml");
+		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/9.pnml"),"9.pnml", "/");
 		System.out.println("9.pnml stored");
-		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/10.pnml"),"10.pnml");
+		PQLTest.pqlAPI.storeModel(new File("./pnml/pql/10.pnml"),"10.pnml", "/");
 		System.out.println("10.pnml stored");
 		
 		PQLTest.pqlAPI.index(PQLTest.pqlAPI.getInternalID("1.pnml"));
@@ -255,7 +253,7 @@ public class PQLTest {
 	    PQLTest.pqlAPI.moveModel("/1.pnml", "/A/");
         PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM \"/A/\";");
         assertEquals(0,queryResult.getNumberOfParseErrors());
-        assertEquals(10,queryResult.getSearchResults().size());
+        assertEquals(1,queryResult.getSearchResults().size());
         Set<String> res = queryResult.getSearchResults();
         assertEquals(true, res.contains("1.pnml"));
         
@@ -268,7 +266,7 @@ public class PQLTest {
         PQLTest.pqlAPI.moveModel("/2.pnml", "/A/B/");
         PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM \"/A/B/\";");
         assertEquals(0,queryResult.getNumberOfParseErrors());
-        assertEquals(10,queryResult.getSearchResults().size());
+        assertEquals(1,queryResult.getSearchResults().size());
         Set<String> res = queryResult.getSearchResults();
         assertEquals(true, res.contains("2.pnml"));
         
@@ -279,7 +277,7 @@ public class PQLTest {
         PQLTest.pqlAPI.deleteFolder("/A/");
         PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM *;");
         assertEquals(0,queryResult.getNumberOfParseErrors());
-        assertEquals(10,queryResult.getSearchResults().size());
+        assertEquals(8,queryResult.getSearchResults().size());
         Set<String> res = queryResult.getSearchResults();
         assertEquals(true, res.contains("3.pnml"));
         assertEquals(true, res.contains("4.pnml"));

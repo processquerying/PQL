@@ -1,2 +1,2 @@
-java -jar locations.jar -rmdir -target="/A/"
+java -jar PQL.TOOL-latest.jar -rmdir -target="/A/"
 pause

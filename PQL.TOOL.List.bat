@@ -1,2 +1,2 @@
-java -jar locations.jar -ls
+java -jar PQL.TOOL-latest.jar -ls
 pause

@@ -1,4 +1,4 @@
-java -jar locations.jar --index -id=1.pnml
+java -jar PQL.TOOL-latest.jar --index -id=1.pnml
 java -jar PQL.TOOL-latest.jar --index -id=2.pnml
 java -jar PQL.TOOL-latest.jar --index -id=3.pnml
 java -jar PQL.TOOL-latest.jar --index -id=4.pnml

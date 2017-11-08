@@ -1,0 +1,41 @@
+                ________   ________   ___          
+               |\   __  \ |\   __  \ |\  \         
+               \ \  \|\  \\ \  \|\  \\ \  \        
+                \ \   ____\\ \  \\\  \\ \  \       
+                 \ \  \___| \ \  \\\  \\ \  \____  
+                  \ \__\     \ \_____  \\ \_______\
+                   \|__|      \|___| \__\\|_______|
+                                    \|__|
+                                    
+                    www.processquerying.com
+                                    
+
+Process Query Language (PQL) is a special-purpose programming language for managing process models based on information about process instances that these models describe. PQL is based upon temporal logic and adopts the concrete syntax of SQL.
+
+
+--------------------
+SYSTEM REQUIREMENTS
+--------------------
+
+1. MySQL 5.7.8+
+2. Java 7
+
+-------------------------
+INSTALLATION INSTRUCTIONS
+-------------------------
+
+1. Download latest PQL release from https://github.com/processquerying/PQL/tree/master/release.
+2. Install supplied PQL.MySQL-*.sql schema file.
+3. Update MySQL URL, user, and password parameters in PQL.ini.
+4. Start using PQL by following the supplied examples!
+
+---------------
+FRIEND PROJECTS
+---------------
+
+1. The jBPT Library (https://github.com/jbpt/codebase) provides many useful functionalities to 
+   the PQL tool.
+2. Apromore process model repository (https://github.com/apromore/ApromoreCode) integrates the PQL tool, 
+   refer to the custom installation instructions in the README file of the Apromore project. A screencast 
+   on using PQL in Apromore is available here: https://www.youtube.com/watch?v=S_U6frTWd3M.
+
