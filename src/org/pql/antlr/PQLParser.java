@@ -92,6 +92,7 @@ public class PQLParser extends Parser {
 		public InsertQueryContext insertQuery() {
 			return getRuleContext(InsertQueryContext.class,0);
 		}
+		public TerminalNode EOS() { return getToken(PQLParser.EOS, 0); }
 		public SelectQueryContext selectQuery() {
 			return getRuleContext(SelectQueryContext.class,0);
 		}
@@ -113,21 +114,23 @@ public class PQLParser extends Parser {
 		QueryContext _localctx = new QueryContext(_ctx, getState());
 		enterRule(_localctx, 0, RULE_query);
 		try {
+			enterOuterAlt(_localctx, 1);
+			{
 			setState(130);
 			switch ( getInterpreter().adaptivePredict(_input,0,_ctx) ) {
 			case 1:
-				enterOuterAlt(_localctx, 1);
 				{
 				setState(128); selectQuery();
 				}
 				break;
 
 			case 2:
-				enterOuterAlt(_localctx, 2);
 				{
 				setState(129); insertQuery();
 				}
 				break;
+			}
+			setState(132); match(EOS);
 			}
 		}
 		catch (RecognitionException re) {
@@ -151,7 +154,6 @@ public class PQLParser extends Parser {
 		public LocationsContext locations() {
 			return getRuleContext(LocationsContext.class,0);
 		}
-		public TerminalNode EOS() { return getToken(PQLParser.EOS, 0); }
 		public TerminalNode WHERE() { return getToken(PQLParser.WHERE, 0); }
 		public TerminalNode FROM() { return getToken(PQLParser.FROM, 0); }
 		public TerminalNode SELECT() { return getToken(PQLParser.SELECT, 0); }
@@ -179,21 +181,20 @@ public class PQLParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(132); variables();
-			setState(133); match(SELECT);
-			setState(134); attributes();
-			setState(135); match(FROM);
-			setState(136); locations();
-			setState(139);
+			setState(134); variables();
+			setState(135); match(SELECT);
+			setState(136); attributes();
+			setState(137); match(FROM);
+			setState(138); locations();
+			setState(141);
 			_la = _input.LA(1);
 			if (_la==WHERE) {
 				{
-				setState(137); match(WHERE);
-				setState(138); predicate();
+				setState(139); match(WHERE);
+				setState(140); predicate();
 				}
 			}
 
-			setState(141); match(EOS);
 			}
 		}
 		catch (RecognitionException re) {
@@ -791,7 +792,6 @@ public class PQLParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			{
 			setState(200); match(LP);
 			setState(203);
 			switch ( getInterpreter().adaptivePredict(_input,9,_ctx) ) {
@@ -808,7 +808,6 @@ public class PQLParser extends Parser {
 				break;
 			}
 			setState(205); match(RP);
-			}
 			}
 		}
 		catch (RecognitionException re) {
@@ -3853,8 +3852,8 @@ public class PQLParser extends Parser {
 		"\t!\4\"\t\"\4#\t#\4$\t$\4%\t%\4&\t&\4\'\t\'\4(\t(\4)\t)\4*\t*\4+\t+\4"+
 		",\t,\4-\t-\4.\t.\4/\t/\4\60\t\60\4\61\t\61\4\62\t\62\4\63\t\63\4\64\t"+
 		"\64\4\65\t\65\4\66\t\66\4\67\t\67\48\t8\49\t9\4:\t:\4;\t;\4<\t<\4=\t="+
-		"\4>\t>\4?\t?\4@\t@\4A\tA\3\2\3\2\5\2\u0085\n\2\3\3\3\3\3\3\3\3\3\3\3\3"+
-		"\3\3\5\3\u008e\n\3\3\3\3\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4\u0099\n\4\3"+
+		"\4>\t>\4?\t?\4@\t@\4A\tA\3\2\3\2\5\2\u0085\n\2\3\2\3\2\3\3\3\3\3\3\3\3"+
+		"\3\3\3\3\3\3\5\3\u0090\n\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4\u0099\n\4\3"+
 		"\4\3\4\3\5\7\5\u009e\n\5\f\5\16\5\u00a1\13\5\3\6\3\6\3\6\3\6\3\6\3\7\3"+
 		"\7\3\b\3\b\3\b\7\b\u00ad\n\b\f\b\16\b\u00b0\13\b\3\t\3\t\5\t\u00b4\n\t"+
 		"\3\n\3\n\3\n\3\n\7\n\u00ba\n\n\f\n\16\n\u00bd\13\n\5\n\u00bf\n\n\3\13"+
@@ -3886,7 +3885,7 @@ public class PQLParser extends Parser {
 		"\3>\3>\3?\3?\3?\3@\3@\3@\3@\3A\3A\3A\3A\3A\3A\2B\2\4\6\b\n\f\16\20\22"+
 		"\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJLNPRTVXZ\\^`bdfhjlnp"+
 		"rtvxz|~\u0080\2\7\4\2\'\'**\3\2\63\64\3\2\66;\3\2\'*\3\2./\u024e\2\u0084"+
-		"\3\2\2\2\4\u0086\3\2\2\2\6\u0091\3\2\2\2\b\u009f\3\2\2\2\n\u00a2\3\2\2"+
+		"\3\2\2\2\4\u0088\3\2\2\2\6\u0091\3\2\2\2\b\u009f\3\2\2\2\n\u00a2\3\2\2"+
 		"\2\f\u00a7\3\2\2\2\16\u00a9\3\2\2\2\20\u00b3\3\2\2\2\22\u00be\3\2\2\2"+
 		"\24\u00c2\3\2\2\2\26\u00c4\3\2\2\2\30\u00c6\3\2\2\2\32\u00c8\3\2\2\2\34"+
 		"\u00ca\3\2\2\2\36\u00d5\3\2\2\2 \u00dc\3\2\2\2\"\u00de\3\2\2\2$\u00e2"+
@@ -3901,10 +3900,10 @@ public class PQLParser extends Parser {
 		"\3\2\2\2p\u01d5\3\2\2\2r\u01ea\3\2\2\2t\u020b\3\2\2\2v\u022d\3\2\2\2x"+
 		"\u022f\3\2\2\2z\u0231\3\2\2\2|\u0234\3\2\2\2~\u0237\3\2\2\2\u0080\u023b"+
 		"\3\2\2\2\u0082\u0085\5\4\3\2\u0083\u0085\5\6\4\2\u0084\u0082\3\2\2\2\u0084"+
-		"\u0083\3\2\2\2\u0085\3\3\2\2\2\u0086\u0087\5\b\5\2\u0087\u0088\7\31\2"+
-		"\2\u0088\u0089\5\16\b\2\u0089\u008a\7\34\2\2\u008a\u008d\5\22\n\2\u008b"+
-		"\u008c\7\35\2\2\u008c\u008e\5@!\2\u008d\u008b\3\2\2\2\u008d\u008e\3\2"+
-		"\2\2\u008e\u008f\3\2\2\2\u008f\u0090\7\20\2\2\u0090\5\3\2\2\2\u0091\u0092"+
+		"\u0083\3\2\2\2\u0085\u0086\3\2\2\2\u0086\u0087\7\20\2\2\u0087\3\3\2\2"+
+		"\2\u0088\u0089\5\b\5\2\u0089\u008a\7\31\2\2\u008a\u008b\5\16\b\2\u008b"+
+		"\u008c\7\34\2\2\u008c\u008f\5\22\n\2\u008d\u008e\7\35\2\2\u008e\u0090"+
+		"\5@!\2\u008f\u008d\3\2\2\2\u008f\u0090\3\2\2\2\u0090\5\3\2\2\2\u0091\u0092"+
 		"\5\b\5\2\u0092\u0093\7\32\2\2\u0093\u0094\5&\24\2\u0094\u0095\7\33\2\2"+
 		"\u0095\u0098\5\22\n\2\u0096\u0097\7\35\2\2\u0097\u0099\5@!\2\u0098\u0096"+
 		"\3\2\2\2\u0098\u0099\3\2\2\2\u0099\u009a\3\2\2\2\u009a\u009b\7\20\2\2"+
@@ -4043,7 +4042,7 @@ public class PQLParser extends Parser {
 		"{\3\2\2\2\u0234\u0235\7\37\2\2\u0235\u0236\7 \2\2\u0236}\3\2\2\2\u0237"+
 		"\u0238\7,\2\2\u0238\u0239\7!\2\2\u0239\u023a\7-\2\2\u023a\177\3\2\2\2"+
 		"\u023b\u023c\7,\2\2\u023c\u023d\7\"\2\2\u023d\u023e\7!\2\2\u023e\u023f"+
-		"\7-\2\2\u023f\u0081\3\2\2\2/\u0084\u008d\u0098\u009f\u00ae\u00b3\u00bb"+
+		"\7-\2\2\u023f\u0081\3\2\2\2/\u0084\u008f\u0098\u009f\u00ae\u00b3\u00bb"+
 		"\u00be\u00c2\u00cd\u00d5\u00dc\u00e8\u00eb\u00f5\u00f8\u00fe\u0108\u010a"+
 		"\u0114\u0132\u013d\u0159\u0171\u0180\u0188\u018d\u0193\u0199\u019d\u01a2"+
 		"\u01a7\u01ac\u01b0\u01bb\u01d5\u01db\u01e1\u01e5\u01ea\u01ef\u01f4\u01f8"+

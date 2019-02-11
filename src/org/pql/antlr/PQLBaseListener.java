@@ -1,6 +1,5 @@
 // Generated from PQL.g4 by ANTLR 4.1
 package org.pql.antlr;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ErrorNode;

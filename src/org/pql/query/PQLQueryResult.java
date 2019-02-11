@@ -31,6 +31,7 @@ import java.util.StringTokenizer;
 public class PQLQueryResult extends MySQLConnection {
 	private Set<String>	queryResult = null;
 	private IPQLQuery	query = null;
+	private IPQLQuery myquery = null;
 	private String pqlQuery = null;
 	private ILabelManager labelMngr = null;
 	private int numberOfQueryThreads = 1;
@@ -112,22 +113,22 @@ public class PQLQueryResult extends MySQLConnection {
 	
 	//A.P. 
 	private void query() throws ClassNotFoundException, SQLException {
-	
+
 		Set<PQLQueryMySQL> queries = new HashSet<PQLQueryMySQL>();
 		Set<Thread> threads = new HashSet<Thread>();
-		
+
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-				
+
 		//start threads
 		int q=1;
 		for (int j=1; j<this.numberOfQueryThreads; j++) {
-			
-			Connection con = (new MySQLConnection(mysqlURL,mysqlUser,mysqlPassword)).getConnection(); 
-			
+
+			Connection con = (new MySQLConnection(mysqlURL,mysqlUser,mysqlPassword)).getConnection();
+
 			//TODO improve creation of thread label managers
 			ILabelManager threadLabelMngr = null;
 			try {
-				switch (labelManagerType) 
+				switch (labelManagerType)
 				{
 				case THEMIS_VSM:
 					threadLabelMngr = new LabelManagerThemisVSM(con,postgreSQLHost,postgreSQLName,postgreSQLUser,postgreSQLPassword,defaultLabelSimilarity,indexedLabelSimilarities);
@@ -140,16 +141,16 @@ public class PQLQueryResult extends MySQLConnection {
 					break;
 				}
 			} catch (IOException e) {e.printStackTrace();}
-	
+
 			IPQLQuery threadQuery = new PQLQueryMySQL(this.filteredModels, con, this.pqlQuery, threadLabelMngr);
 			queries.add((PQLQueryMySQL) threadQuery);
 			PQLQueryThread newThread = new PQLQueryThread("PQL"+(q++), threadQuery, queue, this.queryResult, this.netIDsLoaded);
-			
+
 			newThread.setPriority(Thread.MAX_PRIORITY);
 			newThread.start();
 			threads.add(newThread);
 		}
-			
+
 			try {
 				this.query.configure(new Integer(0));
 				this.query.check();
@@ -157,21 +158,24 @@ public class PQLQueryResult extends MySQLConnection {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			
+
+//		 this.myquery = new PQLQueryMySQL(this.filteredModels, this.getConnection(), this.pqlQuery,this.labelMngr);
+//		System.out.println(this.myquery.getAttributes());
+
 			//if (!(this.query.getLocations().size()==1 && this.query.getLocations().iterator().next().isUniverse())) {
 			if (this.query.getLocations().toString() != "[]") {
 					StringTokenizer folderPath = new StringTokenizer(this.query.getLocations().toString(), "[]");
 					String folderPathString = folderPath.nextElement().toString();
-					
+
 					StringTokenizer folderPaths = new StringTokenizer(folderPathString, ", ");
 					int folder_id = 1;
 					CallableStatement cs = null;
-					
+
 					while (folderPaths.hasMoreElements()) {
 						String temp = folderPaths.nextElement().toString();
 						if (temp.endsWith("/")) {
 							StringTokenizer folders = new StringTokenizer(temp, "/");
-							
+
 							while (folders.hasMoreElements()) {
 								cs = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + folders.nextElement().toString() + "\")}");
 								ResultSet res = cs.executeQuery();
@@ -180,28 +184,28 @@ public class PQLQueryResult extends MySQLConnection {
 							}
 							cs = connection.prepareCall("{CALL locations_query(" + folder_id + ")}");
 							ResultSet res = cs.executeQuery();
-							
+
 							while (res.next()) {
 								queue.put(res.getString(1));
 							}
 							folder_id = 1;
 						}
-						
+
 						else {
 							StringTokenizer folders = new StringTokenizer(temp, "/");
 							int counter =0;
-							
+
 							while (folders.hasMoreElements()) {
 								folders.nextElement();
 								counter++;
 							}
-							
+
 							//limits to the final element
 							counter = (counter - 1);
-							
+
 							//retokenises temp
 							StringTokenizer foldertofile = new StringTokenizer(temp, "/");
-							
+
 							while(counter > 0) {
 								cs = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + foldertofile.nextElement().toString() + "\")}");
 								ResultSet res = cs.executeQuery();
@@ -209,62 +213,57 @@ public class PQLQueryResult extends MySQLConnection {
 								folder_id = res.getInt(1);
 								counter--;
 							}
-							
+
 							String lastPos = foldertofile.nextElement().toString();
 							int folderCheck;
-							
+
 							cs = connection.prepareCall("{CALL double_up(\"" + lastPos + "\", " + folder_id + ")}");
 							ResultSet res = cs.executeQuery();
 							res.next();
 							folderCheck = res.getInt(1);
-							
+
 							if(folderCheck == 1) {
-								
+
 								cs = connection.prepareCall("{CALL return_id(" + folder_id + ", \"" + lastPos + "\")}");
 								ResultSet res2 = cs.executeQuery();
 								res2.next();
 								folder_id = res2.getInt(1);
-								
+
 								cs = connection.prepareCall("{CALL locations_query(" + folder_id + ")}");
 								res2 = cs.executeQuery();
-								
+
 								while (res2.next()) {
 									queue.put(res2.getString(1));
 								}
-							}
-							
-							else {
+							} else {
 								CallableStatement cs2 = connection.prepareCall("{CALL double_up_file(\"" + lastPos + "\", " + folder_id + ")}");
 								ResultSet res2 = cs2.executeQuery();
 								res2.next();
                                 int fileCheck = res2.getInt(1);
-								
+
 								if(fileCheck == 1) {
 								    queue.put(lastPos);
 								}
 							}
 							folder_id = 1;
 						}
-							
+
 					}
-			}
-			
-			else {
-				
+			} else {
 				CallableStatement cs = connection.prepareCall("{CALL pql_get_universe_ids()}");
 				ResultSet res = cs.executeQuery();
-				
+
 				while (res.next()) {
 					queue.put(res.getString(1));
 				}
 			}
-		
+
 			this.netIDsLoaded.set(true);
-			
+
 		queries.add((PQLQueryMySQL) this.query);
 		PQLQueryThread mainThread = new PQLQueryThread("PQLmain", this.query, queue, this.queryResult, this.netIDsLoaded);
 		mainThread.checkQuery();
-		
+
 		try{
 			for (Thread thread : threads) {
 			    thread.join();
@@ -272,10 +271,10 @@ public class PQLQueryResult extends MySQLConnection {
 		} catch (InterruptedException e) {
 		    e.printStackTrace();
 		}
-		
+
 		for (PQLQueryMySQL query : queries)
 			query.disconnect();
-		
+
 		Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
 		
 	}

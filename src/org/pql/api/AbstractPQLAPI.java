@@ -2,6 +2,8 @@ package org.pql.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
@@ -56,7 +58,9 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	private Set<Double> 						 indexedLabelSimilarities = null;
 	private String 								 labelSimilarityConfig = null;
 	private LabelManagerType 					 labelManagerType = null;
-			
+
+	public static int tabCounter = 0;
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	
 	public AbstractPQLAPI(String mySQLURL, String mySQLUser, String mySQLPassword,
@@ -163,26 +167,50 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	@Override
 	public void listFolders() throws SQLException {
 		this.netPersistenceLayer.listNetSystem();
+//        PQLChildPrinter(1);
 	}
 	
 	@Override
 	public int moveModel(String id_name, String targetFolder) throws SQLException {
-		return this.netPersistenceLayer.moveNetSystem(id_name, targetFolder);
+			return this.netPersistenceLayer.moveNetSystem(id_name, targetFolder);
 	}
 	
 	@Override
 	public int moveFolder(String movingFolder, String targetFolder) throws SQLException {
-		return this.netPersistenceLayer.moveFolderNetSystem(movingFolder, targetFolder);
+		try {
+			return this.netPersistenceLayer.moveFolderNetSystem(movingFolder, targetFolder);
+		} catch (Exception e) {
+			System.out.println("No such file or directory");
+			return 0;
+		}
 	}
 	
 	@Override
 	public int createFolder(String folderName, String targetFolder) throws SQLException {
-		return this.netPersistenceLayer.createFolderNetSystem(folderName, targetFolder);
+		try {
+			if(validateEmptyFolderName(folderName)) {
+				if(validateSpecialCharacters(folderName)) {
+					return this.netPersistenceLayer.createFolderNetSystem(folderName, targetFolder);
+				} else {
+					return 0;
+				}
+			} else {
+				return 0;
+			}
+		} catch (Exception e) {
+			System.out.println("Could not create the folder " + folderName + " under " + targetFolder + "directory.");
+			return 0;
+		}
 	}
 	
 	@Override
     public int deleteFolder(String folderName) throws SQLException {
-        return this.netPersistenceLayer.deleteFolderNetSystem(folderName);
+		try {
+			return this.netPersistenceLayer.deleteFolderNetSystem(folderName);
+		} catch(Exception e) {
+			System.out.println("No such file or directory");
+			return 0;
+		}
     }
 	
 	@Override
@@ -256,5 +284,64 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		
 		return externalIDs;
 	}
+
+
+	public boolean validateSpecialCharacters(String folderName) {
+		if(!folderName.contains("/") && !folderName.contains(">") && !folderName.contains("<")
+				&& !folderName.contains("|") && !folderName.contains(":") && !folderName.contains("&")
+				&&!folderName.contains(":")) {
+			return true;
+		}else {
+			System.out.println("Invalid folder name, please provide a valid folder name");
+			return false;
+		}
+	}
+	public boolean validateEmptyFolderName(String folderName) {
+		if(folderName.length() > 0 && folderName != null) {
+			return true;
+		} else {
+			System.out.println("Empty folder name, please provide a valid folder name");
+			return false;
+		}
+	}
+
+//    private void PQLChildPrinter(int folder_id) throws SQLException {
+//        CallableStatement cs = connection.prepareCall("{CALL id_to_foldername(" + folder_id + ")}");
+//        ResultSet res = cs.executeQuery();
+//
+//        res.next();
+//	if(folder_id > 1) {
+//				CallableStatement precs = connection.prepareCall("{CALL id_to_foldername(" + (folder_id - 1) + ")}");
+//				ResultSet pre = precs.executeQuery();
+//				System.out.println("folder label is: " + pre.getString(1));
+//	}
+//        for(int i = 0; i < tabCounter; i++){
+//	        System.out.print("====<>");
+//        }
+//
+//        System.out.println(res.getString(1));
+//
+//        CallableStatement cs3 = connection.prepareCall("{CALL id_to_filename(" + folder_id + ")}");
+//        ResultSet res3 = cs3.executeQuery();
+//
+//        while(res3.next()){
+//
+//            for(int i = 0; i < tabCounter; i++){
+//                System.out.print("====<>");
+//            }
+//
+//            System.out.print(res.getString(1) + ": ");
+//            System.out.println(res3.getString(1));
+//        }
+//
+//        CallableStatement cs2 = connection.prepareCall("{CALL id_to_children(" + folder_id + ")}");
+//        ResultSet res2 = cs2.executeQuery();
+//
+//        while(res2.next()){
+//            tabCounter++;
+//            PQLChildPrinter(res2.getInt(1));
+//        }
+//        tabCounter--;
+//    }
 
 }

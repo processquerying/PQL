@@ -5,7 +5,7 @@ package org.pql.core;
  */
 public class PQLLocation {	
 	private String		locationPath	= null;
-	
+
 	/**
 	 * Empty constructor is used to construct the universe location.
 	 */
@@ -54,7 +54,7 @@ public class PQLLocation {
 	
 	@Override
 	public String toString() {
-		return this.isUniverse() ? "UNIVERSE" : this.getLocationPath();
+			return this.isUniverse() ? "UNIVERSE" : this.getLocationPath();
 	}
 	
 	@Override
