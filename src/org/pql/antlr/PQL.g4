@@ -50,8 +50,8 @@
    attribute  : universe
               | attributeName ;
            
-   locations  : universe | location (SEP location)* ;
-   location   : locationPath | nestedQuery;
+   locations  : location (SEP location)* ;
+   location   : universe | locationPath | nestedQuery;
               
    universe           : UNIVERSE ;
    attributeName      : STRING ;

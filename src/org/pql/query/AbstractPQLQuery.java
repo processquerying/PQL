@@ -21,8 +21,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
-import org.pql.antlr.PQLLexer;
-import org.pql.antlr.PQLParser;
+import org.pql.antlr.*;
 import org.pql.api.PQLErrorListener;
 import org.pql.core.PQLAttribute;
 import org.pql.core.PQLLocation;
@@ -232,9 +231,11 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 			
 			if(child instanceof RuleNode) {
                 int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
-                
-                if (ruleIndex == PQLParser.RULE_location)
-                	interpretLocation(child);
+
+                if (ruleIndex == PQLParser.RULE_location) {
+	                interpretLocation(child);
+                }
+
             }
         }
 	}
@@ -244,13 +245,17 @@ public abstract class AbstractPQLQuery implements IPQLQuery {
 		
 		if (child instanceof RuleNode) {
             int ruleIndex = ((RuleNode)child).getRuleContext().getRuleIndex();
-            
+//			System.out.println("[DEBUG] - ruleIndex is: " + ruleIndex);
             switch (ruleIndex) {
 	            case PQLParser.RULE_universe :
 	            	this.locations.add(new PQLLocation());
 	            	break;
 	            case PQLParser.RULE_locationPath :
 	            	this.locations.add(new PQLLocation(this.interpretString(child)));
+	            	break;
+	            	//TODO - NestedQuery location: at the moment it returns Universe no matter what is nested query is.
+	            case PQLParser.RULE_nestedQuery:
+		            this.locations.add(new PQLLocation());
 	            	break;
             }
         }

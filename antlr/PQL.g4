@@ -1,8 +1,7 @@
-   /*
+/*
     [The "BSD licence"]
-    Copyright (c) 2014-2016 Artem Polyvyanyy (http://polyvyanyy.com/)
+    Copyright (c) 2014-2019 Artem Polyvyanyy (http://polyvyanyy.com/)
     All rights reserved.
-
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
     are met:
@@ -13,7 +12,6 @@
        documentation and/or other materials provided with the distribution.
     3. The name of the author may not be used to endorse or promote products
        derived from this software without specific prior written permission.
-
     THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
     IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
     OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -26,17 +24,16 @@
     THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    */
 
-   // PQL version 1.2 grammar for ANTLR v4
+   // PQL version 1.3 grammar for ANTLR v4
 
    grammar PQL;
 
-   query      : selectQuery |
-                insertQuery ;
+   query      : (selectQuery | insertQuery) EOS ;
                 
    selectQuery : variables 
               SELECT attributes 
               FROM locations 
-              (WHERE predicate)? EOS ;
+              (WHERE predicate)? ;
 
    insertQuery : variables 
               INSERT trace 
@@ -53,13 +50,13 @@
    attribute  : universe
               | attributeName ;
            
-   locations  : universe | location (SEP location)* ;
-   location   : locationPath | nestedQuery;
+   locations  : location (SEP location)* ;
+   location   : universe | locationPath | nestedQuery;
               
    universe           : UNIVERSE ;
    attributeName      : STRING ;
    locationPath       : STRING ;
-   nestedQuery        : (LP (selectQuery|insertQuery) RP) ;
+   nestedQuery        : LP (selectQuery | insertQuery) RP ;
 
    setOfTasks : tasks
               | union
@@ -81,7 +78,7 @@
    trace      : 
               LTB (event (SEP event)*)? RTB ; 
    
-   event 	    :	universe | task; 
+   event      : universe | task; 
    
    task       : approximate label 
               | label (LSB similarity RSB)? ; 
@@ -140,11 +137,11 @@
 
    unaryTracePredicate : 
                 unaryTracePredicateName 
-                LP trace RP ;				
+                LP trace RP ;
               
    unaryPredicateMacro : unaryPredicateName
                 LP setOfTasks SEP anyAll RP ;
-		   
+
    binaryPredicateMacro: 
                 binaryPredicateMacroTaskSet
               | binaryPredicateMacroSetSet ;    
@@ -152,7 +149,7 @@
    binaryPredicateMacroTaskSet :
                 binaryPredicateName LP task 
                 SEP setOfTasks SEP anyAll RP ;
-		   
+
    binaryPredicateMacroSetSet  : 
               binaryPredicateName 
               LP setOfTasks SEP setOfTasks 
@@ -211,7 +208,7 @@
             logicalTest | conjunction) (OR 
             (proposition | logicalTest 
             | conjunction))* ;
-		   
+
    conjunction  : (proposition | logicalTest) 
             AND (proposition | logicalTest)
             (AND (proposition 
@@ -233,12 +230,10 @@
 
    UNIVERSE     : '*' ;
    
-   STRING       : DQ ( ESC_SEQ 
-                | ~('\\'|'"') )* DQ ;
+   STRING       : DQ ( ESC_SEQ | ~('\\'|'"') )+ DQ ;
    VARIABLE_NAME: ('a'..'z'|'_') 
                   ('a'..'z'|'0'..'9'|'_')*;
-   SIMILARITY   : '1' | '0' ('.' '0'..'9'+)? 
-                | '.' '0'..'9'+ ;
+   SIMILARITY   : '1' | '0' ('.' '0'..'9'+)? | '.' '0'..'9'+ ;
 
    LP          : '(' ;
    RP          : ')' ;
@@ -246,21 +241,19 @@
    RB          : '}' ;
    LSB         : '[' ;
    RSB         : ']' ;
-   LTB	       : '<' ;
-   RTB	       : '>' ;
+   LTB         : '<' ;
+   RTB         : '>' ;
    DQ          : '"' ;
    EOS         : ';' ; 
    SEP         : ',' ;
    ASSIGN      : '=' ;
    TILDE       : '~' ;
    
-   ESC_SEQ     : '\\' ('\"'|'\\'|'/'|'b'|
-               'f'|'n'|'r'|'t') 
+   ESC_SEQ     : '\\' ('\"'|'\\'|'/'|'b'|'f'|'n'|'r'|'t') 
                | UNICODE_ESC ;
    UNICODE_ESC : '\\' 'u' HEX_DIGIT 
                HEX_DIGIT HEX_DIGIT HEX_DIGIT ;
-   HEX_DIGIT   : ('0'..'9'|
-               'a'..'f'|'A'..'F') ;
+   HEX_DIGIT   : ('0'..'9'|'a'..'f'|'A'..'F') ;
    WS          : [ \r\t\n]+ -> skip ;
    LINE_COMMENT: '--' ~[\r\n]* -> skip ;
 
@@ -304,7 +297,7 @@
 
    CAN_OCCUR       : 'CanOccur' ;
    ALWAYS_OCCURS   : 'AlwaysOccurs' ;
-   EXECUTES		     : 'Executes' ;
+   EXECUTES        : 'Executes' ;
    CAN_CONFLICT    : 'CanConflict' ;
    CAN_COOCCUR     : 'CanCooccur' ;
    CONFLICT        : 'Conflict' ;

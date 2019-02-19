@@ -31,7 +31,6 @@ import java.util.StringTokenizer;
 public class PQLQueryResult extends MySQLConnection {
 	private Set<String>	queryResult = null;
 	private IPQLQuery	query = null;
-	private IPQLQuery myquery = null;
 	private String pqlQuery = null;
 	private ILabelManager labelMngr = null;
 	private int numberOfQueryThreads = 1;
@@ -160,10 +159,10 @@ public class PQLQueryResult extends MySQLConnection {
 			}
 
 //		 this.myquery = new PQLQueryMySQL(this.filteredModels, this.getConnection(), this.pqlQuery,this.labelMngr);
-//		System.out.println(this.myquery.getAttributes());
+		System.out.println("Location: " + this.query.getLocations());
 
 			//if (!(this.query.getLocations().size()==1 && this.query.getLocations().iterator().next().isUniverse())) {
-			if (this.query.getLocations().toString() != "[]") {
+			if (!this.query.getLocations().iterator().next().isUniverse()) {
 					StringTokenizer folderPath = new StringTokenizer(this.query.getLocations().toString(), "[]");
 					String folderPathString = folderPath.nextElement().toString();
 

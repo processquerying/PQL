@@ -192,9 +192,11 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 				if(validateSpecialCharacters(folderName)) {
 					return this.netPersistenceLayer.createFolderNetSystem(folderName, targetFolder);
 				} else {
+					System.out.println("Could not create the folder " + folderName + " under " + targetFolder + "directory.");
 					return 0;
 				}
 			} else {
+				System.out.println("Could not create the folder " + folderName + " under " + targetFolder + "directory.");
 				return 0;
 			}
 		} catch (Exception e) {
