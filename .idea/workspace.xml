@@ -2,22 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9884c989-c314-423f-b380-763e297cd91a" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/PQL.TOOL-latest.jar" beforeDir="false" afterPath="$PROJECT_DIR$/PQL.TOOL-latest.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_kqs.fdt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_kqs.fdx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_kqs.fnm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_kqs.nvd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_kqs.nvm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_kqs.si" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_kqs_Lucene50_0.doc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_kqs_Lucene50_0.pos" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_kqs_Lucene50_0.tim" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_kqs_Lucene50_0.tip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/segments_io2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pql-1.3-new.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/org/pql/api/AbstractPQLAPI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/pql/api/AbstractPQLAPI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/org/pql/test/PQLTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/org/pql/test/PQLTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_themis_themis_1_0.xml" beforeDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -41,24 +26,15 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AbstractPQLAPI.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="AbstractPQLAPI.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/org/pql/api/AbstractPQLAPI.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4061">
-              <caret line="358" column="30" selection-start-line="358" selection-start-column="30" selection-end-line="358" selection-end-column="30" />
+            <state relative-caret-position="221">
+              <caret line="102" column="53" selection-start-line="102" selection-start-column="53" selection-end-line="102" selection-end-column="53" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#2519#2527#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="pom.xml" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/pom.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="332">
-              <caret line="118" column="18" selection-start-line="118" selection-start-column="15" selection-end-line="118" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -112,9 +88,9 @@
       <find>path</find>
       <find>system.out.p</find>
       <find>findChi</find>
-      <find>location</find>
       <find>one-ja</find>
       <find>1.3</find>
+      <find>location</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -715,17 +691,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/pql/api/AbstractPQLAPI.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4061">
-          <caret line="358" column="30" selection-start-line="358" selection-start-column="30" selection-end-line="358" selection-end-column="30" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#2519#2527#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/org/pql/test/PQLTest.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="378">
@@ -740,6 +705,17 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="332">
           <caret line="118" column="18" selection-start-line="118" selection-start-column="15" selection-end-line="118" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/pql/api/AbstractPQLAPI.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="102" column="53" selection-start-line="102" selection-start-column="53" selection-end-line="102" selection-end-column="53" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#2519#2527#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
