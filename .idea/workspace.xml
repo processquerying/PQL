@@ -2,37 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9884c989-c314-423f-b380-763e297cd91a" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caa.fdt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caa.fdx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caa.fnm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caa.nvd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caa.nvm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caa.si" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caa_Lucene50_0.doc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caa_Lucene50_0.pos" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caa_Lucene50_0.tim" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caa_Lucene50_0.tip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cab.cfe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cab.cfs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cab.si" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cac.cfe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cac.cfs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cac.si" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cad.cfe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cad.cfs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cad.si" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cae.cfe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cae.cfs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cae.si" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caf.cfe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caf.cfs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_caf.si" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cag.cfe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cag.cfs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/_cag.si" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lucene/segments_b27" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pql-1.3-new.jar" beforeDir="false" afterPath="$PROJECT_DIR$/pql-1.3-new.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PQL.TOOL-latest.jar" beforeDir="false" afterPath="$PROJECT_DIR$/PQL.TOOL-latest.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lucene/_kqs.fdt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lucene/_kqs.fdx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lucene/_kqs.fnm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lucene/_kqs.nvd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lucene/_kqs.nvm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lucene/_kqs.si" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lucene/_kqs_Lucene50_0.doc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lucene/_kqs_Lucene50_0.pos" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lucene/_kqs_Lucene50_0.tim" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lucene/_kqs_Lucene50_0.tip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lucene/segments_io2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pql-1.3-new.jar" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/org/pql/api/AbstractPQLAPI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/pql/api/AbstractPQLAPI.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/org/pql/test/PQLTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/org/pql/test/PQLTest.java" afterDir="false" />
     </list>
@@ -49,8 +32,8 @@
       <file leaf-file-name="PQLTest.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/org/pql/test/PQLTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3883">
-              <caret line="408" selection-start-line="408" selection-start-column="2" selection-end-line="432" selection-end-column="56" />
+            <state relative-caret-position="378">
+              <caret line="406" column="41" selection-start-line="406" selection-start-column="41" selection-end-line="406" selection-end-column="41" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -58,15 +41,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AbstractPQLAPI.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="AbstractPQLAPI.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/pql/api/AbstractPQLAPI.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="377">
-              <caret line="216" column="4" lean-forward="true" selection-start-line="216" selection-start-column="4" selection-end-line="216" selection-end-column="4" />
+            <state relative-caret-position="4061">
+              <caret line="358" column="30" selection-start-line="358" selection-start-column="30" selection-end-line="358" selection-end-column="30" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#2519#2527#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pom.xml" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/pom.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="332">
+              <caret line="118" column="18" selection-start-line="118" selection-start-column="15" selection-end-line="118" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -93,8 +85,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>junit</find>
-      <find>callableStatem</find>
       <find>getLocation</find>
       <find>folder_id</find>
       <find>query</find>
@@ -121,8 +111,10 @@
       <find>convert</find>
       <find>path</find>
       <find>system.out.p</find>
-      <find>location</find>
       <find>findChi</find>
+      <find>location</find>
+      <find>one-ja</find>
+      <find>1.3</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -143,7 +135,6 @@
         <option value="$PROJECT_DIR$/src/org/pql/core/PQLLocation.java" />
         <option value="$PROJECT_DIR$/src/org/pql/query/IPQLQuery.java" />
         <option value="$PROJECT_DIR$/src/org/jbpt/petri/persist/AbstractPetriNetPersistenceLayerMySQL.java" />
-        <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/antlr/PQL.g4" />
         <option value="$PROJECT_DIR$/src/org/pql/antlr/PQL.g4" />
         <option value="$PROJECT_DIR$/src/org/pql/antlr/PQLVisitor.java" />
@@ -157,6 +148,7 @@
         <option value="$PROJECT_DIR$/src/org/pql/query/AbstractPQLQuery.java" />
         <option value="$PROJECT_DIR$/test/org/pql/test/PQLTest.java" />
         <option value="$PROJECT_DIR$/src/org/pql/api/AbstractPQLAPI.java" />
+        <option value="$PROJECT_DIR$/pom.xml" />
       </list>
     </option>
   </component>
@@ -203,40 +195,6 @@
             <path>
               <item name="pql" type="b2602c69:ProjectViewProjectNode" />
               <item name="PQL" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pql" type="b2602c69:ProjectViewProjectNode" />
-              <item name="PQL" type="462c0819:PsiDirectoryNode" />
-              <item name="sql" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pql" type="b2602c69:ProjectViewProjectNode" />
-              <item name="PQL" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pql" type="b2602c69:ProjectViewProjectNode" />
-              <item name="PQL" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="persist" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pql" type="b2602c69:ProjectViewProjectNode" />
-              <item name="PQL" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="antlr" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pql" type="b2602c69:ProjectViewProjectNode" />
-              <item name="PQL" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="api" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pql" type="b2602c69:ProjectViewProjectNode" />
-              <item name="PQL" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="query" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -577,13 +535,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pom.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="435">
-          <caret line="29" column="36" lean-forward="true" selection-start-line="29" selection-start-column="36" selection-end-line="29" selection-end-column="36" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sql/PQL.MySQL-latest.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="304">
@@ -764,24 +715,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/pql/api/AbstractPQLAPI.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4061">
+          <caret line="358" column="30" selection-start-line="358" selection-start-column="30" selection-end-line="358" selection-end-column="30" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#2519#2527#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test/org/pql/test/PQLTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3883">
-          <caret line="408" selection-start-line="408" selection-start-column="2" selection-end-line="432" selection-end-column="56" />
+        <state relative-caret-position="378">
+          <caret line="406" column="41" selection-start-line="406" selection-start-column="41" selection-end-line="406" selection-end-column="41" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/pql/api/AbstractPQLAPI.java">
+    <entry file="file://$PROJECT_DIR$/pom.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="377">
-          <caret line="216" column="4" lean-forward="true" selection-start-line="216" selection-start-column="4" selection-end-line="216" selection-end-column="4" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#2519#2527#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="332">
+          <caret line="118" column="18" selection-start-line="118" selection-start-column="15" selection-end-line="118" selection-end-column="18" />
         </state>
       </provider>
     </entry>

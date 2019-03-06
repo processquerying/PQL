@@ -172,16 +172,16 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 	
 	@Override
 	public void listFolders() throws SQLException {
-		StructList = new ArrayList<String>();
-		findChild(1, "/");
-		System.out.println("------------------------");
-		for(int i=0; i < StructList.size(); i++) {
-			System.out.println(StructList.get(i));
-		}
+//		StructList = new ArrayList<String>();
+//		findChild(1, "/");
+//		System.out.println("------------------------");
+//		for(int i=0; i < StructList.size(); i++) {
+//			System.out.println(StructList.get(i));
+//		}
+//
+//		System.out.println("------------------------");
 
-		System.out.println("------------------------");
-
-//		this.netPersistenceLayer.listNetSystem();
+		this.netPersistenceLayer.listNetSystem();
 	}
 	
 	@Override
@@ -204,18 +204,13 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 		try {
 			StructList = new ArrayList<String>();
 			findChild(1, "/");
-
 			String Fullpath;
-
 			if(targetFolder.endsWith("/")) {
 				Fullpath = targetFolder + folderName;
 			} else {
 				Fullpath = targetFolder + "/" + folderName;
 			}
-
-//			System.out.println("Full path is: " + Fullpath);
 			for(int i=0; i < StructList.size(); i++) {
-//				System.out.println("[i IS] : " + StructList.get(i) + "  --  [AND FULL PATH IS ] : " + Fullpath);
 				if(StructList.get(i).equals(Fullpath))
 				{
 					System.out.println("Folder already exists.");
@@ -347,11 +342,8 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 			CallableStatement cs2 = connection.prepareCall("{CALL id_to_children(" + parent + ")}");
 			ResultSet res2 = cs2.executeQuery();
 
-			// Do this while the result from databse is not empty
 			while (res2.next()) {
-				// get the ID of first element (and only element)
 					int tempID = res2.getInt((1));
-					// convertIDtoName uses another MySQL table to match ID and Name and returns Name as string.
 					String folderName = convertIDtoName(tempID);
 				if(path == "/") {
 					newpath = path + folderName;
@@ -365,10 +357,9 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 
 			}
 		} catch(Exception e) {
-			//print exception
+			System.out.println("Error! Could not retrieve folder structure tree.");
 		}
     }
-
 
     private String convertIDtoName(int folder_id) {
 		try {
@@ -380,41 +371,6 @@ public class AbstractPQLAPI<F extends IFlow<N>, N extends INode, P extends IPlac
 			System.out.println(e.getMessage());
 			return "0";
 		}
-    }
-    private void PQLChildPrinter(int folder_id) throws SQLException {
-
-		CallableStatement cs1 = connection.prepareCall("{CALL id_to_foldername(" + folder_id + ")}");
-	    ResultSet res = cs1.executeQuery();
-
-
-
-	    for (int i = 0; i < tabCounter; i++) {
-		    System.out.print("====<>");
-	    }
-
-	    System.out.println(res.getString(1));
-
-	    CallableStatement cs3 = connection.prepareCall("{CALL id_to_filename(" + folder_id + ")}");
-	    ResultSet res3 = cs3.executeQuery();
-
-	    while (res3.next()) {
-
-		    for (int i = 0; i < tabCounter; i++) {
-			    System.out.print("====<>");
-		    }
-
-		    System.out.print(res.getString(1) + ": ");
-		    System.out.println(res3.getString(1));
-	    }
-
-	    CallableStatement cs2 = connection.prepareCall("{CALL id_to_children(" + folder_id + ")}");
-	    ResultSet res2 = cs2.executeQuery();
-
-	    while (res2.next()) {
-		    tabCounter++;
-		    PQLChildPrinter(res2.getInt(1));
-	    }
-	    tabCounter--;
     }
 
 }
