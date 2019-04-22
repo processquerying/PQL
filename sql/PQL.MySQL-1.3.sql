@@ -128,7 +128,7 @@ CREATE TABLE `jbpt_petri_nets` (
   `name` text,
   `description` text,
   `external_id` text,
-  `pnml_content` text,
+  `pnml_content` longtext,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid` (`uuid`(20)),
   UNIQUE KEY `external_id` (`external_id`(20))
@@ -816,7 +816,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` FUNCTION `jbpt_petri_nets_create`(uuid VARCHAR(36), name TEXT, description TEXT, external_id TEXT, pnml_content TEXT) RETURNS int(11)
+CREATE DEFINER=`root`@`localhost` FUNCTION `jbpt_petri_nets_create`(uuid VARCHAR(36), name TEXT, description TEXT, external_id TEXT, pnml_content LONGTEXT) RETURNS int(11)
 BEGIN
   IF jbpt_petri_nets_get_internal_id(external_id) IS NOT NULL THEN
     RETURN 0;
@@ -925,9 +925,9 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` FUNCTION `jbpt_petri_nets_get_pnml_content`(internal_id INTEGER(11)) RETURNS text CHARSET utf8
+CREATE DEFINER=`root`@`localhost` FUNCTION `jbpt_petri_nets_get_pnml_content`(internal_id INTEGER(11)) RETURNS LONGTEXT CHARSET utf8
 BEGIN
-  DECLARE result TEXT;
+  DECLARE result LONGTEXT;
 
   SELECT `jbpt_petri_nets`.`pnml_content` INTO result
   FROM `jbpt_petri_nets`

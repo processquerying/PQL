@@ -26,13 +26,13 @@ import org.pql.mc.LoLA2ModelChecker;
 /**
  * Implementation of the PQL Bot command line interface.
  * 
- * @version 1.2.*
+ * @version 1.3.*
  * @since 15-01-2015
  * 
  * @author Artem Polyvyanyy
  */
 public class PQLBotCLI {
-	final private static String	version	= "1.2";
+	final private static String	version	= "1.3";
 	
 	public static void main(String[] args) throws AbstractPQLBot.NameInUseException, InterruptedException, ClassNotFoundException, SQLException, IOException {
 		// read parameters from the CLI

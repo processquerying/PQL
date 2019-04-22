@@ -4,16 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.CallableStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -31,13 +26,13 @@ import org.pql.query.PQLQueryResult;
 /**
  * Implementation of the PQL Tool command line interface.
  * 
- * @version 1.2.*
+ * @version 1.3.*
  * @since 15-01-2015
  * 
  * @author Artem Polyvyanyy 
  */ 
 public final class PQLToolCLI {
-	final private static String	version	= "1.2";
+	final private static String	version	= "1.3";
 	
 	private static PQLAPI pqlAPI = null;
 		

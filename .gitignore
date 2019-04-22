@@ -2,14 +2,5 @@
 **/target/*
 /testOther/
 /bin/
-/bin/
-/bin/
-/bin/
-/bin/
-/bin/
-/bin/
-/bin/
-/bin/
-/bin/
-/bin/
-/bin/
+/target/
+/lucene/
