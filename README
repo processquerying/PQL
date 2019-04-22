@@ -24,7 +24,9 @@ SYSTEM REQUIREMENTS
 TESTED ENVIRONMENTS
 --------------------
 
-PQL-1.2: (Windows 10 Education (64-bit); JRE 1.8.0_171; MySQL Ver 14.14 Distrib 5.7.24, for Win64 (x86_64))
+PQL-1.3: macOS Mojave version 10.14.1; JRE 1.8.0_144; MySQL Community server Ver 5.7.24 for MacOS
+PQL-1.3: Windows 10 Education (64-bit); JRE 1.8.0_171; MySQL Ver 14.14 Distrib 5.7.24, for Win64 (x86_64)
+PQL-1.2: Windows 10 Education (64-bit); JRE 1.8.0_171; MySQL Ver 14.14 Distrib 5.7.24, for Win64 (x86_64)
 
 PQL-X.Y refers to the corresponding PQL release published at https://github.com/processquerying/PQL/tree/master/release.
 
