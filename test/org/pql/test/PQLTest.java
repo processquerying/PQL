@@ -12,7 +12,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.pql.api.PQLAPI;
 import org.pql.ini.PQLIniFile;
 import org.pql.query.PQLQueryResult;
@@ -24,6 +26,9 @@ import org.pql.query.PQLQueryResult;
  *
  * @author Artem Polyvyanyy
  */
+
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+
 public class PQLTest {
 	private static PQLAPI	pqlAPI	= null;
 
