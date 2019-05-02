@@ -1,14 +1,10 @@
 package org.pql.test;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.BeforeClass;
@@ -102,7 +98,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test001() throws ClassNotFoundException, SQLException {
+	public void test1001() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE CanOccur(\"D\") AND Conflict(\"D\", \"E\");");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(2,queryResult.getSearchResults().size());
@@ -113,7 +109,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test002() throws ClassNotFoundException, SQLException {
+	public void test1002() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE AlwaysOccurs(\"C\") OR Cooccur(\"B\", \"C\");");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(6,queryResult.getSearchResults().size());
@@ -129,7 +125,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test003() throws ClassNotFoundException, SQLException {
+	public void test1003() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE (CanOccur(\"G\") AND (NOT Conflict(\"E\", \"G\"))) OR (TotalConcurrent(\"C\", \"D\") AND AlwaysOccurs(\"D\"));");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(5,queryResult.getSearchResults().size());
@@ -144,7 +140,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test004() throws ClassNotFoundException, SQLException {
+	public void test1004() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE CanOccur({\"F\", \"G\"}, ALL) AND AlwaysOccurs({\"F\", \"G\"}, ANY);");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(3,queryResult.getSearchResults().size());
@@ -157,7 +153,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test005() throws ClassNotFoundException, SQLException {
+	public void test1005() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE Cooccur(\"B\", {\"C\", \"D\"}, ALL) AND TotalConcurrent(\"B\", {\"C\", \"D\"}, ANY);");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(3,queryResult.getSearchResults().size());
@@ -170,7 +166,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test006() throws ClassNotFoundException, SQLException {
+	public void test1006() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE Conflict({\"A\", \"B\"}, {\"E\", \"F\"}, ANY) OR (Cooccur({\"A\", \"B\"}, {\"E\", \"F\"}, EACH) AND TotalCausal({\"A\", \"B\"}, {\"E\", \"F\"}, ALL));");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(3,queryResult.getSearchResults().size());
@@ -183,7 +179,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test007() throws ClassNotFoundException, SQLException {
+	public void test1007() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE \"C\" IN (GetTasksAlwaysOccurs({\"C\"}) UNION GetTasksTotalCausal({\"C\"}, {\"B\", \"D\"}, ALL));");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(7,queryResult.getSearchResults().size());
@@ -201,7 +197,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test008() throws ClassNotFoundException, SQLException {
+	public void test1008() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE \"G\" IN (GetTasksCanOccur({\"G\"}) INTERSECT GetTasksConflict({\"G\"}, {\"D\", \"E\", \"F\"}, ANY));");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(1,queryResult.getSearchResults().size());
@@ -213,7 +209,7 @@ public class PQLTest {
 
 
 	@Test
-	public void test009() throws ClassNotFoundException, SQLException {
+	public void test1009() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE GetTasksCooccur({\"A\", \"B\", \"C\"}, {\"D\", \"E\"}, ANY) NOT EQUALS GetTasksTotalConcurrent({\"A\", \"B\", \"C\"}, {\"D\", \"E\"}, ANY);");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(7,queryResult.getSearchResults().size());
@@ -232,7 +228,7 @@ public class PQLTest {
 
 
 	@Test
-	public void test010() throws ClassNotFoundException, SQLException {
+	public void test1010() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM * WHERE ({\"A\", \"B\", \"E\", \"F\"} EXCEPT GetTasksCooccur({\"A\", \"B\", \"E\", \"F\"}, {\"C\", \"D\"}, ALL)) OVERLAPS WITH GetTasksConflict({\"A\", \"B\", \"E\", \"F\"}, {\"C\", \"D\"}, ANY);");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(5,queryResult.getSearchResults().size());
@@ -247,7 +243,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test011() throws ClassNotFoundException, SQLException {
+	public void test1011() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM (SELECT * FROM * WHERE CanCooccur(~\"A\",\"B\") AND AlwaysOccurs(~\"C\")) ;");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(10,queryResult.getSearchResults().size());
@@ -266,7 +262,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test012() throws ClassNotFoundException, SQLException {
+	public void test1012() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM (SELECT * FROM \"/\");");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(10,queryResult.getSearchResults().size());
@@ -284,7 +280,7 @@ public class PQLTest {
 		System.out.println("[TEST] Search SubQuery 012 - OK");
 	}
 	@Test
-	public void test013() throws ClassNotFoundException, SQLException {
+	public void test1013() throws ClassNotFoundException, SQLException {
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM \"/\";");
 		assertEquals(0,queryResult.getNumberOfParseErrors());
 		assertEquals(10,queryResult.getSearchResults().size());
@@ -303,7 +299,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test014() throws ClassNotFoundException, SQLException {
+	public void test1014() throws ClassNotFoundException, SQLException {
 		PQLTest.pqlAPI.createFolder("A", "/");
 		PQLTest.pqlAPI.moveModel("/1.pnml", "/A/");
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM \"/A/\";");
@@ -315,7 +311,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test015() throws ClassNotFoundException, SQLException {
+	public void test1015() throws ClassNotFoundException, SQLException {
 		PQLTest.pqlAPI.createFolder("B", "/");
 		PQLTest.pqlAPI.moveFolder("B", "/A/");
 		PQLTest.pqlAPI.moveModel("/2.pnml", "/A/B/");
@@ -329,7 +325,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test016() throws ClassNotFoundException, SQLException {
+	public void test1016() throws ClassNotFoundException, SQLException {
 		PQLTest.pqlAPI.createFolder("C", "/");
 		PQLTest.pqlAPI.moveModel("/3.pnml", "/C/");
 		PQLTest.pqlAPI.moveModel("/4.pnml", "/C/");
@@ -343,7 +339,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test017() throws ClassNotFoundException, SQLException {
+	public void test1017() throws ClassNotFoundException, SQLException {
 		PQLTest.pqlAPI.createFolder("D", "/C/");
 		PQLTest.pqlAPI.moveModel("/C/3.pnml", "/C/D/");
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM \"/C/D/\";");
@@ -356,7 +352,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test018() throws ClassNotFoundException, SQLException {
+	public void test1018() throws ClassNotFoundException, SQLException {
 		PQLTest.pqlAPI.createFolder("E", "/C/D");
 		PQLTest.pqlAPI.moveModel("/5.pnml", "/C/D/E");
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM \"/C/D/E\";");
@@ -369,7 +365,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test019() throws ClassNotFoundException, SQLException {
+	public void test1019() throws ClassNotFoundException, SQLException {
 		PQLTest.pqlAPI.createFolder("F", "/C/");
 		PQLTest.pqlAPI.moveModel("/6.pnml", "/C/F/");
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM \"/C/F/\";");
@@ -382,7 +378,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test020() throws ClassNotFoundException, SQLException {
+	public void test1020() throws ClassNotFoundException, SQLException {
 		PQLTest.pqlAPI.createFolder("I", "/A/B/");
 		PQLTest.pqlAPI.createFolder("J", "/A/B/I");
 		PQLTest.pqlAPI.moveModel("/7.pnml", "/A/B");
@@ -396,7 +392,7 @@ public class PQLTest {
 	}
 
 	@Test
-	public void test021() throws ClassNotFoundException, SQLException {
+	public void test1021() throws ClassNotFoundException, SQLException {
 		PQLTest.pqlAPI.createFolder("G", "/A/B/");
 		PQLTest.pqlAPI.moveModel("/8.pnml", "/A/B/G");
 		PQLQueryResult queryResult = PQLTest.pqlAPI.query("SELECT * FROM \"/A/B/G/\";");
@@ -408,7 +404,7 @@ public class PQLTest {
 		System.out.println("[TEST] Folder Query 021 - OK");
 	}
 	@Test
-	public void test022() throws ClassNotFoundException, SQLException {
+	public void test1022() throws ClassNotFoundException, SQLException {
 			PQLTest.pqlAPI.listFolders();
 			PQLTest.pqlAPI.moveModel("/A/1.pnml", "/");
 			PQLTest.pqlAPI.moveModel("/A/B/2.pnml", "/");
