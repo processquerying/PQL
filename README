@@ -39,6 +39,11 @@ INSTALLATION INSTRUCTIONS
 3. Update MySQL URL, user, and password parameters in PQL.ini.
 4. Start using PQL by following the supplied examples!
 
+------------
+PUBLICATIONS
+------------
+1. Polyvyanyy, Artem; ter Hofstede, Arthur H. M.; Marcello, La Rosa; Ouyang, Chun; Pika, Anastasiia (2019). "Process Query Language: Design, Implementation, and Evaluation". arXiv:[1909.09543](https://arxiv.org/abs/1909.09543)
+
 ---------------
 FRIEND PROJECTS
 ---------------
